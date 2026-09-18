@@ -121,6 +121,56 @@ tests whose transitive inputs changed; everything else is a cache hit. Add a
 `--disk_cache=` (or a remote cache) in an uncommitted `user.bazelrc` to share
 results across checkouts.
 
+## Incremental rustc (`--config=dev`, Linux only)
+
+By default every rustc action is a full compile of its crate, so editing one
+line of a large crate costs the whole crate plus its test binary (~20 s for
+`reth-eth-wire` + `reth-network` on 16 cores, vs ~7 s with cargo). rustc's
+`-C incremental` cuts that roughly in half, but it needs two things Bazel does
+not give it by default: a cache directory outside the sandbox and a stable
+working directory (rules_rust puts the cwd into `--remap-path-prefix` and
+`CARGO_MANIFEST_DIR`, and rustc treats a changed cwd as a changed crate; the
+default sandbox uses a fresh numbered directory per action). `--config=dev`
+in `.bazelrc` switches to Bazel's hermetic Linux sandbox, which pivot_roots
+so every action runs in `/execroot/_main`. The cache directory is machine
+specific, so create it and add it to the uncommitted `user.bazelrc` (absolute
+path, both lines):
+
+```
+mkdir -p ~/.cache/reth-bazel-incremental
+cat >> user.bazelrc <<EOF
+build:dev --sandbox_add_mount_pair=/home/<you>/.cache/reth-bazel-incremental
+build:dev --@rules_rust//rust/settings:per_crate_rustc_flag=//crates/@-Cincremental=/home/<you>/.cache/reth-bazel-incremental
+EOF
+bazel test --config=dev //crates/net/network/...
+```
+
+Both lines are needed: without the mount pair rustc silently writes its cache
+inside the throwaway sandbox and nothing is reused. Notes:
+
+* Measured on 16 cores, touching `crates/net/eth-wire/src/lib.rs` and
+  building `//crates/net/eth-wire/... //crates/net/network/...`: 20 s default,
+  9–12 s with `--config=dev` (the rustc process for a touched crate drops from
+  ~6 s to ~2 s; the rest is Bazel overhead and test-binary linking).
+  `-C codegen-units=256` on its own changes nothing measurable.
+* `per_crate_rustc_flag=<label prefix>@<flag>` applies the flag only to
+  crates whose label starts with the prefix. `//crates/` covers the libraries
+  and their test binaries but not `//bin/...` or `//examples/...`: those leaf
+  binaries monomorphise the whole node and each would add ~900 MiB of cache
+  for code nobody iterates on. External crates never match, so switching the
+  config on or off rebuilds the `//crates/` targets once (a few minutes) but
+  keeps every external crate cached. Narrow the prefix further (e.g.
+  `//crates/net/`) to keep the cache small.
+* The cache is large: ~15–20 GiB for all of `//crates/` including test
+  binaries (the biggest e2e test binaries take ~1 GiB each), roughly what
+  cargo's `target/debug/incremental` costs. Delete the directory to reset it.
+* Not for CI: the hermetic sandbox mounts `/usr`, `/bin`, `/lib`, `/lib64`,
+  `/etc` from the host, and incremental artifacts are not reproducible.
+* macOS has no equivalent: the Darwin sandbox also uses per-action
+  directories, and running rustc unsandboxed (`--strategy=Rustc=local`)
+  fails because the rlib action rewrites the `.rmeta` the pipelined
+  `RustcMetadata` action already produced.
+
 ## Machine resources
 
 `.bazelrc` sets `--@rules_rust//rust/settings:codegen_units=4`, which makes
