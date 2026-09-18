@@ -1,0 +1,1053 @@
+//! Contains the [`AccountChanges`] struct, which represents storage writes, balance, nonce, code
+//! changes and read for the account. All changes for a single account, grouped by field type.
+//! This eliminates address redundancy across different change types.
+
+use crate::{
+    BalAccountInfo, BlockAccessIndex, SlotChanges, balance_change::BalanceChange,
+    code_change::CodeChange, nonce_change::NonceChange,
+};
+use alloc::vec::Vec;
+use alloy_primitives::{
+    Address, B256, Bytes, KECCAK256_EMPTY, U256, keccak256,
+    map::{HashMap, HashSet},
+};
+
+/// This struct is used to track the changes across accounts in a block.
+#[derive(Debug, Clone, Default, PartialEq, Eq, Hash)]
+#[cfg_attr(feature = "rlp", derive(alloy_rlp::RlpEncodable, alloy_rlp::RlpDecodable))]
+#[cfg_attr(feature = "serde", derive(serde::Serialize, serde::Deserialize))]
+#[cfg_attr(feature = "borsh", derive(borsh::BorshSerialize, borsh::BorshDeserialize))]
+#[cfg_attr(feature = "serde", serde(rename_all = "camelCase"))]
+#[cfg_attr(feature = "arbitrary", derive(arbitrary::Arbitrary))]
+pub struct AccountChanges {
+    /// The address of the account whose changes are stored.
+    pub address: Address,
+    /// List of slot changes for this account.
+    pub storage_changes: Vec<SlotChanges>,
+    /// List of storage reads for this account.
+    pub storage_reads: Vec<U256>,
+    /// List of balance changes for this account.
+    pub balance_changes: Vec<BalanceChange>,
+    /// List of nonce changes for this account.
+    pub nonce_changes: Vec<NonceChange>,
+    /// List of code changes for this account.
+    pub code_changes: Vec<CodeChange>,
+}
+
+impl AccountChanges {
+    /// Creates a new [`AccountChanges`] instance for the given address with empty vectors.
+    pub const fn new(address: Address) -> Self {
+        Self {
+            address,
+            storage_changes: Vec::new(),
+            storage_reads: Vec::new(),
+            balance_changes: Vec::new(),
+            nonce_changes: Vec::new(),
+            code_changes: Vec::new(),
+        }
+    }
+
+    /// Creates a new [`AccountChanges`] instance for the given address with specified capacity.
+    pub fn with_capacity(address: Address, capacity: usize) -> Self {
+        Self {
+            address,
+            storage_changes: Vec::with_capacity(capacity),
+            storage_reads: Vec::with_capacity(capacity),
+            balance_changes: Vec::with_capacity(capacity),
+            nonce_changes: Vec::with_capacity(capacity),
+            code_changes: Vec::with_capacity(capacity),
+        }
+    }
+
+    /// Returns the address of the account.
+    #[inline]
+    pub const fn address(&self) -> Address {
+        self.address
+    }
+
+    /// Returns `true` if this account change set contains no changes or reads.
+    ///
+    /// A [`SlotChanges`] entry with an empty change list does not count as data, so an entry
+    /// that only carries the address (or empty slot entries) is considered empty.
+    pub fn is_empty(&self) -> bool {
+        let Self {
+            address: _,
+            storage_changes,
+            storage_reads,
+            balance_changes,
+            nonce_changes,
+            code_changes,
+        } = self;
+        storage_changes.iter().all(SlotChanges::is_empty)
+            && storage_reads.is_empty()
+            && balance_changes.is_empty()
+            && nonce_changes.is_empty()
+            && code_changes.is_empty()
+    }
+
+    /// Returns the storage changes for this account.
+    #[inline]
+    pub fn storage_changes(&self) -> &[SlotChanges] {
+        &self.storage_changes
+    }
+
+    /// Returns an iterator over storage slots present in this account's changes and reads.
+    ///
+    /// Changed slots are yielded first, followed by read slots.
+    #[inline]
+    pub fn storage_slots(&self) -> impl Iterator<Item = U256> + '_ {
+        self.storage_changes
+            .iter()
+            .map(|changes| changes.slot)
+            .chain(self.storage_reads.iter().copied())
+    }
+
+    /// Returns an iterator over the post-state value for each changed storage slot.
+    ///
+    /// The post-state value is taken from the last recorded change for each slot.
+    #[inline]
+    pub fn storage_post_states(&self) -> impl Iterator<Item = (U256, U256)> + '_ {
+        self.storage_changes.iter().filter_map(|changes| {
+            changes.changes.last().map(|change| (changes.slot, change.new_value))
+        })
+    }
+
+    /// Returns the balance from the last recorded change, or `None` if unchanged.
+    #[inline]
+    pub fn balance_post_state(&self) -> Option<U256> {
+        self.balance_changes.last().map(|change| change.post_balance)
+    }
+
+    /// Returns the nonce from the last recorded change, or `None` if unchanged.
+    #[inline]
+    pub fn nonce_post_state(&self) -> Option<u64> {
+        self.nonce_changes.last().map(|change| change.new_nonce)
+    }
+
+    /// Returns the code from the last recorded change, or `None` if unchanged.
+    #[inline]
+    pub fn code_post_state(&self) -> Option<&Bytes> {
+        self.code_changes.last().map(|change| &change.new_code)
+    }
+
+    /// Returns the hash of the code from the last recorded change, or `None` if unchanged.
+    ///
+    /// [`KECCAK256_EMPTY`] is returned when the code was set to empty.
+    #[inline]
+    pub fn code_hash_post_state(&self) -> Option<B256> {
+        self.code_post_state().map(|code| code_hash(code))
+    }
+
+    /// Returns the code from the last recorded change together with its hash, or `None` if
+    /// unchanged.
+    ///
+    /// Use this over hashing [`Self::code_post_state`] separately when both the code and its hash
+    /// are needed, for example when storing the deployed bytecode by hash.
+    #[inline]
+    pub fn code_post_state_with_hash(&self) -> Option<(B256, &Bytes)> {
+        self.code_post_state().map(|code| (code_hash(code), code))
+    }
+
+    /// Returns the account-level fields this entry changed, see [`BalAccountInfo`].
+    #[inline]
+    pub fn account_info(&self) -> BalAccountInfo {
+        BalAccountInfo::from_changes(self)
+    }
+
+    /// Returns `true` if this entry writes at least one storage slot.
+    ///
+    /// [`SlotChanges`] entries without changes are ignored, mirroring [`Self::is_empty`].
+    pub fn has_storage_changes(&self) -> bool {
+        self.storage_changes.iter().any(|changes| !changes.is_empty())
+    }
+
+    /// Returns `true` if this entry records at least one state change.
+    ///
+    /// Entries that only record reads leave the account untouched and do not contribute to the
+    /// block's post-state.
+    pub fn has_changes(&self) -> bool {
+        !self.balance_changes.is_empty()
+            || !self.nonce_changes.is_empty()
+            || !self.code_changes.is_empty()
+            || self.has_storage_changes()
+    }
+
+    /// Merges another account change set into this one.
+    ///
+    /// Storage changes for matching slots are grouped together. Storage reads are normalized after
+    /// merging so that written slots are represented by `storage_changes`, while `storage_reads`
+    /// only contains unique read-only slots in first-seen order. This preserves the EIP-7928
+    /// invariant that a storage slot appears in either reads or changes, but not both, after
+    /// independently valid account change sets are combined.
+    ///
+    /// This preserves relative ordering by appending incoming changes to existing changes. Call
+    /// [`Self::sort`] after merging if canonical EIP-7928 ordering is required.
+    ///
+    /// # Panics
+    ///
+    /// Panics if the two account change sets have different addresses.
+    pub fn merge(&mut self, incoming: Self) {
+        assert_eq!(
+            self.address, incoming.address,
+            "cannot merge account changes for different addresses"
+        );
+
+        merge_slot_changes(&mut self.storage_changes, incoming.storage_changes);
+        self.storage_reads.extend(incoming.storage_reads);
+        self.balance_changes.extend(incoming.balance_changes);
+        self.nonce_changes.extend(incoming.nonce_changes);
+        self.code_changes.extend(incoming.code_changes);
+
+        let written = self
+            .storage_changes
+            .iter()
+            .map(|slot_changes| slot_changes.slot)
+            .collect::<HashSet<_>>();
+        self.storage_reads.retain(|slot| !written.contains(slot));
+
+        let mut seen = HashSet::with_capacity(self.storage_reads.len());
+        self.storage_reads.retain(|slot| seen.insert(*slot));
+    }
+
+    /// Returns the storage reads for this account.
+    #[inline]
+    pub fn storage_reads(&self) -> &[U256] {
+        &self.storage_reads
+    }
+
+    /// Returns the balance changes for this account.
+    #[inline]
+    pub fn balance_changes(&self) -> &[BalanceChange] {
+        &self.balance_changes
+    }
+
+    /// Returns the nonce changes for this account.
+    #[inline]
+    pub fn nonce_changes(&self) -> &[NonceChange] {
+        &self.nonce_changes
+    }
+
+    /// Returns the code changes for this account.
+    #[inline]
+    pub fn code_changes(&self) -> &[CodeChange] {
+        &self.code_changes
+    }
+
+    /// Sorts this account's changes in-place according to the account-local EIP-7928 ordering
+    /// rules.
+    ///
+    /// This applies the account-local ordering required by the "Ordering, Uniqueness and
+    /// Determinism" section of EIP-7928:
+    ///
+    /// - `storage_changes` are sorted lexicographically by storage key
+    /// - each per-slot `StorageChange` list is sorted by block access index in ascending order
+    /// - `storage_reads` are sorted lexicographically by storage key
+    /// - `balance_changes`, `nonce_changes`, and `code_changes` are sorted by block access index in
+    ///   ascending order
+    ///
+    /// Per-slot storage change ordering is delegated to [`SlotChanges::sort`].
+    ///
+    /// This method only canonicalizes ordering for a single account. It does not enforce the
+    /// EIP-7928 uniqueness constraints for storage keys or block access indexes.
+    pub fn sort(&mut self) {
+        self.storage_changes.sort_unstable_by_key(|changes| changes.slot);
+        for slot_changes in &mut self.storage_changes {
+            slot_changes.sort();
+        }
+
+        self.storage_reads.sort_unstable();
+        self.balance_changes.sort_unstable_by_key(|change| change.block_access_index);
+        self.nonce_changes.sort_unstable_by_key(|change| change.block_access_index);
+        self.code_changes.sort_unstable_by_key(|change| change.block_access_index);
+    }
+
+    /// Renormalizes this account change set in place.
+    ///
+    /// Empty [`SlotChanges`] entries are dropped, duplicate slot entries are folded together
+    /// (preserving the relative order of their changes), and storage reads are deduplicated and
+    /// pruned against written slots, restoring the EIP-7928 invariant that a slot appears in
+    /// either reads or changes but not both.
+    pub fn normalize(&mut self) {
+        self.storage_changes.retain(|slot_changes| !slot_changes.is_empty());
+        let incoming = core::mem::replace(self, Self::new(self.address));
+        self.merge(incoming);
+    }
+
+    /// Collapses each change list to its last entry and assigns that entry to `at`.
+    ///
+    /// The last entry of each list is treated as the effective value ("last write wins"),
+    /// matching [`Self::storage_post_states`]. Storage reads carry no block access index and are
+    /// left untouched.
+    pub fn collapse_changes_at(&mut self, at: BlockAccessIndex) {
+        let Self {
+            address: _,
+            storage_changes,
+            storage_reads: _,
+            balance_changes,
+            nonce_changes,
+            code_changes,
+        } = self;
+        for slot_changes in storage_changes.iter_mut() {
+            keep_last(&mut slot_changes.changes, |change| change.block_access_index = at);
+        }
+        keep_last(balance_changes, |change| change.block_access_index = at);
+        keep_last(nonce_changes, |change| change.block_access_index = at);
+        keep_last(code_changes, |change| change.block_access_index = at);
+    }
+
+    /// Shifts every recorded block access index at or after `from` forward by one.
+    ///
+    /// Indices saturate at `u64::MAX` instead of overflowing.
+    pub fn shift_indices_from(&mut self, from: BlockAccessIndex) {
+        let Self {
+            address: _,
+            storage_changes,
+            storage_reads: _,
+            balance_changes,
+            nonce_changes,
+            code_changes,
+        } = self;
+        let storage = storage_changes
+            .iter_mut()
+            .flat_map(|slot_changes| slot_changes.changes.iter_mut())
+            .map(|change| &mut change.block_access_index);
+        let balances = balance_changes.iter_mut().map(|change| &mut change.block_access_index);
+        let nonces = nonce_changes.iter_mut().map(|change| &mut change.block_access_index);
+        let codes = code_changes.iter_mut().map(|change| &mut change.block_access_index);
+        for index in storage.chain(balances).chain(nonces).chain(codes) {
+            if *index >= from {
+                index.saturating_increment();
+            }
+        }
+    }
+
+    /// Set the address.
+    pub const fn with_address(mut self, address: Address) -> Self {
+        self.address = address;
+        self
+    }
+
+    /// Add a storage read slot.
+    pub fn with_storage_read(mut self, key: U256) -> Self {
+        self.storage_reads.push(key);
+        self
+    }
+
+    /// Add a storage change (multiple writes to a slot grouped in `SlotChanges`).
+    pub fn with_storage_change(mut self, change: SlotChanges) -> Self {
+        self.storage_changes.push(change);
+        self
+    }
+
+    /// Add a balance change.
+    pub fn with_balance_change(mut self, change: BalanceChange) -> Self {
+        self.balance_changes.push(change);
+        self
+    }
+
+    /// Add a nonce change.
+    pub fn with_nonce_change(mut self, change: NonceChange) -> Self {
+        self.nonce_changes.push(change);
+        self
+    }
+
+    /// Add a code change.
+    pub fn with_code_change(mut self, change: CodeChange) -> Self {
+        self.code_changes.push(change);
+        self
+    }
+
+    /// Add multiple storage reads at once.
+    pub fn extend_storage_reads<I>(mut self, iter: I) -> Self
+    where
+        I: IntoIterator<Item = U256>,
+    {
+        self.storage_reads.extend(iter);
+        self
+    }
+
+    /// Add multiple slot changes at once.
+    pub fn extend_storage_changes<I>(mut self, iter: I) -> Self
+    where
+        I: IntoIterator<Item = SlotChanges>,
+    {
+        self.storage_changes.extend(iter);
+        self
+    }
+}
+
+/// Hashes the given code, avoiding the hash of the empty code.
+fn code_hash(code: &[u8]) -> B256 {
+    if code.is_empty() { KECCAK256_EMPTY } else { keccak256(code) }
+}
+
+/// Keeps only the last entry of the list, applying `stamp` to it.
+fn keep_last<T>(changes: &mut Vec<T>, stamp: impl FnOnce(&mut T)) {
+    if let Some(mut change) = changes.pop() {
+        stamp(&mut change);
+        changes.clear();
+        changes.push(change);
+    }
+}
+
+fn merge_slot_changes(existing: &mut Vec<SlotChanges>, incoming: Vec<SlotChanges>) {
+    let mut slot_positions = existing
+        .iter()
+        .enumerate()
+        .map(|(idx, slot_changes)| (slot_changes.slot, idx))
+        .collect::<HashMap<_, _>>();
+
+    for slot_changes in incoming {
+        if let Some(&idx) = slot_positions.get(&slot_changes.slot) {
+            existing[idx].changes.extend(slot_changes.changes);
+        } else {
+            slot_positions.insert(slot_changes.slot, existing.len());
+            existing.push(slot_changes);
+        }
+    }
+}
+
+#[cfg(test)]
+mod merge_tests {
+    use crate::{BlockAccessIndex, StorageChange};
+
+    use super::*;
+    use alloy_primitives::Bytes;
+
+    #[test]
+    fn merge_groups_slot_changes_and_appends_account_changes() {
+        let address = Address::from([0x11; 20]);
+        let mut existing = AccountChanges {
+            address,
+            storage_changes: vec![SlotChanges::new(
+                U256::from(1),
+                vec![StorageChange::new(BlockAccessIndex::new(0), U256::from(10))],
+            )],
+            storage_reads: vec![U256::from(3)],
+            balance_changes: vec![BalanceChange::new(BlockAccessIndex::new(1), U256::from(100))],
+            nonce_changes: vec![NonceChange::new(BlockAccessIndex::new(2), 7)],
+            code_changes: vec![],
+        };
+        let incoming = AccountChanges {
+            address,
+            storage_changes: vec![
+                SlotChanges::new(
+                    U256::from(1),
+                    vec![StorageChange::new(BlockAccessIndex::new(3), U256::from(20))],
+                ),
+                SlotChanges::new(
+                    U256::from(2),
+                    vec![StorageChange::new(BlockAccessIndex::new(4), U256::from(30))],
+                ),
+            ],
+            storage_reads: vec![U256::from(4)],
+            balance_changes: vec![BalanceChange::new(BlockAccessIndex::new(5), U256::from(150))],
+            nonce_changes: vec![NonceChange::new(BlockAccessIndex::new(6), 8)],
+            code_changes: vec![CodeChange::new(
+                BlockAccessIndex::new(7),
+                Bytes::from_static(&[0xaa]),
+            )],
+        };
+
+        existing.merge(incoming);
+
+        assert_eq!(existing.storage_reads, vec![U256::from(3), U256::from(4)]);
+        assert_eq!(
+            existing.storage_changes.iter().map(|changes| changes.slot).collect::<Vec<_>>(),
+            vec![U256::from(1), U256::from(2)]
+        );
+        assert_eq!(
+            existing.storage_changes[0]
+                .changes
+                .iter()
+                .map(|change| change.new_value)
+                .collect::<Vec<_>>(),
+            vec![U256::from(10), U256::from(20)]
+        );
+        assert_eq!(existing.balance_changes.len(), 2);
+        assert_eq!(existing.nonce_changes.len(), 2);
+        assert_eq!(existing.code_changes.len(), 1);
+    }
+
+    #[test]
+    fn merge_normalizes_storage_reads_after_cross_block_merge() {
+        let address = Address::from([0x33; 20]);
+        const A: U256 = U256::from_limbs([1, 0, 0, 0]);
+        const B: U256 = U256::from_limbs([2, 0, 0, 0]);
+        const C: U256 = U256::from_limbs([3, 0, 0, 0]);
+        const D: U256 = U256::from_limbs([4, 0, 0, 0]);
+
+        let mut existing = AccountChanges {
+            address,
+            storage_changes: vec![SlotChanges::new(
+                A,
+                vec![StorageChange::new(BlockAccessIndex::new(0), U256::from(10))],
+            )],
+            storage_reads: vec![B, C],
+            balance_changes: vec![],
+            nonce_changes: vec![],
+            code_changes: vec![],
+        };
+        let incoming = AccountChanges {
+            address,
+            storage_changes: vec![SlotChanges::new(
+                B,
+                vec![StorageChange::new(BlockAccessIndex::new(1), U256::from(20))],
+            )],
+            storage_reads: vec![A, C, D],
+            balance_changes: vec![],
+            nonce_changes: vec![],
+            code_changes: vec![],
+        };
+
+        existing.merge(incoming);
+
+        assert_eq!(
+            existing
+                .storage_changes
+                .iter()
+                .map(|slot_changes| slot_changes.slot)
+                .collect::<Vec<_>>(),
+            vec![A, B]
+        );
+        assert_eq!(existing.storage_reads, vec![C, D]);
+        assert!(existing.storage_reads.iter().all(|read_slot| {
+            !existing.storage_changes.iter().any(|slot_changes| slot_changes.slot == *read_slot)
+        }));
+    }
+
+    #[test]
+    #[should_panic(expected = "cannot merge account changes for different addresses")]
+    fn merge_rejects_different_addresses() {
+        let mut existing = AccountChanges::new(Address::from([0x11; 20]));
+        let incoming = AccountChanges::new(Address::from([0x22; 20]));
+
+        existing.merge(incoming);
+    }
+}
+
+#[cfg(test)]
+mod sort_tests {
+    use crate::{BlockAccessIndex, StorageChange};
+
+    use super::*;
+    use alloy_primitives::Bytes;
+
+    #[test]
+    fn sort_orders_account_local_eip7928_lists() {
+        let mut account = AccountChanges {
+            address: Address::from([0x11; 20]),
+            storage_changes: vec![
+                SlotChanges::new(
+                    U256::from(3),
+                    vec![
+                        StorageChange::new(BlockAccessIndex::new(8), U256::from(0x80)),
+                        StorageChange::new(BlockAccessIndex::new(2), U256::from(0x20)),
+                    ],
+                ),
+                SlotChanges::new(
+                    U256::from(1),
+                    vec![
+                        StorageChange::new(BlockAccessIndex::new(5), U256::from(0x50)),
+                        StorageChange::new(BlockAccessIndex::new(1), U256::from(0x10)),
+                    ],
+                ),
+            ],
+            storage_reads: vec![U256::from(4), U256::from(2)],
+            balance_changes: vec![
+                BalanceChange::new(BlockAccessIndex::new(6), U256::from(600)),
+                BalanceChange::new(BlockAccessIndex::new(3), U256::from(300)),
+            ],
+            nonce_changes: vec![
+                NonceChange::new(BlockAccessIndex::new(7), 70),
+                NonceChange::new(BlockAccessIndex::new(4), 40),
+            ],
+            code_changes: vec![
+                CodeChange::new(BlockAccessIndex::new(9), Bytes::from_static(&[0x60, 0x09])),
+                CodeChange::new(BlockAccessIndex::new(5), Bytes::from_static(&[0x60, 0x05])),
+            ],
+        };
+
+        account.sort();
+
+        assert_eq!(
+            account.storage_changes.iter().map(|changes| changes.slot).collect::<Vec<_>>(),
+            vec![U256::from(1), U256::from(3)]
+        );
+        assert_eq!(
+            account.storage_changes[0]
+                .changes
+                .iter()
+                .map(|change| change.block_access_index)
+                .collect::<Vec<_>>(),
+            vec![BlockAccessIndex::new(1), BlockAccessIndex::new(5)]
+        );
+        assert_eq!(
+            account.storage_changes[1]
+                .changes
+                .iter()
+                .map(|change| change.block_access_index)
+                .collect::<Vec<_>>(),
+            vec![BlockAccessIndex::new(2), BlockAccessIndex::new(8)]
+        );
+        assert_eq!(account.storage_reads, vec![U256::from(2), U256::from(4)]);
+        assert_eq!(
+            account
+                .balance_changes
+                .iter()
+                .map(|change| change.block_access_index)
+                .collect::<Vec<_>>(),
+            vec![BlockAccessIndex::new(3), BlockAccessIndex::new(6)]
+        );
+        assert_eq!(
+            account
+                .nonce_changes
+                .iter()
+                .map(|change| change.block_access_index)
+                .collect::<Vec<_>>(),
+            vec![BlockAccessIndex::new(4), BlockAccessIndex::new(7)]
+        );
+        assert_eq!(
+            account.code_changes.iter().map(|change| change.block_access_index).collect::<Vec<_>>(),
+            vec![BlockAccessIndex::new(5), BlockAccessIndex::new(9)]
+        );
+    }
+}
+
+#[cfg(test)]
+mod post_state_tests {
+    use crate::{BlockAccessIndex, StorageChange};
+
+    use super::*;
+
+    #[test]
+    fn account_post_states_are_absent_for_unchanged_fields() {
+        let account = AccountChanges::new(Address::ZERO)
+            .with_storage_read(U256::from(1))
+            .with_storage_change(SlotChanges::new(
+                U256::from(2),
+                vec![StorageChange::new(BlockAccessIndex::new(1), U256::from(3))],
+            ));
+
+        assert_eq!(account.balance_post_state(), None);
+        assert_eq!(account.nonce_post_state(), None);
+        assert_eq!(account.code_post_state(), None);
+    }
+
+    #[test]
+    fn account_post_states_use_last_recorded_change() {
+        for indices in [&[0][..], &[0, 1, 2][..], &[2, 1, 0][..]] {
+            let mut account = AccountChanges::new(Address::ZERO);
+            for (position, &index) in indices.iter().enumerate() {
+                let index = BlockAccessIndex::new(index);
+                let value = (position + 1) as u64;
+                account.balance_changes.push(BalanceChange::new(index, U256::from(value)));
+                account.nonce_changes.push(NonceChange::new(index, value));
+                account.code_changes.push(CodeChange::new(index, Bytes::from(vec![value as u8])));
+            }
+
+            let expected = indices.len() as u64;
+            assert_eq!(account.balance_post_state(), Some(U256::from(expected)));
+            assert_eq!(account.nonce_post_state(), Some(expected));
+            assert_eq!(account.code_post_state(), Some(&Bytes::from(vec![expected as u8])));
+        }
+    }
+
+    #[test]
+    fn account_post_states_preserve_zero_values_and_cleared_code() {
+        let mut account = AccountChanges::new(Address::ZERO)
+            .with_balance_change(BalanceChange::new(BlockAccessIndex::new(0), U256::from(10)))
+            .with_nonce_change(NonceChange::new(BlockAccessIndex::new(0), 1))
+            .with_code_change(CodeChange::new(
+                BlockAccessIndex::new(0),
+                Bytes::from_static(&[0x60]),
+            ));
+        let index = BlockAccessIndex::new(1);
+        account.balance_changes.push(BalanceChange::new(index, U256::ZERO));
+        account.nonce_changes.push(NonceChange::new(index, 0));
+        account.code_changes.push(CodeChange::new(index, Bytes::new()));
+
+        assert_eq!(account.balance_post_state(), Some(U256::ZERO));
+        assert_eq!(account.nonce_post_state(), Some(0));
+        assert_eq!(account.code_post_state(), Some(&Bytes::new()));
+    }
+
+    #[test]
+    fn storage_post_states_yields_last_change_per_slot() {
+        let account = AccountChanges::new(Address::from([0x11; 20]))
+            .with_storage_change(SlotChanges::new(
+                U256::from(1),
+                vec![
+                    StorageChange::new(BlockAccessIndex::new(0), U256::from(0xaa)),
+                    StorageChange::new(BlockAccessIndex::new(2), U256::from(0xbb)),
+                ],
+            ))
+            .with_storage_change(SlotChanges::new(
+                U256::from(3),
+                vec![
+                    StorageChange::new(BlockAccessIndex::new(1), U256::from(0xcc)),
+                    StorageChange::new(BlockAccessIndex::new(3), U256::from(0xdd)),
+                ],
+            ));
+
+        let post_states = account.storage_post_states().collect::<Vec<_>>();
+
+        assert_eq!(
+            post_states,
+            vec![(U256::from(1), U256::from(0xbb)), (U256::from(3), U256::from(0xdd))]
+        );
+    }
+
+    #[test]
+    fn code_post_state_hash_matches_the_last_recorded_code() {
+        let code = Bytes::from_static(&[0x60, 0x00, 0x56]);
+        let account = AccountChanges::new(Address::ZERO)
+            .with_code_change(CodeChange::new(
+                BlockAccessIndex::new(0),
+                Bytes::from_static(&[0x00]),
+            ))
+            .with_code_change(CodeChange::new(BlockAccessIndex::new(1), code.clone()));
+
+        assert_eq!(account.code_hash_post_state(), Some(keccak256(&code)));
+        assert_eq!(account.code_post_state_with_hash(), Some((keccak256(&code), &code)));
+    }
+
+    #[test]
+    fn cleared_code_post_state_hashes_to_the_empty_code_hash() {
+        let account = AccountChanges::new(Address::ZERO)
+            .with_code_change(CodeChange::new(BlockAccessIndex::new(0), Bytes::new()));
+
+        assert_eq!(account.code_hash_post_state(), Some(KECCAK256_EMPTY));
+        assert_eq!(account.code_post_state_with_hash(), Some((KECCAK256_EMPTY, &Bytes::new())));
+    }
+
+    #[test]
+    fn unchanged_code_has_no_post_state_hash() {
+        let account = AccountChanges::new(Address::ZERO).with_storage_read(U256::from(1));
+
+        assert_eq!(account.code_hash_post_state(), None);
+        assert_eq!(account.code_post_state_with_hash(), None);
+    }
+}
+
+#[cfg(test)]
+mod has_changes_tests {
+    use super::*;
+    use crate::{BlockAccessIndex, StorageChange};
+
+    #[test]
+    fn read_only_entries_have_no_changes() {
+        let account = AccountChanges::new(Address::ZERO).with_storage_read(U256::from(1));
+
+        assert!(!account.has_changes());
+        assert!(!account.is_empty());
+        assert!(account.account_info().is_empty());
+    }
+
+    #[test]
+    fn empty_slot_entries_have_no_changes() {
+        let account = AccountChanges::new(Address::ZERO)
+            .with_storage_change(SlotChanges::new(U256::from(1), Vec::new()));
+
+        assert!(!account.has_changes());
+    }
+
+    #[test]
+    fn every_change_kind_counts_as_a_change() {
+        let index = BlockAccessIndex::new(0);
+        let entries = [
+            AccountChanges::new(Address::ZERO).with_storage_change(SlotChanges::new(
+                U256::from(1),
+                vec![StorageChange::new(index, U256::from(2))],
+            )),
+            AccountChanges::new(Address::ZERO)
+                .with_balance_change(BalanceChange::new(index, U256::from(1))),
+            AccountChanges::new(Address::ZERO).with_nonce_change(NonceChange::new(index, 1)),
+            AccountChanges::new(Address::ZERO)
+                .with_code_change(CodeChange::new(index, Bytes::new())),
+        ];
+
+        for account in entries {
+            assert!(account.has_changes());
+        }
+    }
+
+    #[test]
+    fn account_info_matches_the_post_state_accessors() {
+        let account = AccountChanges::new(Address::ZERO)
+            .with_balance_change(BalanceChange::new(BlockAccessIndex::new(0), U256::from(7)));
+
+        assert_eq!(account.account_info(), BalAccountInfo::from_changes(&account));
+        assert_eq!(account.account_info().balance, account.balance_post_state());
+    }
+}
+
+#[cfg(test)]
+mod storage_slots_tests {
+    use crate::{BlockAccessIndex, StorageChange};
+
+    use super::*;
+
+    #[test]
+    fn storage_slots_yields_changed_then_read_slots() {
+        let account = AccountChanges::new(Address::ZERO)
+            .with_storage_change(SlotChanges::new(
+                U256::from(1),
+                vec![StorageChange::new(BlockAccessIndex::new(0), U256::ZERO)],
+            ))
+            .with_storage_change(SlotChanges::new(
+                U256::from(2),
+                vec![StorageChange::new(BlockAccessIndex::new(1), U256::ZERO)],
+            ))
+            .extend_storage_reads([U256::from(3), U256::from(4)]);
+
+        assert_eq!(
+            account.storage_slots().collect::<Vec<_>>(),
+            vec![U256::from(1), U256::from(2), U256::from(3), U256::from(4)]
+        );
+    }
+}
+
+#[cfg(all(test, feature = "serde"))]
+mod tests {
+    use crate::{BlockAccessIndex, BlockAccessList, StorageChange};
+
+    use super::*;
+    use alloy_primitives::Bytes;
+    use serde_json;
+
+    #[test]
+    fn test_account_changes_serde() {
+        let acc = AccountChanges {
+            address: Address::from([0x11; 20]),
+            storage_changes: vec![SlotChanges {
+                slot: U256::from(1),
+                changes: vec![StorageChange {
+                    block_access_index: BlockAccessIndex::new(0),
+                    new_value: U256::from(100),
+                }],
+            }],
+            storage_reads: vec![U256::from(2)],
+            balance_changes: vec![BalanceChange {
+                block_access_index: BlockAccessIndex::new(1),
+                post_balance: U256::from(1000),
+            }],
+            nonce_changes: vec![NonceChange {
+                block_access_index: BlockAccessIndex::new(2),
+                new_nonce: 42,
+            }],
+            code_changes: vec![CodeChange {
+                block_access_index: BlockAccessIndex::new(3),
+                new_code: Bytes::from(vec![0x60, 0x00]),
+            }],
+        };
+
+        let json = serde_json::to_string(&acc).unwrap();
+        let value: serde_json::Value = serde_json::from_str(&json).unwrap();
+        assert_eq!(value["storageChanges"][0]["key"], "0x1");
+        assert_eq!(value["storageChanges"][0]["changes"][0]["value"], "0x64");
+        assert_eq!(value["storageReads"][0], "0x2");
+        assert_eq!(value["balanceChanges"][0]["value"], "0x3e8");
+        assert_eq!(value["nonceChanges"][0]["value"], "0x2a");
+        assert_eq!(value["codeChanges"][0]["code"], "0x6000");
+        let decoded: AccountChanges = serde_json::from_str(&json).unwrap();
+
+        assert_eq!(acc, decoded);
+    }
+
+    #[test]
+    fn test_storage_reads_deserialize_compact_quantities() {
+        let fixture = r#"
+        {
+            "address": "0x1111111111111111111111111111111111111111",
+            "storageChanges": [],
+            "storageReads": [
+                "0x00",
+                "0x01",
+                "0x02"
+            ],
+            "balanceChanges": [],
+            "nonceChanges": [],
+            "codeChanges": []
+        }
+        "#;
+
+        let decoded: AccountChanges = serde_json::from_str(fixture).unwrap();
+        assert_eq!(decoded.storage_reads, vec![U256::ZERO, U256::from(1), U256::from(2)]);
+
+        assert_eq!(
+            serde_json::to_value(decoded).unwrap()["storageReads"],
+            serde_json::json!(["0x0", "0x1", "0x2"])
+        );
+    }
+
+    #[test]
+    fn test_eest_storage_fields_deserialize_compact_quantities() {
+        // Extracted from tests-glamsterdam-devnet@v7.2.0's precompile_warming.json fixture.
+        let fixture = r#"
+        [
+          {
+            "address": "0x0000f90827f1c53a10cb7a02335b175320002935",
+            "storageChanges": [
+              {
+                "slot": "0x01",
+                "slotChanges": [
+                  {
+                    "blockAccessIndex": "0x00",
+                    "postValue": "0x27330b1c525088b9b5ed2ced86b42d53378c8f6b384e8c3897493e851bc026df"
+                  }
+                ]
+              }
+            ],
+            "storageReads": [],
+            "balanceChanges": [],
+            "nonceChanges": [],
+            "codeChanges": []
+          },
+          {
+            "address": "0x000f3df6d732807ef1319fb7b8bb8522d0beac02",
+            "storageChanges": [
+              {
+                "slot": "0x0e22",
+                "slotChanges": [
+                  {
+                    "blockAccessIndex": "0x00",
+                    "postValue": "0x4e20"
+                  }
+                ]
+              }
+            ],
+            "storageReads": ["0x2e21"],
+            "balanceChanges": [],
+            "nonceChanges": [],
+            "codeChanges": []
+          }
+        ]
+        "#;
+
+        let decoded: BlockAccessList = serde_json::from_str(fixture).unwrap();
+        assert_eq!(decoded[0].storage_changes[0].slot, U256::from(1));
+        assert_eq!(decoded[1].storage_changes[0].slot, U256::from(0x0e22));
+        assert_eq!(decoded[1].storage_changes[0].changes[0].new_value, U256::from(0x4e20));
+        assert_eq!(decoded[1].storage_reads, vec![U256::from(0x2e21)]);
+    }
+
+    #[test]
+    fn test_vec_account_changes_serde() {
+        let acc1 = AccountChanges::new(Address::from([0x11; 20]))
+            .with_storage_read(U256::from(1))
+            .with_balance_change(BalanceChange {
+                block_access_index: BlockAccessIndex::new(0),
+                post_balance: U256::from(100),
+            });
+
+        let acc2 = AccountChanges::new(Address::from([0x22; 20]))
+            .with_storage_change(SlotChanges {
+                slot: U256::from(2),
+                changes: vec![StorageChange {
+                    block_access_index: BlockAccessIndex::new(1),
+                    new_value: U256::from(200),
+                }],
+            })
+            .with_nonce_change(NonceChange {
+                block_access_index: BlockAccessIndex::new(2),
+                new_nonce: 42,
+            });
+
+        let acc3 = AccountChanges::new(Address::from([0x33; 20])).with_code_change(CodeChange {
+            block_access_index: BlockAccessIndex::new(3),
+            new_code: Bytes::from(vec![0x60, 0x00]),
+        });
+
+        let vec_acc = vec![acc1, acc2, acc3];
+
+        let json = serde_json::to_string(&vec_acc).unwrap();
+        let decoded: Vec<AccountChanges> = serde_json::from_str(&json).unwrap();
+
+        assert_eq!(vec_acc, decoded);
+    }
+
+    #[test]
+    fn test_block_access_list_serde_roundtrip_from_populated_fixture() {
+        let fixture = r#"
+[
+  {
+    "address": "0x1111111111111111111111111111111111111111",
+    "storageChanges": [
+      {
+        "key": "0x1",
+        "changes": [
+          {
+            "index": "0x1",
+            "value": "0x10"
+          },
+          {
+            "index": "0x2",
+            "value": "0x20"
+          }
+        ]
+      }
+    ],
+    "storageReads": [
+      "0x2"
+    ],
+    "balanceChanges": [
+      {
+        "index": "0x3",
+        "value": "0x3e8"
+      }
+    ],
+    "nonceChanges": [
+      {
+        "index": "0x4",
+        "value": "0x2a"
+      }
+    ],
+    "codeChanges": [
+      {
+        "index": "0x5",
+        "code": "0x6000"
+      }
+    ]
+  }
+]
+"#;
+
+        let decoded: BlockAccessList = serde_json::from_str(fixture).unwrap();
+        let serialized = serde_json::to_string(&decoded).unwrap();
+        let fixture_value: serde_json::Value = serde_json::from_str(fixture).unwrap();
+        let serialized_value: serde_json::Value = serde_json::from_str(&serialized).unwrap();
+
+        assert!(fixture_value.is_array());
+        assert_eq!(fixture_value, serialized_value);
+    }
+
+    #[test]
+    fn test_block_access_list_serde_roundtrip_from_empty_fixture() {
+        let fixture = r#"
+[
+  {
+    "address": "0x2222222222222222222222222222222222222222",
+    "storageChanges": [],
+    "storageReads": [],
+    "balanceChanges": [],
+    "nonceChanges": [],
+    "codeChanges": []
+  }
+]
+"#;
+
+        let decoded: BlockAccessList = serde_json::from_str(fixture).unwrap();
+        let serialized = serde_json::to_string(&decoded).unwrap();
+        let fixture_value: serde_json::Value = serde_json::from_str(fixture).unwrap();
+        let serialized_value: serde_json::Value = serde_json::from_str(&serialized).unwrap();
+
+        assert!(fixture_value.is_array());
+        assert_eq!(fixture_value, serialized_value);
+        assert_eq!(serialized_value[0]["storageChanges"], serde_json::json!([]));
+        assert_eq!(serialized_value[0]["storageReads"], serde_json::json!([]));
+        assert_eq!(serialized_value[0]["balanceChanges"], serde_json::json!([]));
+        assert_eq!(serialized_value[0]["nonceChanges"], serde_json::json!([]));
+        assert_eq!(serialized_value[0]["codeChanges"], serde_json::json!([]));
+    }
+}
