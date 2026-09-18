@@ -1016,7 +1016,9 @@ def render_build_script_data(bs: BuildScript) -> str | None:
     return " + ".join(parts)
 
 
-def render_build_file(crate: Crate, crates: dict[str, Crate]) -> str:
+def render_build_file(crate: Crate, crates: dict[str, Crate], *, cargo_test_names: bool = False) -> str:
+    # Tempo's snapshots require Cargo's module names. Keep other projects'
+    # existing Bazel test names until they opt into the same convention.
     project = crate.project
     lib = crate.lib
     lib_rule = "crate_proc_macro" if lib and lib.kind == "proc-macro" else "crate_library"
@@ -1156,6 +1158,7 @@ def render_build_file(crate: Crate, crates: dict[str, Crate]) -> str:
                 "crate_integration_test",
                 [
                     ("name", starlark_str(f"{crate.ident}_{crate_name_to_ident(t.name)}_test")),
+                    ("crate_name", starlark_str(crate_name_to_ident(t.name)) if cargo_test_names else None),
                     ("workspace", "WORKSPACE"),
                     ("crate_root", starlark_str(t.src_path)),
                     ("crate_features", "FEATURES"),

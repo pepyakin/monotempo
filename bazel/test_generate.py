@@ -35,6 +35,15 @@ class RenderTargetsTest(unittest.TestCase):
         self.assertIn('"@tempo_crates//:reth-node-api"', output)
         self.assertNotIn("crate_library(\n", output)
 
+    def test_cargo_integration_name_is_not_bazel_target_or_source_directory(self):
+        crate = self.crate([
+            generate.Target("test", "storage", "tests/storage_tests/main.rs", []),
+        ])
+        output = generate.render_build_file(crate, {}, cargo_test_names=True)
+        self.assertIn('name = "example_storage_test"', output)
+        self.assertIn('crate_name = "storage"', output)
+        self.assertNotIn('crate_name =', generate.render_build_file(crate, {}))
+
     def test_required_features_gate_binary_and_integration_test_runfiles(self):
         targets = [
             generate.Target("lib", "example", "src/lib.rs", []),
