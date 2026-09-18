@@ -1,0 +1,32 @@
+# GENERATED FILE - DO NOT EDIT.
+#
+# Regenerate with `python3 bazel/generate.py` after changing Cargo.toml.
+
+load("//bazel:rust.bzl", "crate_cargo_toml_env_vars", "crate_proc_macro", "crate_unit_test")
+load("//alloy-rlp/bazel:workspace.bzl", "WORKSPACE")
+
+FEATURES = []
+
+DECLARED_FEATURES = []
+
+crate_cargo_toml_env_vars(WORKSPACE)
+
+crate_proc_macro(
+    name = "alloy_rlp_derive",
+    workspace = WORKSPACE,
+    crate_features = FEATURES,
+    declared_features = DECLARED_FEATURES,
+    deps = [
+        "@crates//:proc-macro2",
+        "@crates//:quote",
+        "@crates//:syn",
+    ],
+)
+
+crate_unit_test(
+    name = "alloy_rlp_derive_test",
+    workspace = WORKSPACE,
+    crate = ":alloy_rlp_derive",
+    crate_features = FEATURES,
+    declared_features = DECLARED_FEATURES,
+)

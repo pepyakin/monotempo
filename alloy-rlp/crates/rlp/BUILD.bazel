@@ -1,0 +1,76 @@
+# GENERATED FILE - DO NOT EDIT.
+#
+# Regenerate with `python3 bazel/generate.py` after changing Cargo.toml.
+
+load("//bazel:rust.bzl", "crate_cargo_toml_env_vars", "crate_integration_test", "crate_library", "crate_unit_test")
+load("//alloy-rlp/bazel:workspace.bzl", "WORKSPACE")
+
+FEATURES = [
+    "arrayvec",
+    "core-error",
+    "core-net",
+    "default",
+    "derive",
+    "std",
+]
+
+DECLARED_FEATURES = [
+    "arrayvec",
+    "core-error",
+    "core-net",
+    "default",
+    "derive",
+    "std",
+]
+
+crate_cargo_toml_env_vars(WORKSPACE)
+
+crate_library(
+    name = "alloy_rlp",
+    workspace = WORKSPACE,
+    crate_features = FEATURES,
+    declared_features = DECLARED_FEATURES,
+    deps = [
+        "@crates//:arrayvec",
+        "@crates//:bytes",
+    ],
+    proc_macro_deps = [
+        "//alloy-rlp/crates/rlp-derive:alloy_rlp_derive",
+    ],
+)
+
+crate_unit_test(
+    name = "alloy_rlp_test",
+    workspace = WORKSPACE,
+    crate = ":alloy_rlp",
+    crate_features = FEATURES,
+    declared_features = DECLARED_FEATURES,
+    deps = [
+        "@crates//:hex",
+        "@crates//:hex-literal",
+    ],
+    aliases = {
+        "@crates//:hex": "hex",
+    },
+)
+
+crate_integration_test(
+    name = "alloy_rlp_derive_test",
+    workspace = WORKSPACE,
+    crate_root = "tests/derive.rs",
+    crate_features = FEATURES,
+    declared_features = DECLARED_FEATURES,
+    deps = [
+        ":alloy_rlp",
+        "@crates//:arrayvec",
+        "@crates//:bytes",
+        "@crates//:hex",
+        "@crates//:hex-literal",
+    ],
+    proc_macro_deps = [
+        "//alloy-rlp/crates/rlp-derive:alloy_rlp_derive",
+    ],
+    aliases = {
+        "@crates//:hex": "hex",
+    },
+)
