@@ -1,0 +1,64 @@
+# GENERATED FILE - DO NOT EDIT.
+#
+# Regenerate with `python3 bazel/generate.py` after changing Cargo.toml.
+
+load("//bazel:rust.bzl", "crate_cargo_toml_env_vars", "crate_library", "crate_unit_test")
+load("//alloy-trie/bazel:workspace.bzl", "WORKSPACE")
+
+FEATURES = [
+    "arbitrary",
+    "default",
+    "ethereum",
+    "serde",
+    "std",
+]
+
+DECLARED_FEATURES = [
+    "arbitrary",
+    "default",
+    "ethereum",
+    "serde",
+    "std",
+]
+
+crate_cargo_toml_env_vars(WORKSPACE)
+
+crate_library(
+    name = "alloy_trie",
+    workspace = WORKSPACE,
+    crate_features = FEATURES,
+    declared_features = DECLARED_FEATURES,
+    deps = [
+        "//alloy-core/crates/primitives:alloy_primitives",
+        "//alloy-rlp/crates/rlp:alloy_rlp",
+        "@crates//:arbitrary",
+        "@crates//:derive_more",
+        "@crates//:nybbles",
+        "@crates//:proptest",
+        "@crates//:serde",
+        "@crates//:smallvec",
+        "@crates//:thiserror",
+        "@crates//:tracing",
+    ],
+    proc_macro_deps = [
+        "@crates//:derive_arbitrary",
+        "@crates//:proptest-derive-0.7.0",
+    ],
+)
+
+crate_unit_test(
+    name = "alloy_trie_test",
+    workspace = WORKSPACE,
+    crate = ":alloy_trie",
+    crate_features = FEATURES,
+    declared_features = DECLARED_FEATURES,
+    deps = [
+        "@crates//:codspeed-criterion-compat",
+        "@crates//:hash-db",
+        "@crates//:plain_hasher",
+        "@crates//:triehash",
+    ],
+    aliases = {
+        "@crates//:codspeed-criterion-compat": "criterion",
+    },
+)

@@ -119,3 +119,8 @@ ethereum = []
 name = "bench"
 harness = false
 required-features = ["arbitrary"]
+
+[patch.crates-io]
+alloy-primitives = { path = "../alloy-core/crates/primitives" }
+alloy-rlp = { path = "../alloy-rlp/crates/rlp" }
+alloy-rlp-derive = { path = "../alloy-rlp/crates/rlp-derive" }
