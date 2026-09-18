@@ -1,0 +1,28 @@
+# Bazel configuration of the alloy project, read by //bazel:generate.py.
+#
+# Everything Bazel needs to know about alloy that cannot be derived from its
+# Cargo manifests. Labels are written out in full.
+
+# crate_universe repository holding alloy's external crates (see alloy.MODULE.bazel).
+crates_repo = "@alloy_crates"
+
+# Extra compile-time inputs for targets that `include_*!` files from outside
+# the `src/`, `res/`, `assets/` and test-data directories that are globbed
+# automatically: {target = [labels]}, where target is an integration test's
+# name, or "crate" for the lib, binaries and unit tests.
+[compile_data]
+# `src/lib.rs` tests `include_str!` the geth `dumpgenesis` fixtures.
+alloy-genesis.crate = ["dumpgenesis/holesky.json", "dumpgenesis/mainnet.json", "dumpgenesis/sepolia.json"]
+
+# Tags applied to a crate's test targets (all of them, or per target with
+# `<crate>.<integration test>` / `<crate>.crate` for the unit tests). `manual`
+# keeps a test out of `bazel test //...`; `requires-network` lifts the
+# sandbox's network block when the test is run explicitly.
+#
+# These tests spawn `anvil` (Foundry), which is not part of the hermetic
+# toolchain, and/or query public mainnet RPC endpoints.
+[test_tags]
+alloy-contract = ["manual", "requires-network"]
+alloy-ens = ["manual", "requires-network"]
+alloy-provider = ["manual", "requires-network"]
+alloy-rpc-client.it = ["manual", "requires-network"]

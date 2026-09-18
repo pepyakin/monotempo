@@ -1,12 +1,12 @@
-# GENERATED FILE - DO NOT EDIT. Regenerate with `python3 reth/scripts/bazel/generate.py`.
+# GENERATED FILE - DO NOT EDIT. Regenerate with `python3 bazel/generate.py`.
 #
-# Bazel-only shadow of `bin/reth/Cargo.toml`. It is identical to the real manifest except
-# that these features are removed from `default`, because Bazel cannot
-# build them hermetically yet:
+# Bazel-only shadow of `reth/bin/reth/Cargo.toml`. It is identical to the real
+# manifest except that these features are removed from `default`, because
+# Bazel cannot build them hermetically yet:
 #   - jit: requires system LLVM (llvm-sys)
 #   - gmp: requires autotools GMP build (gmp-mpfr-sys)
 #
-# Cargo builds are unaffected; see reth/scripts/bazel/generate.py (BAZEL_DISABLED_FEATURES).
+# Cargo builds are unaffected; see reth/bazel/project.toml (disabled_features).
 
 [package]
 name = "reth"
@@ -216,9 +216,3 @@ trie-debug = ["reth-node-builder/trie-debug", "reth-node-core/trie-debug"]
 [[bin]]
 name = "reth"
 path = "src/main.rs"
-
-# Digest of every workspace member manifest. crate_universe re-resolves the
-# external crate graph when this file changes, so a member edit that alters
-# feature resolution invalidates Cargo.Bazel.lock (see members_digest).
-[package.metadata.bazel]
-workspace-members-digest = "a47735615f9d71308594391b4554681e0af4d6098ca3b10f8a745ee73dcdba5a"

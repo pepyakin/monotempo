@@ -68,4 +68,6 @@ register_toolchains("@rust_toolchains//:all")
 # file. Cross-project dependencies are plain `//<project>/...` labels.
 ###############################################################################
 
+include("//alloy:alloy.MODULE.bazel")
+
 include("//reth:reth.MODULE.bazel")

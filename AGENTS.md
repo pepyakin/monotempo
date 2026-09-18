@@ -12,6 +12,7 @@ crates are `//reth/crates/...`.
 ```bash
 bazel build //reth                          # reth node binary
 bazel test //reth/crates/net/eth-wire/...   # tests of one crate
+bazel test //alloy/...                      # all of alloy
 bazel test //...                            # everything; only changed crates rebuild/rerun
 ```
 
@@ -22,20 +23,30 @@ building and testing the crates you changed and their dependants
 ## Changing a `Cargo.toml` or `Cargo.lock`
 
 `BUILD.bazel` files are generated; never edit them by hand. After changing a
-manifest in reth:
+manifest in any project:
 
 ```bash
-python3 reth/scripts/bazel/generate.py      # regenerate BUILD.bazel files
-CARGO_BAZEL_REPIN=1 bazel mod deps           # regenerate reth/Cargo.Bazel.lock if deps changed
+python3 bazel/generate.py                   # regenerate BUILD.bazel files (all projects)
+CARGO_BAZEL_REPIN=1 bazel mod deps           # regenerate <project>/Cargo.Bazel.lock if deps changed
 ```
 
-`python3 reth/scripts/bazel/generate.py --check` must pass before committing.
+`python3 bazel/generate.py --check` must pass before committing. Per-project
+Bazel settings that cannot be derived from Cargo (disabled features, build
+script inputs, test tags) live in `<project>/bazel/project.toml`.
+
+## Cross-project dependencies
+
+Each project is its own Cargo workspace with its own crate_universe
+(`@reth_crates`, `@alloy_crates`); the lockfiles are kept aligned so shared
+third-party crates resolve to the same versions. reth still consumes alloy from
+crates.io (the version its `Cargo.lock` pins, currently equal to `alloy/`);
+wiring reth to the in-tree alloy is the next step.
 
 ## Project-specific guidance
 
 Each project keeps its upstream guidance: `reth/AGENTS.md` applies to files
-under `reth/`. Its Cargo commands still work when run from `reth/`, but Bazel
-is the build of record here.
+under `reth/`, `alloy/CONTRIBUTING.md` to `alloy/`. Their Cargo commands still
+work when run from the project directory, but Bazel is the build of record here.
 
 ## Git
 

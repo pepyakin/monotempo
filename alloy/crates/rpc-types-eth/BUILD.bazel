@@ -1,0 +1,59 @@
+# GENERATED FILE - DO NOT EDIT.
+#
+# Regenerate with `python3 bazel/generate.py` after changing Cargo.toml.
+
+load("//bazel:rust.bzl", "crate_cargo_toml_env_vars", "crate_library", "crate_unit_test")
+load("//alloy/bazel:workspace.bzl", "WORKSPACE")
+
+FEATURES = [
+    "default",
+    "serde",
+    "std",
+]
+
+DECLARED_FEATURES = [
+    "arbitrary",
+    "default",
+    "k256",
+    "serde",
+    "serde-bincode-compat",
+    "std",
+]
+
+crate_cargo_toml_env_vars(WORKSPACE)
+
+crate_library(
+    name = "alloy_rpc_types_eth",
+    workspace = WORKSPACE,
+    crate_features = FEATURES,
+    declared_features = DECLARED_FEATURES,
+    deps = [
+        "//alloy/crates/consensus-any:alloy_consensus_any",
+        "//alloy/crates/consensus:alloy_consensus",
+        "//alloy/crates/eips:alloy_eips",
+        "//alloy/crates/network-primitives:alloy_network_primitives",
+        "//alloy/crates/serde:alloy_serde",
+        "@alloy_crates//:alloy-primitives",
+        "@alloy_crates//:alloy-rlp",
+        "@alloy_crates//:alloy-sol-types",
+        "@alloy_crates//:itertools",
+        "@alloy_crates//:serde",
+        "@alloy_crates//:serde_json",
+        "@alloy_crates//:thiserror",
+    ],
+)
+
+crate_unit_test(
+    name = "alloy_rpc_types_eth_test",
+    workspace = WORKSPACE,
+    crate = ":alloy_rpc_types_eth",
+    crate_features = FEATURES,
+    declared_features = DECLARED_FEATURES,
+    deps = [
+        "@alloy_crates//:arbitrary",
+        "@alloy_crates//:assert_matches",
+        "@alloy_crates//:bincode",
+        "@alloy_crates//:rand",
+        "@alloy_crates//:similar-asserts",
+    ],
+)

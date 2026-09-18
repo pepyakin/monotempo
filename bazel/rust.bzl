@@ -1,17 +1,21 @@
 """Thin wrappers around rules_rust used by the generated per-crate BUILD files.
 
-The wrappers hold everything that is the same for every workspace crate
-(edition, package version, workspace lints, `Cargo.toml` env vars, data globs)
-so that the generated `BUILD.bazel` files only carry per-crate facts: crate
-root, features, and dependencies.
+The wrappers hold everything that is the same for every crate of a Cargo
+workspace (edition, package version, workspace lints, `Cargo.toml` env vars,
+data globs) so that the generated `BUILD.bazel` files only carry per-crate
+facts: crate root, features, and dependencies.
 
-Regenerate BUILD files with `python3 reth/scripts/bazel/generate.py`.
+Every macro takes the `WORKSPACE` struct of the crate's project (generated
+into `<project>/bazel/workspace.bzl` from the root `Cargo.toml`), which
+supplies the values inherited from `[workspace.package]` and the labels of the
+root manifest and the lint config.
+
+Regenerate BUILD files with `python3 bazel/generate.py`.
 """
 
 load("@rules_rust//cargo:defs.bzl", "cargo_build_script", "cargo_toml_env_vars")
-load("@rules_rust//rust:defs.bzl", "rust_binary", "rust_library", "rust_test")
-load("//reth/bazel:process_per_test.bzl", "process_per_test")
-load("//reth/bazel:workspace.bzl", "RUST_EDITION", "WORKSPACE_VERSION")
+load("@rules_rust//rust:defs.bzl", "rust_binary", "rust_library", "rust_proc_macro", "rust_test")
+load("//bazel:process_per_test.bzl", "process_per_test")
 
 # Non-Rust files a crate may `include_str!`/`include_bytes!` at compile time.
 _COMPILE_DATA_DIRS = ["src", "res", "assets"]
@@ -23,7 +27,8 @@ _TEST_DATA_DIRS = _COMPILE_DATA_DIRS + ["tests", "testdata", "test-data", "test_
 # jsonrpsee's `#[rpc]`, among others) opens `$CARGO_MANIFEST_DIR/Cargo.toml` to
 # find out what the crate calls its dependencies, and follows `workspace = true`
 # entries up to the workspace root.
-_MANIFESTS = ["Cargo.toml", "//reth:Cargo.toml"]
+def _manifests(workspace):
+    return ["Cargo.toml", workspace.manifest]
 
 # Threads per test process. libtest defaults to the core count, but every
 # test that opens an MDBX environment reserves 8 TiB of virtual address
@@ -33,9 +38,9 @@ _MANIFESTS = ["Cargo.toml", "//reth:Cargo.toml"]
 # parallel, so a lower per-process thread count costs little throughput.
 _TEST_THREADS = "8"
 
-def _non_rust_files(dirs):
+def _non_rust_files(workspace, dirs):
     # `*.md` covers `#![doc = include_str!("../README.md")]`.
-    return _MANIFESTS + native.glob(
+    return _manifests(workspace) + native.glob(
         [d + "/**" for d in dirs] + ["*.md"],
         exclude = ["**/*.rs"],
         allow_empty = True,
@@ -44,12 +49,17 @@ def _non_rust_files(dirs):
 def _rust_srcs(dirs):
     return native.glob([d + "/**/*.rs" for d in dirs], allow_empty = True)
 
-def reth_cargo_toml_env_vars(name = "cargo_toml_env_vars"):
-    """Exposes `CARGO_PKG_*` env vars derived from the crate's Cargo.toml."""
+def crate_cargo_toml_env_vars(workspace, name = "cargo_toml_env_vars"):
+    """Exposes `CARGO_PKG_*` env vars derived from the crate's Cargo.toml.
+
+    Args:
+        workspace: The project's `WORKSPACE` struct.
+        name: Target name; the other macros expect the default.
+    """
     cargo_toml_env_vars(
         name = name,
         src = "Cargo.toml",
-        workspace = "//reth:Cargo.toml",
+        workspace = workspace.manifest,
     )
 
 def _check_cfg_flags(declared_features):
@@ -57,7 +67,7 @@ def _check_cfg_flags(declared_features):
 
     `unexpected_cfgs` is warn-by-default in rustc, so without these every
     `#[cfg(feature = "...")]`, `#[cfg(test)]` and `#[cfg(docsrs)]` would warn.
-    Workspace-level `check-cfg` entries come from `//reth/bazel:lints`.
+    Workspace-level `check-cfg` entries come from the project's lint config.
     """
     values = ", ".join(['"%s"' % f for f in declared_features])
     return [
@@ -65,34 +75,34 @@ def _check_cfg_flags(declared_features):
         "--check-cfg=cfg(feature, values(%s))" % values,
     ]
 
-def _common_kwargs(crate_features, declared_features, workspace_lints, kwargs):
+def _common_kwargs(workspace, crate_features, declared_features, workspace_lints, kwargs):
     common = dict(
-        edition = RUST_EDITION,
-        version = WORKSPACE_VERSION,
+        edition = workspace.edition,
+        version = workspace.version,
         crate_features = crate_features,
         rustc_flags = _check_cfg_flags(declared_features) + kwargs.pop("rustc_flags", []),
         rustc_env_files = [":cargo_toml_env_vars"],
-        lint_config = "//reth/bazel:lints" if workspace_lints else None,
+        lint_config = workspace.lints if workspace_lints else None,
     )
     common.update(kwargs)
     return common
 
 # What `#[test_fuzz]`-instrumented tests need at run time: they shell out to
 # `cargo metadata` to find a `target/` directory for the corpus they record.
-# `//reth/bazel/test_fuzz` is a self-contained stub package so that neither the
+# `//bazel/test_fuzz` is a self-contained stub package so that neither the
 # real workspace nor a host cargo is needed; see its Cargo.toml.
 _TEST_FUZZ_DATA = [
-    "//reth/bazel/test_fuzz:Cargo.toml",
-    "//reth/bazel/test_fuzz:src/lib.rs",
+    "//bazel/test_fuzz:Cargo.toml",
+    "//bazel/test_fuzz:src/lib.rs",
     "@rules_rust//rust/toolchain:current_cargo_files",
 ]
 
 _TEST_FUZZ_ENV = {
     "CARGO": "$(rootpath @rules_rust//rust/toolchain:current_cargo_files)",
-    "TEST_FUZZ_MANIFEST_PATH": "$(rootpath //reth/bazel/test_fuzz:Cargo.toml)",
+    "TEST_FUZZ_MANIFEST_PATH": "$(rootpath //bazel/test_fuzz:Cargo.toml)",
 }
 
-def _test_kwargs(crate_features, declared_features, workspace_lints, test_fuzz, kwargs):
+def _test_kwargs(workspace, crate_features, declared_features, workspace_lints, test_fuzz, kwargs):
     """`_common_kwargs` plus what only test targets need.
 
     rules_rust bakes an absolute sandbox path into `CARGO_MANIFEST_DIR` at
@@ -119,6 +129,7 @@ def _test_kwargs(crate_features, declared_features, workspace_lints, test_fuzz, 
         env.update(_TEST_FUZZ_ENV)
     env.update(kwargs.pop("env", {}))
     return _common_kwargs(
+        workspace,
         crate_features,
         declared_features,
         workspace_lints,
@@ -144,8 +155,9 @@ def _rust_test(name, per_process, size, tags, **kwargs):
         tags = tags,
     )
 
-def reth_library(
+def crate_library(
         name,
+        workspace,
         crate_name = None,
         crate_root = "src/lib.rs",
         crate_features = [],
@@ -161,6 +173,7 @@ def reth_library(
 
     Args:
         name: Bazel target name; also the Rust crate name unless `crate_name` is set.
+        workspace: The project's `WORKSPACE` struct (from `<project>/bazel/workspace.bzl`).
         crate_name: Rust crate name, when a sibling binary already uses `name`.
         crate_root: Path to the crate root (`src/lib.rs` unless `[lib] path` is set).
         crate_features: Cargo features to enable (`--cfg feature=...`).
@@ -184,13 +197,47 @@ def reth_library(
         deps = deps,
         proc_macro_deps = proc_macro_deps,
         aliases = aliases,
-        compile_data = compile_data + _non_rust_files(_COMPILE_DATA_DIRS),
+        compile_data = compile_data + _non_rust_files(workspace, _COMPILE_DATA_DIRS),
         visibility = ["//visibility:public"],
-        **_common_kwargs(crate_features, declared_features, workspace_lints, kwargs)
+        **_common_kwargs(workspace, crate_features, declared_features, workspace_lints, kwargs)
     )
 
-def reth_binary(
+def crate_proc_macro(
         name,
+        workspace,
+        crate_name = None,
+        crate_root = "src/lib.rs",
+        crate_features = [],
+        declared_features = [],
+        workspace_lints = True,
+        deps = [],
+        proc_macro_deps = [],
+        aliases = {},
+        compile_data = [],
+        build_script = None,
+        **kwargs):
+    """A workspace crate's `[lib] proc-macro = true` target.
+
+    Takes the same arguments as `crate_library`.
+    """
+    if build_script:
+        deps = deps + [build_script]
+    rust_proc_macro(
+        name = name,
+        crate_name = crate_name or name,
+        crate_root = crate_root,
+        srcs = _rust_srcs(["src"]),
+        deps = deps,
+        proc_macro_deps = proc_macro_deps,
+        aliases = aliases,
+        compile_data = compile_data + _non_rust_files(workspace, _COMPILE_DATA_DIRS),
+        visibility = ["//visibility:public"],
+        **_common_kwargs(workspace, crate_features, declared_features, workspace_lints, kwargs)
+    )
+
+def crate_binary(
+        name,
+        workspace,
         crate_root = "src/main.rs",
         crate_features = [],
         declared_features = [],
@@ -203,7 +250,7 @@ def reth_binary(
         **kwargs):
     """A workspace crate's `[[bin]]` target.
 
-    Takes the same arguments as `reth_library`. `name` is the binary name.
+    Takes the same arguments as `crate_library`. `name` is the binary name.
     """
     if build_script:
         deps = deps + [build_script]
@@ -214,13 +261,14 @@ def reth_binary(
         deps = deps,
         proc_macro_deps = proc_macro_deps,
         aliases = aliases,
-        compile_data = compile_data + _non_rust_files(_COMPILE_DATA_DIRS),
+        compile_data = compile_data + _non_rust_files(workspace, _COMPILE_DATA_DIRS),
         visibility = ["//visibility:public"],
-        **_common_kwargs(crate_features, declared_features, workspace_lints, kwargs)
+        **_common_kwargs(workspace, crate_features, declared_features, workspace_lints, kwargs)
     )
 
-def reth_unit_test(
+def crate_unit_test(
         name,
+        workspace,
         crate,
         crate_features = [],
         declared_features = [],
@@ -238,7 +286,8 @@ def reth_unit_test(
 
     Args:
         name: Test target name.
-        crate: Label of the `reth_library`/`reth_binary` whose sources are compiled with `--test`.
+        workspace: The project's `WORKSPACE` struct.
+        crate: Label of the `crate_library`/`crate_binary` whose sources are compiled with `--test`.
         crate_features: Same features as `crate` (rules_rust does not inherit them).
         declared_features: Every feature the crate declares (for `--check-cfg`).
         workspace_lints: Whether the crate has `[lints] workspace = true`.
@@ -254,7 +303,7 @@ def reth_unit_test(
     """
     if test_fuzz:
         data = data + _TEST_FUZZ_DATA
-    test_data = _non_rust_files(_TEST_DATA_DIRS)
+    test_data = _non_rust_files(workspace, _TEST_DATA_DIRS)
     _rust_test(
         name = name,
         per_process = process_per_test,
@@ -267,11 +316,12 @@ def reth_unit_test(
         # Merged with the crate's own compile_data by rules_rust.
         compile_data = test_data,
         data = data + test_data,
-        **_test_kwargs(crate_features, declared_features, workspace_lints, test_fuzz, kwargs)
+        **_test_kwargs(workspace, crate_features, declared_features, workspace_lints, test_fuzz, kwargs)
     )
 
-def reth_integration_test(
+def crate_integration_test(
         name,
+        workspace,
         crate_root,
         crate_features = [],
         declared_features = [],
@@ -290,6 +340,7 @@ def reth_integration_test(
 
     Args:
         name: Test target name.
+        workspace: The project's `WORKSPACE` struct.
         crate_root: The test's root file, e.g. `tests/it/main.rs`.
         crate_features: Features of the crate under test.
         declared_features: Every feature the crate under test declares (for `--check-cfg`).
@@ -305,7 +356,7 @@ def reth_integration_test(
         tags: Bazel tags for the test target.
         **kwargs: Forwarded to `rust_test`.
     """
-    test_data = _non_rust_files(_TEST_DATA_DIRS)
+    test_data = _non_rust_files(workspace, _TEST_DATA_DIRS)
     if test_fuzz:
         data = data + _TEST_FUZZ_DATA
     _rust_test(
@@ -320,11 +371,12 @@ def reth_integration_test(
         aliases = aliases,
         compile_data = compile_data + test_data,
         data = data + test_data,
-        **_test_kwargs(crate_features, declared_features, workspace_lints, test_fuzz, kwargs)
+        **_test_kwargs(workspace, crate_features, declared_features, workspace_lints, test_fuzz, kwargs)
     )
 
-def reth_build_script(
+def crate_build_script(
         name,
+        workspace,
         crate_features = [],
         deps = [],
         data = [],
@@ -334,6 +386,7 @@ def reth_build_script(
 
     Args:
         name: Target name, referenced by the library's `build_script` argument.
+        workspace: The project's `WORKSPACE` struct.
         crate_features: Features of the owning crate (exposed as `CARGO_FEATURE_*`).
         deps: `[build-dependencies]`.
         data: Files the script reads (relative to `CARGO_MANIFEST_DIR`).
@@ -343,8 +396,8 @@ def reth_build_script(
     cargo_build_script(
         name = name,
         srcs = ["build.rs"],
-        edition = RUST_EDITION,
-        version = WORKSPACE_VERSION,
+        edition = workspace.edition,
+        version = workspace.version,
         crate_features = crate_features,
         deps = deps,
         data = data,

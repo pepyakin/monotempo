@@ -1,42 +1,48 @@
 # GENERATED FILE - DO NOT EDIT.
 #
-# Regenerate with `python3 reth/scripts/bazel/generate.py` after changing Cargo.toml.
+# Regenerate with `python3 bazel/generate.py` after changing Cargo.toml.
 
-load("//reth/bazel:rust.bzl", "reth_build_script", "reth_cargo_toml_env_vars", "reth_library", "reth_unit_test")
+load("//bazel:rust.bzl", "crate_build_script", "crate_cargo_toml_env_vars", "crate_library", "crate_unit_test")
+load("//reth/bazel:workspace.bzl", "WORKSPACE")
 
 FEATURES = []
 
 DECLARED_FEATURES = []
 
-reth_cargo_toml_env_vars()
+crate_cargo_toml_env_vars(WORKSPACE)
 
-reth_build_script(
+crate_build_script(
     name = "reth_mdbx_sys_build_script",
+    workspace = WORKSPACE,
     crate_features = FEATURES,
     deps = [
         "@reth_crates//:bindgen",
         "@reth_crates//:cc",
     ],
-    data = glob(["libmdbx/**"]) + [
-        "//reth/bazel:clang_builtin_headers",
+    data = glob([
+        "libmdbx/**",
+    ]) + [
+        "//bazel:clang_builtin_headers",
         "@llvm_toolchain_llvm//:libclang",
     ],
     build_script_env = {
         "LIBCLANG_PATH": "$(execpath @llvm_toolchain_llvm//:libclang)",
-        "BINDGEN_EXTRA_CLANG_ARGS": "-resource-dir=$(execpath //reth/bazel:clang_builtin_headers)/..",
+        "BINDGEN_EXTRA_CLANG_ARGS": "-resource-dir=$(execpath //bazel:clang_builtin_headers)/..",
     },
 )
 
-reth_library(
+crate_library(
     name = "reth_mdbx_sys",
+    workspace = WORKSPACE,
     crate_features = FEATURES,
     declared_features = DECLARED_FEATURES,
     workspace_lints = False,
     build_script = ":reth_mdbx_sys_build_script",
 )
 
-reth_unit_test(
+crate_unit_test(
     name = "reth_mdbx_sys_test",
+    workspace = WORKSPACE,
     crate = ":reth_mdbx_sys",
     crate_features = FEATURES,
     declared_features = DECLARED_FEATURES,

@@ -1,0 +1,65 @@
+# GENERATED FILE - DO NOT EDIT.
+#
+# Regenerate with `python3 bazel/generate.py` after changing Cargo.toml.
+
+load("//bazel:rust.bzl", "crate_cargo_toml_env_vars", "crate_library", "crate_unit_test")
+load("//alloy/bazel:workspace.bzl", "WORKSPACE")
+
+FEATURES = [
+    "default",
+    "hyper",
+    "hyper-tls",
+    "jwt-auth",
+    "reqwest",
+    "reqwest-default-tls",
+    "reqwest-rustls-tls",
+    "traceparent",
+]
+
+DECLARED_FEATURES = [
+    "default",
+    "hyper",
+    "hyper-tls",
+    "jwt-auth",
+    "reqwest",
+    "reqwest-default-tls",
+    "reqwest-native-tls",
+    "reqwest-rustls-tls",
+    "traceparent",
+]
+
+crate_cargo_toml_env_vars(WORKSPACE)
+
+crate_library(
+    name = "alloy_transport_http",
+    workspace = WORKSPACE,
+    crate_features = FEATURES,
+    declared_features = DECLARED_FEATURES,
+    deps = [
+        "//alloy/crates/json-rpc:alloy_json_rpc",
+        "//alloy/crates/rpc-types-engine:alloy_rpc_types_engine",
+        "//alloy/crates/transport:alloy_transport",
+        "@alloy_crates//:http-body-util",
+        "@alloy_crates//:hyper",
+        "@alloy_crates//:hyper-tls",
+        "@alloy_crates//:hyper-util",
+        "@alloy_crates//:itertools",
+        "@alloy_crates//:jsonwebtoken",
+        "@alloy_crates//:opentelemetry",
+        "@alloy_crates//:opentelemetry-http",
+        "@alloy_crates//:reqwest",
+        "@alloy_crates//:serde_json",
+        "@alloy_crates//:tower",
+        "@alloy_crates//:tracing",
+        "@alloy_crates//:tracing-opentelemetry",
+        "@alloy_crates//:url",
+    ],
+)
+
+crate_unit_test(
+    name = "alloy_transport_http_test",
+    workspace = WORKSPACE,
+    crate = ":alloy_transport_http",
+    crate_features = FEATURES,
+    declared_features = DECLARED_FEATURES,
+)

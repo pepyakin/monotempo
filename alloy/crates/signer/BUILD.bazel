@@ -1,0 +1,45 @@
+# GENERATED FILE - DO NOT EDIT.
+#
+# Regenerate with `python3 bazel/generate.py` after changing Cargo.toml.
+
+load("//bazel:rust.bzl", "crate_cargo_toml_env_vars", "crate_library", "crate_unit_test")
+load("//alloy/bazel:workspace.bzl", "WORKSPACE")
+
+FEATURES = []
+
+DECLARED_FEATURES = [
+    "eip712",
+]
+
+crate_cargo_toml_env_vars(WORKSPACE)
+
+crate_library(
+    name = "alloy_signer",
+    workspace = WORKSPACE,
+    crate_features = FEATURES,
+    declared_features = DECLARED_FEATURES,
+    deps = [
+        "@alloy_crates//:alloy-primitives",
+        "@alloy_crates//:either",
+        "@alloy_crates//:elliptic-curve",
+        "@alloy_crates//:k256",
+        "@alloy_crates//:thiserror",
+    ],
+    proc_macro_deps = [
+        "@alloy_crates//:async-trait",
+        "@alloy_crates//:auto_impl",
+    ],
+)
+
+crate_unit_test(
+    name = "alloy_signer_test",
+    workspace = WORKSPACE,
+    crate = ":alloy_signer",
+    crate_features = FEATURES,
+    declared_features = DECLARED_FEATURES,
+    deps = [
+        "@alloy_crates//:assert_matches",
+        "@alloy_crates//:serde",
+        "@alloy_crates//:tokio",
+    ],
+)

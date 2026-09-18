@@ -1,0 +1,9 @@
+# GENERATED FILE - DO NOT EDIT.
+#
+# Regenerate with `python3 bazel/generate.py` after changing Cargo.toml.
+
+# The Cargo workspace as seen by Bazel; see bazel/generate.py.
+exports_files([
+    "Cargo.lock",
+    "Cargo.toml",
+])

@@ -1,0 +1,51 @@
+# GENERATED FILE - DO NOT EDIT.
+#
+# Regenerate with `python3 bazel/generate.py` after changing Cargo.toml.
+
+load("//bazel:rust.bzl", "crate_cargo_toml_env_vars", "crate_library", "crate_unit_test")
+load("//alloy/bazel:workspace.bzl", "WORKSPACE")
+
+FEATURES = []
+
+DECLARED_FEATURES = [
+    "k256",
+]
+
+crate_cargo_toml_env_vars(WORKSPACE)
+
+crate_library(
+    name = "alloy_network",
+    workspace = WORKSPACE,
+    crate_features = FEATURES,
+    declared_features = DECLARED_FEATURES,
+    deps = [
+        "//alloy/crates/consensus-any:alloy_consensus_any",
+        "//alloy/crates/consensus:alloy_consensus",
+        "//alloy/crates/eips:alloy_eips",
+        "//alloy/crates/json-rpc:alloy_json_rpc",
+        "//alloy/crates/network-primitives:alloy_network_primitives",
+        "//alloy/crates/rpc-types-any:alloy_rpc_types_any",
+        "//alloy/crates/rpc-types-eth:alloy_rpc_types_eth",
+        "//alloy/crates/serde:alloy_serde",
+        "//alloy/crates/signer:alloy_signer",
+        "@alloy_crates//:alloy-primitives",
+        "@alloy_crates//:alloy-sol-types",
+        "@alloy_crates//:derive_more",
+        "@alloy_crates//:futures-utils-wasm",
+        "@alloy_crates//:serde",
+        "@alloy_crates//:serde_json",
+        "@alloy_crates//:thiserror",
+    ],
+    proc_macro_deps = [
+        "@alloy_crates//:async-trait",
+        "@alloy_crates//:auto_impl",
+    ],
+)
+
+crate_unit_test(
+    name = "alloy_network_test",
+    workspace = WORKSPACE,
+    crate = ":alloy_network",
+    crate_features = FEATURES,
+    declared_features = DECLARED_FEATURES,
+)

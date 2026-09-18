@@ -1,0 +1,47 @@
+# GENERATED FILE - DO NOT EDIT.
+#
+# Regenerate with `python3 bazel/generate.py` after changing Cargo.toml.
+
+load("//bazel:rust.bzl", "crate_cargo_toml_env_vars", "crate_library", "crate_unit_test")
+load("//alloy/bazel:workspace.bzl", "WORKSPACE")
+
+FEATURES = []
+
+DECLARED_FEATURES = [
+    "eip712",
+]
+
+crate_cargo_toml_env_vars(WORKSPACE)
+
+crate_library(
+    name = "alloy_signer_aws",
+    workspace = WORKSPACE,
+    crate_features = FEATURES,
+    declared_features = DECLARED_FEATURES,
+    deps = [
+        "//alloy/crates/consensus:alloy_consensus",
+        "//alloy/crates/network:alloy_network",
+        "//alloy/crates/signer:alloy_signer",
+        "@alloy_crates//:alloy-primitives",
+        "@alloy_crates//:aws-config",
+        "@alloy_crates//:aws-sdk-kms",
+        "@alloy_crates//:k256",
+        "@alloy_crates//:spki",
+        "@alloy_crates//:thiserror",
+        "@alloy_crates//:tracing",
+    ],
+    proc_macro_deps = [
+        "@alloy_crates//:async-trait",
+    ],
+)
+
+crate_unit_test(
+    name = "alloy_signer_aws_test",
+    workspace = WORKSPACE,
+    crate = ":alloy_signer_aws",
+    crate_features = FEATURES,
+    declared_features = DECLARED_FEATURES,
+    deps = [
+        "@alloy_crates//:tokio",
+    ],
+)

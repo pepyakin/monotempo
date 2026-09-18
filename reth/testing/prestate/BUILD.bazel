@@ -1,5 +1,5 @@
-# Prestate fixtures that crate tests `include_str!` (see EXTRA_COMPILE_DATA
-# in scripts/bazel/generate.py).
+# Prestate fixtures that crate tests `include_str!` (see `compile_data` in
+# reth/bazel/project.toml).
 exports_files(
     glob(["*.json"]),
     visibility = ["//visibility:public"],

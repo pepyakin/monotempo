@@ -1,0 +1,49 @@
+# GENERATED FILE - DO NOT EDIT.
+#
+# Regenerate with `python3 bazel/generate.py` after changing Cargo.toml.
+
+load("//bazel:rust.bzl", "crate_cargo_toml_env_vars", "crate_library", "crate_unit_test")
+load("//alloy/bazel:workspace.bzl", "WORKSPACE")
+
+FEATURES = [
+    "aws-lc-rs",
+    "default",
+    "rustls-tls",
+]
+
+DECLARED_FEATURES = [
+    "aws-lc-rs",
+    "default",
+    "native-tls",
+    "ring",
+    "rustls-tls",
+]
+
+crate_cargo_toml_env_vars(WORKSPACE)
+
+crate_library(
+    name = "alloy_transport_ws",
+    workspace = WORKSPACE,
+    crate_features = FEATURES,
+    declared_features = DECLARED_FEATURES,
+    deps = [
+        "//alloy/crates/pubsub:alloy_pubsub",
+        "//alloy/crates/transport:alloy_transport",
+        "@alloy_crates//:futures",
+        "@alloy_crates//:http",
+        "@alloy_crates//:rustls",
+        "@alloy_crates//:serde_json",
+        "@alloy_crates//:tokio",
+        "@alloy_crates//:tokio-tungstenite",
+        "@alloy_crates//:tracing",
+        "@alloy_crates//:url",
+    ],
+)
+
+crate_unit_test(
+    name = "alloy_transport_ws_test",
+    workspace = WORKSPACE,
+    crate = ":alloy_transport_ws",
+    crate_features = FEATURES,
+    declared_features = DECLARED_FEATURES,
+)

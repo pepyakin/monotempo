@@ -5,11 +5,11 @@
 # Extra arguments (`bazel test ... --test_arg=<filter>`) are forwarded to
 # both the listing and every per-test invocation, so filters and flags such
 # as `--nocapture` behave as they would for the plain test binary.
-# `RETH_TEST_PROCESSES` bounds how many test processes run concurrently.
+# `TEST_PROCESSES` bounds how many test processes run concurrently.
 set -euo pipefail
 
 binary="$TEST_SRCDIR/$TEST_WORKSPACE/{BINARY}"
-processes="${RETH_TEST_PROCESSES:-4}"
+processes="${TEST_PROCESSES:-4}"
 
 if [[ "${1:-}" == "--run-one" ]]; then
     name="$2"

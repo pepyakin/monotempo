@@ -1,0 +1,56 @@
+# GENERATED FILE - DO NOT EDIT.
+#
+# Regenerate with `python3 bazel/generate.py` after changing Cargo.toml.
+
+load("//bazel:rust.bzl", "crate_cargo_toml_env_vars", "crate_library", "crate_unit_test")
+load("//alloy/bazel:workspace.bzl", "WORKSPACE")
+
+FEATURES = []
+
+DECLARED_FEATURES = [
+    "pubsub",
+]
+
+crate_cargo_toml_env_vars(WORKSPACE)
+
+crate_library(
+    name = "alloy_contract",
+    workspace = WORKSPACE,
+    crate_features = FEATURES,
+    declared_features = DECLARED_FEATURES,
+    deps = [
+        "//alloy/crates/consensus:alloy_consensus",
+        "//alloy/crates/network-primitives:alloy_network_primitives",
+        "//alloy/crates/network:alloy_network",
+        "//alloy/crates/provider:alloy_provider",
+        "//alloy/crates/rpc-types-eth:alloy_rpc_types_eth",
+        "//alloy/crates/transport:alloy_transport",
+        "@alloy_crates//:alloy-dyn-abi",
+        "@alloy_crates//:alloy-json-abi",
+        "@alloy_crates//:alloy-primitives",
+        "@alloy_crates//:alloy-sol-types",
+        "@alloy_crates//:futures",
+        "@alloy_crates//:futures-util",
+        "@alloy_crates//:serde_json",
+        "@alloy_crates//:thiserror",
+        "@alloy_crates//:tokio",
+        "@alloy_crates//:tracing",
+    ],
+)
+
+crate_unit_test(
+    name = "alloy_contract_test",
+    workspace = WORKSPACE,
+    crate = ":alloy_contract",
+    crate_features = FEATURES,
+    declared_features = DECLARED_FEATURES,
+    deps = [
+        "//alloy/crates/node-bindings:alloy_node_bindings",
+        "//alloy/crates/signer-local:alloy_signer_local",
+        "@alloy_crates//:tracing-subscriber",
+    ],
+    tags = [
+        "manual",
+        "requires-network",
+    ],
+)

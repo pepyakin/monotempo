@@ -1,0 +1,56 @@
+# GENERATED FILE - DO NOT EDIT.
+#
+# Regenerate with `python3 bazel/generate.py` after changing Cargo.toml.
+
+load("//bazel:rust.bzl", "crate_cargo_toml_env_vars", "crate_library", "crate_unit_test")
+load("//alloy/bazel:workspace.bzl", "WORKSPACE")
+
+FEATURES = [
+    "contract",
+    "provider",
+    "reqwest-rustls-tls",
+]
+
+DECLARED_FEATURES = [
+    "contract",
+    "provider",
+    "reqwest-default-tls",
+    "reqwest-native-tls",
+    "reqwest-rustls-tls",
+]
+
+crate_cargo_toml_env_vars(WORKSPACE)
+
+crate_library(
+    name = "alloy_ens",
+    workspace = WORKSPACE,
+    crate_features = FEATURES,
+    declared_features = DECLARED_FEATURES,
+    deps = [
+        "//alloy/crates/contract:alloy_contract",
+        "//alloy/crates/provider:alloy_provider",
+        "@alloy_crates//:alloy-primitives",
+        "@alloy_crates//:alloy-sol-types",
+        "@alloy_crates//:thiserror",
+    ],
+    proc_macro_deps = [
+        "@alloy_crates//:async-trait",
+    ],
+)
+
+crate_unit_test(
+    name = "alloy_ens_test",
+    workspace = WORKSPACE,
+    crate = ":alloy_ens",
+    crate_features = FEATURES,
+    declared_features = DECLARED_FEATURES,
+    deps = [
+        "//alloy/crates/json-rpc:alloy_json_rpc",
+        "@alloy_crates//:serde_json",
+        "@alloy_crates//:tokio",
+    ],
+    tags = [
+        "manual",
+        "requires-network",
+    ],
+)

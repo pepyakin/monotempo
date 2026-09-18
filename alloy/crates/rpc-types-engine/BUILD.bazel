@@ -1,0 +1,62 @@
+# GENERATED FILE - DO NOT EDIT.
+#
+# Regenerate with `python3 bazel/generate.py` after changing Cargo.toml.
+
+load("//bazel:rust.bzl", "crate_cargo_toml_env_vars", "crate_library", "crate_unit_test")
+load("//alloy/bazel:workspace.bzl", "WORKSPACE")
+
+FEATURES = [
+    "default",
+    "jwt",
+    "jwt-aws-lc-rs",
+    "serde",
+    "std",
+]
+
+DECLARED_FEATURES = [
+    "arbitrary",
+    "default",
+    "jwt",
+    "jwt-aws-lc-rs",
+    "kzg",
+    "serde",
+    "ssz",
+    "std",
+]
+
+crate_cargo_toml_env_vars(WORKSPACE)
+
+crate_library(
+    name = "alloy_rpc_types_engine",
+    workspace = WORKSPACE,
+    crate_features = FEATURES,
+    declared_features = DECLARED_FEATURES,
+    deps = [
+        "//alloy/crates/consensus:alloy_consensus",
+        "//alloy/crates/eips:alloy_eips",
+        "//alloy/crates/serde:alloy_serde",
+        "@alloy_crates//:alloy-primitives",
+        "@alloy_crates//:alloy-rlp",
+        "@alloy_crates//:derive_more",
+        "@alloy_crates//:jsonwebtoken",
+        "@alloy_crates//:rand",
+        "@alloy_crates//:serde",
+        "@alloy_crates//:strum",
+    ],
+)
+
+crate_unit_test(
+    name = "alloy_rpc_types_engine_test",
+    workspace = WORKSPACE,
+    crate = ":alloy_rpc_types_engine",
+    crate_features = FEATURES,
+    declared_features = DECLARED_FEATURES,
+    deps = [
+        "@alloy_crates//:arbitrary",
+        "@alloy_crates//:assert_matches",
+        "@alloy_crates//:base64",
+        "@alloy_crates//:serde_json",
+        "@alloy_crates//:similar-asserts",
+        "@alloy_crates//:tempfile",
+    ],
+)

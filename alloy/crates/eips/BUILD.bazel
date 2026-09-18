@@ -1,0 +1,71 @@
+# GENERATED FILE - DO NOT EDIT.
+#
+# Regenerate with `python3 bazel/generate.py` after changing Cargo.toml.
+
+load("//bazel:rust.bzl", "crate_cargo_toml_env_vars", "crate_library", "crate_unit_test")
+load("//alloy/bazel:workspace.bzl", "WORKSPACE")
+
+FEATURES = [
+    "arbitrary",
+    "default",
+    "k256",
+    "kzg",
+    "kzg-sidecar",
+    "serde",
+    "sha2",
+    "std",
+]
+
+DECLARED_FEATURES = [
+    "arbitrary",
+    "borsh",
+    "default",
+    "k256",
+    "kzg",
+    "kzg-sidecar",
+    "serde",
+    "serde-bincode-compat",
+    "sha2",
+    "ssz",
+    "std",
+]
+
+crate_cargo_toml_env_vars(WORKSPACE)
+
+crate_library(
+    name = "alloy_eips",
+    workspace = WORKSPACE,
+    crate_features = FEATURES,
+    declared_features = DECLARED_FEATURES,
+    deps = [
+        "//alloy/crates/serde:alloy_serde",
+        "@alloy_crates//:alloy-eip2124",
+        "@alloy_crates//:alloy-eip2930",
+        "@alloy_crates//:alloy-eip7702",
+        "@alloy_crates//:alloy-eip7928",
+        "@alloy_crates//:alloy-primitives",
+        "@alloy_crates//:alloy-rlp",
+        "@alloy_crates//:arbitrary",
+        "@alloy_crates//:c-kzg",
+        "@alloy_crates//:derive_more",
+        "@alloy_crates//:either",
+        "@alloy_crates//:serde",
+        "@alloy_crates//:serde_with",
+        "@alloy_crates//:sha2",
+    ],
+    proc_macro_deps = [
+        "@alloy_crates//:auto_impl",
+    ],
+)
+
+crate_unit_test(
+    name = "alloy_eips_test",
+    workspace = WORKSPACE,
+    crate = ":alloy_eips",
+    crate_features = FEATURES,
+    declared_features = DECLARED_FEATURES,
+    deps = [
+        "@alloy_crates//:rand",
+        "@alloy_crates//:serde_json",
+    ],
+)

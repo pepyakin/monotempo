@@ -1,0 +1,72 @@
+# GENERATED FILE - DO NOT EDIT.
+#
+# Regenerate with `python3 bazel/generate.py` after changing Cargo.toml.
+
+load("//bazel:rust.bzl", "crate_cargo_toml_env_vars", "crate_library", "crate_unit_test")
+load("//alloy/bazel:workspace.bzl", "WORKSPACE")
+
+FEATURES = [
+    "arbitrary",
+    "default",
+    "k256",
+    "kzg",
+    "serde",
+    "std",
+]
+
+DECLARED_FEATURES = [
+    "arbitrary",
+    "borsh",
+    "crypto-backend",
+    "default",
+    "k256",
+    "kzg",
+    "secp256k1",
+    "serde",
+    "serde-bincode-compat",
+    "serde_with",
+    "std",
+]
+
+crate_cargo_toml_env_vars(WORKSPACE)
+
+crate_library(
+    name = "alloy_consensus",
+    workspace = WORKSPACE,
+    crate_features = FEATURES,
+    declared_features = DECLARED_FEATURES,
+    deps = [
+        "//alloy/crates/eips:alloy_eips",
+        "//alloy/crates/serde:alloy_serde",
+        "@alloy_crates//:alloy-primitives",
+        "@alloy_crates//:alloy-rlp",
+        "@alloy_crates//:alloy-trie",
+        "@alloy_crates//:arbitrary",
+        "@alloy_crates//:c-kzg",
+        "@alloy_crates//:derive_more",
+        "@alloy_crates//:either",
+        "@alloy_crates//:k256",
+        "@alloy_crates//:once_cell",
+        "@alloy_crates//:rand",
+        "@alloy_crates//:serde",
+        "@alloy_crates//:serde_json",
+        "@alloy_crates//:thiserror",
+    ],
+    proc_macro_deps = [
+        "//alloy/crates/tx-macros:alloy_tx_macros",
+        "@alloy_crates//:auto_impl",
+    ],
+)
+
+crate_unit_test(
+    name = "alloy_consensus_test",
+    workspace = WORKSPACE,
+    crate = ":alloy_consensus",
+    crate_features = FEATURES,
+    declared_features = DECLARED_FEATURES,
+    deps = [
+        "@alloy_crates//:assert_matches",
+        "@alloy_crates//:bincode",
+        "@alloy_crates//:secp256k1",
+    ],
+)

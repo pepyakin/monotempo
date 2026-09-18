@@ -1,8 +1,9 @@
 # GENERATED FILE - DO NOT EDIT.
 #
-# Regenerate with `python3 reth/scripts/bazel/generate.py` after changing Cargo.toml.
+# Regenerate with `python3 bazel/generate.py` after changing Cargo.toml.
 
-load("//reth/bazel:rust.bzl", "reth_cargo_toml_env_vars", "reth_integration_test", "reth_library", "reth_unit_test")
+load("//bazel:rust.bzl", "crate_cargo_toml_env_vars", "crate_integration_test", "crate_library", "crate_unit_test")
+load("//reth/bazel:workspace.bzl", "WORKSPACE")
 
 FEATURES = [
     "asm-keccak",
@@ -22,10 +23,11 @@ DECLARED_FEATURES = [
     "test-utils",
 ]
 
-reth_cargo_toml_env_vars()
+crate_cargo_toml_env_vars(WORKSPACE)
 
-reth_library(
+crate_library(
     name = "reth_node_ethereum",
+    workspace = WORKSPACE,
     crate_features = FEATURES,
     declared_features = DECLARED_FEATURES,
     deps = [
@@ -80,8 +82,9 @@ reth_library(
     ],
 )
 
-reth_unit_test(
+crate_unit_test(
     name = "reth_node_ethereum_test",
+    workspace = WORKSPACE,
     crate = ":reth_node_ethereum",
     crate_features = FEATURES,
     declared_features = DECLARED_FEATURES,
@@ -109,8 +112,9 @@ reth_unit_test(
     process_per_test = True,
 )
 
-reth_integration_test(
+crate_integration_test(
     name = "reth_node_ethereum_e2e_test",
+    workspace = WORKSPACE,
     crate_root = "tests/e2e/main.rs",
     crate_features = FEATURES,
     declared_features = DECLARED_FEATURES,
@@ -190,8 +194,9 @@ reth_integration_test(
     process_per_test = True,
 )
 
-reth_integration_test(
+crate_integration_test(
     name = "reth_node_ethereum_it_test",
+    workspace = WORKSPACE,
     crate_root = "tests/it/main.rs",
     crate_features = FEATURES,
     declared_features = DECLARED_FEATURES,

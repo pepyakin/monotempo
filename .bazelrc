@@ -1,4 +1,4 @@
-# Bazel configuration for the monotempo monorepo. See README.md and reth/bazel/README.md.
+# Bazel configuration for the monotempo monorepo. See README.md and bazel/README.md.
 
 # Keep MODULE.bazel.lock in sync automatically; CI checks it in with --lockfile_mode=error.
 common --lockfile_mode=update
@@ -26,7 +26,7 @@ test --test_output=errors
 test --test_summary=terse
 
 # Dev inner loop (Linux only, opt-in, not for CI): rustc incremental
-# compilation for workspace crates. See "Incremental rustc" in reth/bazel/README.md;
+# compilation for workspace crates. See "Incremental rustc" in bazel/README.md;
 # the cache directory is machine specific and is added in user.bazelrc.
 #
 # rules_rust bakes the action's cwd into `--remap-path-prefix` and

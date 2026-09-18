@@ -1,17 +1,19 @@
 # GENERATED FILE - DO NOT EDIT.
 #
-# Regenerate with `python3 reth/scripts/bazel/generate.py` after changing Cargo.toml.
+# Regenerate with `python3 bazel/generate.py` after changing Cargo.toml.
 
-load("//reth/bazel:rust.bzl", "reth_binary", "reth_cargo_toml_env_vars", "reth_unit_test")
+load("//bazel:rust.bzl", "crate_binary", "crate_cargo_toml_env_vars", "crate_unit_test")
+load("//reth/bazel:workspace.bzl", "WORKSPACE")
 
 FEATURES = []
 
 DECLARED_FEATURES = []
 
-reth_cargo_toml_env_vars()
+crate_cargo_toml_env_vars(WORKSPACE)
 
-reth_binary(
+crate_binary(
     name = "example-full-contract-state",
+    workspace = WORKSPACE,
     crate_features = FEATURES,
     declared_features = DECLARED_FEATURES,
     deps = [
@@ -21,8 +23,9 @@ reth_binary(
     ],
 )
 
-reth_unit_test(
+crate_unit_test(
     name = "example_full_contract_state_test",
+    workspace = WORKSPACE,
     crate = ":example-full-contract-state",
     crate_features = FEATURES,
     declared_features = DECLARED_FEATURES,

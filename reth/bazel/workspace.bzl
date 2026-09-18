@@ -1,12 +1,17 @@
 # GENERATED FILE - DO NOT EDIT.
 #
-# Regenerate with `python3 reth/scripts/bazel/generate.py` after changing Cargo.toml.
+# Regenerate with `python3 bazel/generate.py` after changing Cargo.toml.
 
-"""Workspace-wide values derived from the root Cargo.toml."""
+"""Workspace-wide values of the reth project, derived from its root Cargo.toml."""
 
-WORKSPACE_VERSION = "2.5.2"
-
-RUST_EDITION = "2024"
+# What every crate of the project inherits; see //bazel:rust.bzl.
+WORKSPACE = struct(
+    name = "reth",
+    manifest = "//reth:Cargo.toml",
+    lints = "//reth/bazel:lints",
+    edition = "2024",
+    version = "2.5.2",
+)
 
 # `[workspace.lints.*]`, each in Cargo's application order.
 RUSTC_LINTS = {

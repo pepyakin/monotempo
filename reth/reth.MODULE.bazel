@@ -2,7 +2,7 @@
 
 Rust crates are still described by their `Cargo.toml` files; Bazel consumes
 those through crate_universe (external crates) and through the generated
-`BUILD.bazel` files (workspace crates). See `reth/bazel/README.md`.
+`BUILD.bazel` files (workspace crates). See `bazel/README.md`.
 """
 
 ###############################################################################
@@ -12,8 +12,9 @@ those through crate_universe (external crates) and through the generated
 # Bazel repository per external crate. It is pointed at the shadow workspace in
 # `bazel/cargo/` (symlinks into the real one, with `bin/reth`'s manifest
 # replaced by a copy that drops the non-hermetic `jit`/`gmp` default features;
-# see `scripts/bazel/generate.py`) because Cargo unifies features across the
-# whole workspace and crate_universe cannot subtract a feature afterwards.
+# see `bazel/project.toml` and `//bazel:generate.py`) because Cargo unifies
+# features across the whole workspace and crate_universe cannot subtract a
+# feature afterwards.
 #
 # The rendered result is pinned in `Cargo.Bazel.lock`; regenerate it with
 #

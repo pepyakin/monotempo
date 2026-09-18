@@ -1,9 +1,13 @@
+# GENERATED FILE - DO NOT EDIT.
+#
+# Regenerate with `python3 bazel/generate.py` after changing Cargo.toml.
+
 load("@rules_rust//rust:defs.bzl", "rust_lint_config")
 load("//reth/bazel:workspace.bzl", "CLIPPY_LINTS", "RUSTC_CHECK_CFG", "RUSTC_LINTS", "RUSTDOC_LINTS")
 
 package(default_visibility = ["//visibility:public"])
 
-# `[workspace.lints]` from the root Cargo.toml, applied to every workspace crate.
+# `[workspace.lints]` from reth/Cargo.toml, applied to every crate with `[lints] workspace = true`.
 rust_lint_config(
     name = "lints",
     clippy = CLIPPY_LINTS,
@@ -11,14 +15,3 @@ rust_lint_config(
     rustc_check_cfg = RUSTC_CHECK_CFG,
     rustdoc = RUSTDOC_LINTS,
 )
-
-# clang's builtin headers (`stdarg.h`, `stddef.h`, ...). bindgen must be told
-# where they are because the prebuilt libclang cannot locate them itself.
-# Keep the major version in sync with `llvm_version` in MODULE.bazel.
-alias(
-    name = "clang_builtin_headers",
-    actual = "@llvm_toolchain_llvm//:lib/clang/20/include",
-)
-
-# Runner used by `process_per_test` (see process_per_test.bzl).
-exports_files(["process_per_test.sh"])

@@ -1,0 +1,56 @@
+# GENERATED FILE - DO NOT EDIT.
+#
+# Regenerate with `python3 bazel/generate.py` after changing Cargo.toml.
+
+load("//bazel:rust.bzl", "crate_cargo_toml_env_vars", "crate_library", "crate_unit_test")
+load("//alloy/bazel:workspace.bzl", "WORKSPACE")
+
+FEATURES = [
+    "default",
+    "eth",
+]
+
+DECLARED_FEATURES = [
+    "admin",
+    "anvil",
+    "any",
+    "arbitrary",
+    "beacon",
+    "debug",
+    "default",
+    "engine",
+    "eth",
+    "k256",
+    "kzg",
+    "mev",
+    "ssz",
+    "trace",
+    "txpool",
+]
+
+crate_cargo_toml_env_vars(WORKSPACE)
+
+crate_library(
+    name = "alloy_rpc_types",
+    workspace = WORKSPACE,
+    crate_features = FEATURES,
+    declared_features = DECLARED_FEATURES,
+    deps = [
+        "//alloy/crates/rpc-types-eth:alloy_rpc_types_eth",
+        "//alloy/crates/serde:alloy_serde",
+        "@alloy_crates//:alloy-primitives",
+        "@alloy_crates//:serde",
+    ],
+)
+
+crate_unit_test(
+    name = "alloy_rpc_types_test",
+    workspace = WORKSPACE,
+    crate = ":alloy_rpc_types",
+    crate_features = FEATURES,
+    declared_features = DECLARED_FEATURES,
+    deps = [
+        "@alloy_crates//:serde_json",
+        "@alloy_crates//:similar-asserts",
+    ],
+)

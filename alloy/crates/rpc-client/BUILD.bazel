@@ -1,0 +1,103 @@
+# GENERATED FILE - DO NOT EDIT.
+#
+# Regenerate with `python3 bazel/generate.py` after changing Cargo.toml.
+
+load("//bazel:rust.bzl", "crate_cargo_toml_env_vars", "crate_integration_test", "crate_library", "crate_unit_test")
+load("//alloy/bazel:workspace.bzl", "WORKSPACE")
+
+FEATURES = [
+    "alloy-transport-http",
+    "default",
+    "reqwest",
+]
+
+DECLARED_FEATURES = [
+    "alloy-transport-http",
+    "default",
+    "hyper",
+    "ipc",
+    "pubsub",
+    "reqwest",
+    "ws",
+    "ws-base",
+    "ws-native-tls",
+    "ws-ring",
+]
+
+crate_cargo_toml_env_vars(WORKSPACE)
+
+crate_library(
+    name = "alloy_rpc_client",
+    workspace = WORKSPACE,
+    crate_features = FEATURES,
+    declared_features = DECLARED_FEATURES,
+    deps = [
+        "//alloy/crates/json-rpc:alloy_json_rpc",
+        "//alloy/crates/transport-http:alloy_transport_http",
+        "//alloy/crates/transport:alloy_transport",
+        "@alloy_crates//:alloy-primitives",
+        "@alloy_crates//:futures",
+        "@alloy_crates//:pin-project",
+        "@alloy_crates//:reqwest",
+        "@alloy_crates//:serde",
+        "@alloy_crates//:serde_json",
+        "@alloy_crates//:tokio",
+        "@alloy_crates//:tokio-stream",
+        "@alloy_crates//:tower",
+        "@alloy_crates//:tracing",
+        "@alloy_crates//:url",
+    ],
+)
+
+crate_unit_test(
+    name = "alloy_rpc_client_test",
+    workspace = WORKSPACE,
+    crate = ":alloy_rpc_client",
+    crate_features = FEATURES,
+    declared_features = DECLARED_FEATURES,
+    deps = [
+        "//alloy/crates/node-bindings:alloy_node_bindings",
+        "//alloy/crates/transport-ipc:alloy_transport_ipc",
+        "//alloy/crates/transport-ws:alloy_transport_ws",
+        "@alloy_crates//:ci_info",
+        "@alloy_crates//:futures-util",
+        "@alloy_crates//:similar-asserts",
+        "@alloy_crates//:tempfile",
+    ],
+)
+
+crate_integration_test(
+    name = "alloy_rpc_client_it_test",
+    workspace = WORKSPACE,
+    crate_root = "tests/it/main.rs",
+    crate_features = FEATURES,
+    declared_features = DECLARED_FEATURES,
+    deps = [
+        "//alloy/crates/json-rpc:alloy_json_rpc",
+        "//alloy/crates/node-bindings:alloy_node_bindings",
+        "//alloy/crates/transport-http:alloy_transport_http",
+        "//alloy/crates/transport-ipc:alloy_transport_ipc",
+        "//alloy/crates/transport-ws:alloy_transport_ws",
+        "//alloy/crates/transport:alloy_transport",
+        ":alloy_rpc_client",
+        "@alloy_crates//:alloy-primitives",
+        "@alloy_crates//:ci_info",
+        "@alloy_crates//:futures",
+        "@alloy_crates//:futures-util",
+        "@alloy_crates//:pin-project",
+        "@alloy_crates//:reqwest",
+        "@alloy_crates//:serde",
+        "@alloy_crates//:serde_json",
+        "@alloy_crates//:similar-asserts",
+        "@alloy_crates//:tempfile",
+        "@alloy_crates//:tokio",
+        "@alloy_crates//:tokio-stream",
+        "@alloy_crates//:tower",
+        "@alloy_crates//:tracing",
+        "@alloy_crates//:url",
+    ],
+    tags = [
+        "manual",
+        "requires-network",
+    ],
+)

@@ -1,4 +1,4 @@
-# Builds and tests the monorepo with Bazel. See README.md and reth/bazel/README.md.
+# Builds and tests the monorepo with Bazel. See README.md and bazel/README.md.
 #
 # Manual for now: a full build of reth needs ~16 cores, 32 GiB RAM and ~40 GiB
 # of disk (LLVM toolchain + outputs), more than GitHub's hosted runners have.
@@ -34,7 +34,7 @@ jobs:
           disk-cache: ${{ github.workflow }}
           repository-cache: true
       - name: Generated files are up to date
-        run: python3 reth/scripts/bazel/generate.py --check
+        run: python3 bazel/generate.py --check
       - name: Build
         run: bazel build --config=ci //...
       - name: Test

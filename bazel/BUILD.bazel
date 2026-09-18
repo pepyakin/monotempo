@@ -1,0 +1,15 @@
+package(default_visibility = ["//visibility:public"])
+
+# clang's builtin headers (`stdarg.h`, `stddef.h`, ...). bindgen must be told
+# where they are because the prebuilt libclang cannot locate them itself.
+# Keep the major version in sync with `LLVM_VERSION` in //MODULE.bazel.
+alias(
+    name = "clang_builtin_headers",
+    actual = "@llvm_toolchain_llvm//:lib/clang/20/include",
+)
+
+# Runner used by `process_per_test` (see process_per_test.bzl).
+exports_files([
+    "process_per_test.sh",
+    "generate.py",
+])

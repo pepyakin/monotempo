@@ -1,0 +1,67 @@
+# Bazel configuration of the reth project, read by //bazel:generate.py.
+#
+# Everything Bazel needs to know about reth that cannot be derived from its
+# Cargo manifests. Labels are written out in full.
+
+# crate_universe repository holding reth's external crates (see reth.MODULE.bazel).
+crates_repo = "@reth_crates"
+
+# Tests built on these crates launch full nodes, which retain GiBs per node for
+# the process lifetime; they and their dependants run one process per test
+# (see //bazel:process_per_test.bzl).
+process_per_test = ["reth-e2e-test-utils"]
+
+# Cargo features that are enabled by default but are *not* built by Bazel.
+#
+# Bazel compiles every workspace crate with the feature set Cargo resolves for
+# `cargo build --workspace`, except for the features listed here. Each entry
+# must explain why the feature cannot (yet) be built hermetically. Keys are
+# package names; the package's manifest is shadowed in `bazel/cargo/`.
+[disabled_features.reth]
+# revmc -> llvm-sys: links LLVM 22 statically and needs `llvm-config` from a
+# system LLVM install. Needs a hermetic LLVM distribution with static
+# libraries before it can be enabled.
+jit = "requires system LLVM (llvm-sys)"
+# rug -> gmp-mpfr-sys: builds GMP with autotools (m4, make) at build time.
+gmp = "requires autotools GMP build (gmp-mpfr-sys)"
+
+# Per-crate build-script inputs (`data_globs` relative to the crate, `data`
+# labels) and environment. Keys are crate names.
+
+# build.rs compiles `libmdbx/mdbx.c` and runs bindgen over `libmdbx/mdbx.h`
+# with libclang from the hermetic LLVM toolchain. The prebuilt libclang cannot
+# find its own resource dir; see //bazel:clang_builtin_headers.
+[build_scripts.reth-mdbx-sys]
+data_globs = ["libmdbx/**"]
+data = ["//bazel:clang_builtin_headers", "@llvm_toolchain_llvm//:libclang"]
+env.LIBCLANG_PATH = "$(execpath @llvm_toolchain_llvm//:libclang)"
+env.BINDGEN_EXTRA_CLANG_ARGS = "-resource-dir=$(execpath //bazel:clang_builtin_headers)/.."
+
+# vergen cannot see `.git` inside the sandbox (and stamping every build with
+# the current commit would defeat caching). Emit stable placeholder values.
+[build_scripts.reth-node-core]
+env.VERGEN_IDEMPOTENT = "1"
+
+# Extra compile-time inputs for targets that `include_*!` files from outside
+# their own crate directory: {target = [labels]}, where target is an
+# integration test's name, or "crate" for the lib, binaries and unit tests.
+[compile_data]
+example-exex-test.crate = ["//reth/crates/e2e-test-utils:src/testsuite/assets/genesis.json"]
+reth-engine-tree.e2e_testsuite = ["//reth/crates/e2e-test-utils:src/testsuite/assets/genesis.json"]
+reth-node-ethereum.e2e = ["//reth/testing/prestate:tx-selfdestruct-prestate.json"]
+reth-trie-db.proof = ["//reth/crates/trie/trie:testdata/proof-genesis.json"]
+
+# Files a crate must export for other packages (see compile_data).
+[exported_files]
+reth-e2e-test-utils = ["src/testsuite/assets/genesis.json"]
+reth-trie = ["testdata/proof-genesis.json"]
+
+# Tags applied to a crate's test targets. `manual` keeps a test out of `bazel test //...`.
+[test_tags]
+# Runs the ethereum/tests fixtures, which are a git submodule that is not
+# checked out by default; cargo CI excludes it as well.
+ef-tests = ["manual"]
+# `tests/it/history.rs` downloads era1 files from era.ithaca.xyz.
+# `requires-network` lifts the sandbox's network block when it is run
+# explicitly; `manual` keeps the default test run hermetic.
+reth-era-utils = ["manual", "requires-network"]

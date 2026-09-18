@@ -7,7 +7,7 @@
 # self-contained package instead, so the corpus lands in a throwaway `target/`
 # next to it inside the test sandbox.
 [package]
-name = "reth-bazel-test-fuzz-stub"
+name = "bazel-test-fuzz-stub"
 version = "0.0.0"
 edition = "2021"
 publish = false

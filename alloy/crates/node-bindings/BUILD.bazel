@@ -1,0 +1,80 @@
+# GENERATED FILE - DO NOT EDIT.
+#
+# Regenerate with `python3 bazel/generate.py` after changing Cargo.toml.
+
+load("//bazel:rust.bzl", "crate_cargo_toml_env_vars", "crate_integration_test", "crate_library", "crate_unit_test")
+load("//alloy/bazel:workspace.bzl", "WORKSPACE")
+
+FEATURES = []
+
+DECLARED_FEATURES = []
+
+crate_cargo_toml_env_vars(WORKSPACE)
+
+crate_library(
+    name = "alloy_node_bindings",
+    workspace = WORKSPACE,
+    crate_features = FEATURES,
+    declared_features = DECLARED_FEATURES,
+    deps = [
+        "//alloy/crates/genesis:alloy_genesis",
+        "//alloy/crates/network:alloy_network",
+        "//alloy/crates/signer-local:alloy_signer_local",
+        "//alloy/crates/signer:alloy_signer",
+        "@alloy_crates//:alloy-hardforks",
+        "@alloy_crates//:alloy-primitives",
+        "@alloy_crates//:k256",
+        "@alloy_crates//:rand",
+        "@alloy_crates//:serde_json",
+        "@alloy_crates//:tempfile",
+        "@alloy_crates//:thiserror",
+        "@alloy_crates//:tracing",
+        "@alloy_crates//:url",
+    ] + select({
+        "@platforms//os:linux": ["@alloy_crates//:libc"],
+        "@platforms//os:macos": ["@alloy_crates//:libc"],
+        "//conditions:default": [],
+    }),
+)
+
+crate_unit_test(
+    name = "alloy_node_bindings_test",
+    workspace = WORKSPACE,
+    crate = ":alloy_node_bindings",
+    crate_features = FEATURES,
+    declared_features = DECLARED_FEATURES,
+    deps = [
+        "@alloy_crates//:ci_info",
+        "@alloy_crates//:tokio",
+    ],
+)
+
+crate_integration_test(
+    name = "alloy_node_bindings_it_test",
+    workspace = WORKSPACE,
+    crate_root = "tests/it/main.rs",
+    crate_features = FEATURES,
+    declared_features = DECLARED_FEATURES,
+    deps = [
+        "//alloy/crates/genesis:alloy_genesis",
+        "//alloy/crates/network:alloy_network",
+        "//alloy/crates/signer-local:alloy_signer_local",
+        "//alloy/crates/signer:alloy_signer",
+        ":alloy_node_bindings",
+        "@alloy_crates//:alloy-hardforks",
+        "@alloy_crates//:alloy-primitives",
+        "@alloy_crates//:ci_info",
+        "@alloy_crates//:k256",
+        "@alloy_crates//:rand",
+        "@alloy_crates//:serde_json",
+        "@alloy_crates//:tempfile",
+        "@alloy_crates//:thiserror",
+        "@alloy_crates//:tokio",
+        "@alloy_crates//:tracing",
+        "@alloy_crates//:url",
+    ] + select({
+        "@platforms//os:linux": ["@alloy_crates//:libc"],
+        "@platforms//os:macos": ["@alloy_crates//:libc"],
+        "//conditions:default": [],
+    }),
+)
