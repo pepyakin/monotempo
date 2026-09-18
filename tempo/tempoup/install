@@ -1,0 +1,207 @@
+#!/usr/bin/env bash
+set -e
+
+# Tempoup bootstrap installer
+# Downloads tempoup and tempo to ~/.tempo/bin
+
+TEMPO_DIR="${TEMPO_DIR:-$HOME/.tempo}"
+BIN_DIR="${TEMPO_BIN_DIR:-$TEMPO_DIR/bin}"
+ENV_FILE="$TEMPO_DIR/env"
+TEMPOUP_URL="https://raw.githubusercontent.com/tempoxyz/tempo/main/tempoup/tempoup"
+
+# Color output
+GREEN='\033[0;32m'
+YELLOW='\033[1;33m'
+NC='\033[0m'
+
+info() {
+    echo -e "${GREEN}info${NC}: $1"
+}
+
+warn() {
+    echo -e "${YELLOW}warn${NC}: $1"
+}
+
+should_verify_tempo_after_tempoup() {
+    for arg in "$@"; do
+        case "$arg" in
+            -h|--help|-v|--version|-U|--update)
+                return 1
+                ;;
+        esac
+    done
+
+    return 0
+}
+
+# Install a file to BIN_DIR, using sudo if necessary
+install_bin() {
+    local src="$1"
+    local dst="$2"
+
+    if cp "$src" "$dst" 2>/dev/null; then
+        chmod +x "$dst"
+    elif sudo cp "$src" "$dst" 2>/dev/null; then
+        sudo chmod +x "$dst"
+    else
+        echo "error: failed to install to $dst"
+        echo "       try running with sudo"
+        exit 1
+    fi
+}
+
+main() {
+    echo "Installing tempoup..."
+    echo ""
+
+    # Ensure BIN_DIR exists
+    mkdir -p "$TEMPO_DIR"
+    mkdir -p "$BIN_DIR"
+
+    # Download tempoup script to a temp file
+    local tmp_file
+    tmp_file="$(mktemp 2>/dev/null || mktemp -t tempoup)"
+    trap 'rm -f "$tmp_file"' EXIT
+
+    info "Downloading tempoup script..."
+    if command -v curl >/dev/null 2>&1; then
+        curl -# -L "$TEMPOUP_URL" -o "$tmp_file"
+    elif command -v wget >/dev/null 2>&1; then
+        wget --show-progress -q -O "$tmp_file" "$TEMPOUP_URL"
+    else
+        echo "error: neither curl nor wget found"
+        exit 1
+    fi
+
+    # Install tempoup to BIN_DIR
+    install_bin "$tmp_file" "$BIN_DIR/tempoup"
+    info "Tempoup installed to $BIN_DIR/tempoup"
+
+    # Create env file that can be sourced to set PATH (POSIX shells)
+    cat > "$ENV_FILE" <<'ENVEOF'
+# tempo shell setup
+export PATH="$HOME/.tempo/bin:$PATH"
+ENVEOF
+
+    # Create env file for fish shell
+    cat > "$ENV_FILE.fish" <<'ENVEOF'
+# tempo shell setup
+fish_add_path -g $HOME/.tempo/bin
+ENVEOF
+
+    # Add BIN_DIR to PATH for current session
+    export PATH="$BIN_DIR:$PATH"
+
+    # Configure shell profiles
+    configure_shell
+
+    # Run tempoup to install tempo binary
+    info "Running tempoup to install tempo..."
+    echo ""
+
+    TEMPO_BIN_DIR="$BIN_DIR" "$BIN_DIR/tempoup" "$@"
+    if should_verify_tempo_after_tempoup "$@"; then
+        local tempo_bin="$BIN_DIR/tempo"
+        [[ -x "$tempo_bin" ]] || tempo_bin="$BIN_DIR/tempo.exe"
+        if [[ -x "$tempo_bin" ]]; then
+            local output
+            if output="$("$tempo_bin" --version 2>&1)"; then
+                info "Tempo ready: $(printf '%s\n' "$output" | head -n 1)"
+            else
+                echo "$output" >&2
+                echo "error: tempo failed to launch after installation" >&2
+                exit 1
+            fi
+        fi
+    fi
+
+    echo ""
+    local user_shell
+    user_shell="$(basename "$SHELL")"
+    if [[ "$user_shell" == "fish" ]]; then
+        info "To get started, either restart your shell or run:"
+        echo ""
+        echo "  source $ENV_FILE.fish"
+    else
+        info "To get started, either restart your shell or run:"
+        echo ""
+        echo "  source $ENV_FILE"
+    fi
+    echo ""
+}
+
+# Add sourcing of env file to shell config files
+configure_shell() {
+    local source_line=". \"$ENV_FILE\""
+
+    local shell_configs=()
+
+    # Detect POSIX shell configs to modify
+    if [[ -n "${ZDOTDIR:-}" ]]; then
+        shell_configs+=("$ZDOTDIR/.zshenv")
+    fi
+
+    if [[ -f "$HOME/.zshenv" ]] || [[ "$(basename "$SHELL")" == "zsh" ]]; then
+        shell_configs+=("$HOME/.zshenv")
+    fi
+
+    if [[ -f "$HOME/.bashrc" ]] || [[ "$(basename "$SHELL")" == "bash" ]]; then
+        shell_configs+=("$HOME/.bashrc")
+    fi
+
+    if [[ -f "$HOME/.bash_profile" ]]; then
+        shell_configs+=("$HOME/.bash_profile")
+    fi
+
+    if [[ -f "$HOME/.profile" ]]; then
+        shell_configs+=("$HOME/.profile")
+    fi
+
+    # Deduplicate (bash 3 compatible)
+    local unique_configs=()
+    local seen=""
+    for cfg in "${shell_configs[@]}"; do
+        case "$seen" in
+            *"|$cfg|"*) ;;
+            *)
+                seen="$seen|$cfg|"
+                unique_configs+=("$cfg")
+                ;;
+        esac
+    done
+
+    local modified=0
+
+    # Configure POSIX shells
+    for cfg in "${unique_configs[@]}"; do
+        if [[ -f "$cfg" ]] && grep -qF "$ENV_FILE" "$cfg" 2>/dev/null; then
+            continue
+        fi
+
+        {
+            echo
+            echo "# Added by tempoup installer"
+            echo "$source_line"
+        } >> "$cfg"
+        info "Added tempo to PATH in $cfg"
+        modified=1
+    done
+
+    # Configure fish shell
+    local fish_config="${XDG_CONFIG_HOME:-$HOME/.config}/fish/conf.d/tempo.fish"
+    if [[ -d "$(dirname "$fish_config")" ]] || [[ "$(basename "$SHELL")" == "fish" ]]; then
+        if [[ ! -f "$fish_config" ]] || ! grep -qF "$ENV_FILE.fish" "$fish_config" 2>/dev/null; then
+            mkdir -p "$(dirname "$fish_config")"
+            echo "# Added by tempoup installer" > "$fish_config"
+            echo "source $ENV_FILE.fish" >> "$fish_config"
+            info "Added tempo to PATH in $fish_config"
+            modified=1
+        fi
+    fi
+
+    if [[ $modified -eq 0 ]]; then
+        info "Tempo is already in your shell config"
+    fi
+}
+
+main "$@"

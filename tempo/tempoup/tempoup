@@ -1,0 +1,664 @@
+#!/usr/bin/env bash
+set -e
+
+# Tempoup - Tempo installer
+# Downloads and installs the tempo binary from GitHub releases
+
+# NOTE: if you make modifications to this script, please increment the version number.
+# WARNING: the SemVer pattern: major.minor.patch must be followed as we use it to determine if the script is up to date.
+TEMPOUP_INSTALLER_VERSION="0.0.15"
+
+REPO="tempoxyz/tempo"
+# GPG key fingerprint for release signing verification
+GPG_KEY_FINGERPRINT="EE3C5D41EA963E896F310EC3CBBFA54B20D33446"
+BIN_DIR="${TEMPO_BIN_DIR:-$HOME/.tempo/bin}"
+TEMPOUP_BIN_URL="https://raw.githubusercontent.com/tempoxyz/tempo/main/tempoup/tempoup"
+TEMPOUP_BIN_PATH="$BIN_DIR/tempoup"
+
+# Color output
+RED='\033[0;31m'
+GREEN='\033[0;32m'
+YELLOW='\033[1;33m'
+NC='\033[0m' # No Color
+
+info() {
+    echo -e "${GREEN}info${NC}: $1" >&2
+}
+
+warn() {
+    echo -e "${YELLOW}warn${NC}: $1" >&2
+}
+
+error() {
+    echo -e "${RED}error${NC}: $1" >&2
+    exit 1
+}
+
+# Compare SemVer versions
+# Returns 0 if $1 > $2, 1 otherwise
+version_gt() {
+    [ "$1" = "$2" ] && return 1
+
+    # Remove 'v' prefix if present
+    local ver1="${1#v}"
+    local ver2="${2#v}"
+
+    IFS=. read -r major1 minor1 patch1 <<EOF
+$ver1
+EOF
+    IFS=. read -r major2 minor2 patch2 <<EOF
+$ver2
+EOF
+
+    [ "$major1" -gt "$major2" ] && return 0
+    [ "$major1" -lt "$major2" ] && return 1
+    [ "$minor1" -gt "$minor2" ] && return 0
+    [ "$minor1" -lt "$minor2" ] && return 1
+    [ "$patch1" -gt "$patch2" ] && return 0
+    [ "$patch1" -lt "$patch2" ] && return 1
+
+    return 1
+}
+
+# Print installer version
+version() {
+    echo "$TEMPOUP_INSTALLER_VERSION"
+    exit 0
+}
+
+# Download release asset
+download_file() {
+    local tag="$1"
+    local filename="$2"
+    local output_dir="$3"
+
+    local url="https://github.com/${REPO}/releases/download/${tag}/${filename}"
+    local output_path="$output_dir/$filename"
+
+    info "Downloading $filename..."
+    if ! curl -#fLo "$output_path" "$url"; then
+        error "Failed to download $filename from $url"
+    fi
+}
+
+# Compute SHA256 hash of a file
+compute_sha256() {
+    if command -v sha256sum >/dev/null 2>&1; then
+        sha256sum "$1" | cut -d' ' -f1
+    else
+        shasum -a 256 "$1" | awk '{print $1}'
+    fi
+}
+
+# Check if command exists
+check_cmd() {
+    command -v "$1" >/dev/null 2>&1
+}
+
+# Returns true only when gh is installed and can access GitHub APIs.
+gh_authenticated() {
+    check_cmd gh && gh auth status >/dev/null 2>&1
+}
+
+ensure_runtime_dependencies() {
+    local platform="$1"
+    local binary_path="${2:-}"
+    local dylib=""
+    local prefix
+
+    [[ "$platform" == "darwin" ]] || return 0
+
+    if [[ -n "$binary_path" ]] && check_cmd otool; then
+        dylib="$(otool -L "$binary_path" 2>/dev/null | awk '/libusb-1\.0\.0\.dylib/ {print $1; exit}')"
+        [[ -n "$dylib" ]] || return 0
+    fi
+
+    if [[ -z "$dylib" || "$dylib" != /* ]]; then
+        prefix="$(brew --prefix libusb 2>/dev/null || true)"
+        [[ -n "$prefix" ]] && dylib="$prefix/lib/libusb-1.0.0.dylib"
+    fi
+
+    if [[ -n "$dylib" && -r "$dylib" ]]; then
+        info "macOS runtime dependency found: libusb"
+        return
+    fi
+
+    if ! check_cmd brew; then
+        error "macOS runtime dependency libusb is missing and Homebrew was not found.
+  Install Homebrew from https://brew.sh, then run:
+    brew install libusb
+  Then re-run tempoup."
+    fi
+
+    warn "macOS runtime dependency libusb not found; installing with Homebrew..."
+    if brew list --versions libusb >/dev/null 2>&1; then
+        brew reinstall libusb || error "Failed to reinstall libusb with Homebrew."
+    else
+        brew install libusb || error "Failed to install libusb with Homebrew."
+    fi
+
+    if [[ -z "$dylib" || "$dylib" != /* ]]; then
+        dylib="$(brew --prefix libusb 2>/dev/null)/lib/libusb-1.0.0.dylib"
+    fi
+    [[ -r "$dylib" ]] || error "Homebrew did not install libusb where tempo can load it.
+  Try running:
+    brew install libusb
+  Then re-run tempoup."
+
+    info "macOS runtime dependency installed: libusb"
+}
+
+verify_tempo_binary() {
+    local binary_path="$1"
+    local output
+
+    if output="$("$binary_path" --version 2>&1)"; then
+        local first_line
+        first_line="$(printf '%s\n' "$output" | head -n 1)"
+        info "Verified tempo launches: $first_line"
+        return
+    fi
+
+    if [[ "$output" == *"libusb"* ]]; then
+        error "Downloaded tempo binary could not launch because libusb is missing.
+  Try running:
+    brew install libusb
+  Then re-run tempoup.
+
+$output"
+    fi
+
+    error "Downloaded tempo binary could not launch.
+
+$output"
+}
+
+rollback_tempo_install() {
+    local status="$?"
+    trap - EXIT
+
+    if [[ "$status" -ne 0 ]]; then
+        if [[ "${TEMPOUP_HAD_OLD_BINARY:-0}" -eq 1 ]]; then
+            mv -f "$TEMPOUP_OLD_BINARY" "$TEMPOUP_INSTALL_TARGET" 2>/dev/null || true
+        elif [[ -n "${TEMPOUP_INSTALL_TARGET:-}" ]]; then
+            rm -f "$TEMPOUP_INSTALL_TARGET" 2>/dev/null || true
+        fi
+    fi
+
+    exit "$status"
+}
+
+# Verifies the GitHub release attestation.
+verify_attestation() {
+    local archive_path="$1"
+
+    info "Verifying release attestation with gh..."
+
+    if gh attestation verify "$archive_path" --repo "$REPO" \
+            --predicate-type https://slsa.dev/provenance/v1 >/dev/null 2>&1; then
+        info "Release attestation verified ✓"
+        return 0
+    fi
+
+    error "Release attestation not found or failed verification. Install gpg, or re-run with --unsafe-skip-verify to bypass integrity verification."
+}
+
+preflight_dependencies() {
+    if ! check_cmd curl; then
+        error "curl not found. Please install curl."
+    fi
+
+    if ! check_cmd sha256sum && ! check_cmd shasum; then
+        error "sha256sum or shasum not found. Please install one of them."
+    fi
+
+    info "Install prerequisites: curl found, checksum tool found"
+
+    if [[ "$UNSAFE_SKIP_VERIFY" == "1" ]]; then
+        warn "Skipping release integrity verification (--unsafe-skip-verify)."
+    elif gh_authenticated; then
+        info "authenticated gh found; release attestation verification enabled"
+    elif check_cmd gpg; then
+        info "gh unavailable or unauthenticated; falling back to GPG signature verification"
+    else
+        error "gh is unavailable or unauthenticated, and gpg was not found. Run 'gh auth login', install gpg, or re-run with --unsafe-skip-verify to bypass integrity verification."
+    fi
+}
+
+# Check if tempoup installer is up to date
+check_installer_up_to_date() {
+    # Skip check if curl not available
+    if ! command -v curl >/dev/null 2>&1; then
+        return
+    fi
+
+    # Fetch the remote version
+    local remote_version
+    remote_version=$(curl -fsSL "$TEMPOUP_BIN_URL" 2>/dev/null | \
+        grep '^TEMPOUP_INSTALLER_VERSION=' | sed -E 's/TEMPOUP_INSTALLER_VERSION="(.+)"/\1/')
+
+    if [[ -z "$remote_version" ]]; then
+        return
+    fi
+
+    # Compare versions
+    if version_gt "$remote_version" "$TEMPOUP_INSTALLER_VERSION"; then
+        echo ""
+        warn "Your tempoup version ($TEMPOUP_INSTALLER_VERSION) is outdated."
+        warn "Latest version is $remote_version."
+        warn "Run 'tempoup --update' to update to the latest version."
+        echo ""
+    fi
+}
+
+# Update tempoup itself
+update_tempoup() {
+    info "Updating tempoup..."
+
+    if ! command -v curl >/dev/null 2>&1; then
+        error "curl not found. Please install curl."
+    fi
+
+    # Create temporary file
+    local tmp_file
+    tmp_file=$(mktemp)
+    trap 'rm -f "$tmp_file"' EXIT
+
+    # Download latest tempoup script
+    info "Downloading latest tempoup..."
+
+    if ! curl -fsSL "$TEMPOUP_BIN_URL" -o "$tmp_file" 2>/dev/null; then
+        error "Failed to download tempoup update"
+    fi
+
+    # Extract remote version
+    local remote_version
+    remote_version=$(grep '^TEMPOUP_INSTALLER_VERSION=' "$tmp_file" | sed -E 's/TEMPOUP_INSTALLER_VERSION="(.+)"/\1/')
+
+    if [[ -z "$remote_version" ]]; then
+        error "Failed to determine remote version"
+    fi
+
+    # Check if update is needed
+    if ! version_gt "$remote_version" "$TEMPOUP_INSTALLER_VERSION"; then
+        info "Tempoup is already up to date (version $TEMPOUP_INSTALLER_VERSION)"
+        exit 0
+    fi
+
+    # Replace current script with new version
+    info "Updating from $TEMPOUP_INSTALLER_VERSION to $remote_version..."
+    if cp "$tmp_file" "$TEMPOUP_BIN_PATH" 2>/dev/null; then
+        chmod 755 "$TEMPOUP_BIN_PATH"
+    elif sudo cp "$tmp_file" "$TEMPOUP_BIN_PATH" 2>/dev/null; then
+        sudo chmod 755 "$TEMPOUP_BIN_PATH"
+    else
+        error "Failed to update tempoup at $TEMPOUP_BIN_PATH. Try running with sudo."
+    fi
+
+    echo ""
+    info "✓ Tempoup updated successfully to version $remote_version"
+    exit 0
+}
+
+# Parse command-line arguments
+VERSION=""
+UNSAFE_SKIP_VERIFY=0
+while [[ $# -gt 0 ]]; do
+    case $1 in
+        -v|--version)
+            version
+            ;;
+        -i|--install)
+            VERSION="$2"
+            shift 2
+            ;;
+        -U|--update)
+            update_tempoup
+            ;;
+        --unsafe-skip-verify)
+            UNSAFE_SKIP_VERIFY=1
+            shift
+            ;;
+        -h|--help)
+            echo "Usage: tempoup [OPTIONS]"
+            echo ""
+            echo "Options:"
+            echo "  -v, --version           Print tempoup installer version"
+            echo "  -i, --install <VER>     Install specific tempo version (e.g., v1.0.0)"
+            echo "  -U, --update            Update tempoup to the latest version"
+            echo "  --unsafe-skip-verify    Skip release integrity verification (checksum still required)"
+            echo "  -h, --help              Show this help message"
+            echo ""
+            echo "Examples:"
+            echo "  tempoup                   # Install latest release"
+            echo "  tempoup -i v1.0.0         # Install specific version"
+            echo "  tempoup -v                # Print installer version"
+            echo "  tempoup --update          # Update tempoup itself"
+            echo "  tempoup --unsafe-skip-verify  # Install without release integrity verification"
+            exit 0
+            ;;
+        *)
+            error "Unknown option: $1. Use --help for usage information."
+            ;;
+    esac
+done
+
+# Detect platform
+detect_platform() {
+    local platform
+    platform="$(uname -s | tr '[:upper:]' '[:lower:]')"
+
+    case "$platform" in
+        linux*)
+            echo "linux"
+            ;;
+        darwin* | mac*)
+            echo "darwin"
+            ;;
+        mingw* | msys* | cygwin* | win*)
+            echo "win32"
+            ;;
+        *)
+            error "Unsupported platform: $platform"
+            ;;
+    esac
+}
+
+# Detect architecture
+detect_arch() {
+    local arch
+    arch="$(uname -m)"
+
+    case "$arch" in
+        x86_64 | x64 | amd64)
+            # Check if running under Rosetta on macOS
+            if [[ "$(uname -s)" == "Darwin" ]] && [[ "$(sysctl -n sysctl.proc_translated 2>/dev/null || echo 0)" == "1" ]]; then
+                echo "arm64"
+            else
+                echo "amd64"
+            fi
+            ;;
+        arm64 | aarch64)
+            echo "arm64"
+            ;;
+        *)
+            warn "Unknown architecture: $arch, defaulting to amd64"
+            echo "amd64"
+            ;;
+    esac
+}
+
+# Detect Rust target triple for release assets
+detect_target() {
+    local platform="$1"
+    local arch="$2"
+
+    case "$platform" in
+        darwin)
+            case "$arch" in
+                arm64) echo "aarch64-apple-darwin" ;;
+                *) error "Unsupported Darwin architecture: $arch" ;;
+            esac
+            ;;
+        linux)
+            case "$arch" in
+                arm64) echo "aarch64-unknown-linux-gnu" ;;
+                amd64) echo "x86_64-unknown-linux-gnu" ;;
+                *) error "Unsupported Linux architecture: $arch" ;;
+            esac
+            ;;
+        win32)
+            case "$arch" in
+                arm64) echo "aarch64-pc-windows-msvc" ;;
+                amd64) echo "x86_64-pc-windows-msvc" ;;
+                *) error "Unsupported Windows architecture: $arch" ;;
+            esac
+            ;;
+        *)
+            error "Unsupported platform: $platform"
+            ;;
+    esac
+}
+
+# Get latest release tag from GitHub
+get_latest_version() {
+    if ! command -v curl >/dev/null 2>&1; then
+        error "curl not found. Please install curl."
+    fi
+
+    # List recent non-prerelease releases and pick the first tag starting with
+    # "v" (binary releases). The /releases/latest endpoint can return crate-publish
+    # tags (e.g. tempo-primitives@1.6.0) which carry no binary assets.
+    # We also match only strict "vN.N.N" to skip prerelease tags like v1.6.0-rc.1.
+    # Prefer authenticated gh to avoid the 60 req/hr anonymous rate-limit.
+    local version
+    if gh_authenticated; then
+        # Authenticated users can see draft releases, but their assets are not
+        # available through the public download URLs used below. Exclude drafts
+        # explicitly, and retain the JSON filter as a defense against changes in
+        # gh's flag behavior.
+        version=$(gh release list --repo "$REPO" --limit 100 \
+            --exclude-drafts --exclude-pre-releases \
+            --json tagName,isDraft,isPrerelease \
+            --jq '.[] | select(.isDraft == false and .isPrerelease == false) | .tagName' 2>/dev/null | \
+            grep '^v[0-9]*\.[0-9]*\.[0-9]*$' | head -n 1)
+    else
+        local api_url="https://api.github.com/repos/$REPO/releases?per_page=100"
+        version=$(curl -sSL "$api_url" 2>/dev/null | \
+            grep '"tag_name":' | sed 's/.*"tag_name": *"\([^"]*\)".*/\1/' | \
+            grep '^v[0-9]*\.[0-9]*\.[0-9]*$' | head -n 1)
+    fi
+
+    if [[ -z "$version" ]]; then
+        error "Failed to fetch latest version from GitHub"
+    fi
+
+    echo "$version"
+}
+
+# Fail with an actionable error before downloading when an authenticated GitHub
+# lookup can prove that a release is private or missing required assets.
+validate_release_assets() {
+    local tag="$1"
+    shift
+
+    gh_authenticated || return 0
+
+    local release_info
+    if ! release_info=$(gh release view "$tag" --repo "$REPO" \
+            --json isDraft,assets \
+            --jq '["draft=" + (.isDraft | tostring), (.assets[].name)] | .[]' 2>/dev/null); then
+        error "Release $tag was not found on GitHub. Choose a published release with 'tempoup -i <VERSION>'."
+    fi
+
+    if [[ "$(printf '%s\n' "$release_info" | head -n 1)" == "draft=true" ]]; then
+        error "Release $tag is still a draft and cannot be installed. Choose the latest published release with 'tempoup -i <VERSION>'."
+    fi
+
+    local asset
+    for asset in "$@"; do
+        if ! printf '%s\n' "$release_info" | tail -n +2 | grep -Fxq "$asset"; then
+            error "Release $tag does not contain required asset $asset. Choose a compatible published release with 'tempoup -i <VERSION>'."
+        fi
+    done
+}
+
+# Main installation logic
+main() {
+    # Check if tempoup installer is up to date
+    check_installer_up_to_date
+
+    info "Installing tempo..."
+    preflight_dependencies
+
+    # Ensure BIN_DIR exists
+    mkdir -p "$BIN_DIR"
+
+    # Detect system
+    PLATFORM=$(detect_platform)
+    ARCH=$(detect_arch)
+    TARGET=$(detect_target "$PLATFORM" "$ARCH")
+    info "Detected platform: $PLATFORM ($ARCH)"
+
+    # Determine version to install
+    if [[ -z "$VERSION" ]]; then
+        info "Fetching latest release version..."
+        VERSION=$(get_latest_version)
+        if [[ -z "$VERSION" ]]; then
+            error "Failed to fetch latest version. Try specifying --version manually."
+        fi
+    fi
+
+    VERSION_TAG="$VERSION"
+
+    info "Installing tempo $VERSION_TAG"
+
+    # Construct archive name
+    # Format: tempo-v{VERSION}-{TARGET}.tar.gz
+    ARCHIVE_EXT="tar.gz"
+    if [[ "$PLATFORM" == "win32" ]]; then
+        ARCHIVE_EXT="zip"
+    fi
+
+    ARCHIVE_NAME="tempo-${VERSION_TAG}-${TARGET}.${ARCHIVE_EXT}"
+
+    validate_release_assets "$VERSION_TAG" "$ARCHIVE_NAME" "${ARCHIVE_NAME}.sha256"
+
+    # Create temporary directory
+    TMP_DIR=$(mktemp -d)
+    trap 'rm -rf "$TMP_DIR"' EXIT
+
+    # Download archive
+    info "Downloading tempo binary..."
+    download_file "$VERSION_TAG" "$ARCHIVE_NAME" "$TMP_DIR"
+
+    ARCHIVE_PATH="$TMP_DIR/$ARCHIVE_NAME"
+
+    # Download and verify checksum
+    info "Verifying checksum..."
+    download_file "$VERSION_TAG" "${ARCHIVE_NAME}.sha256" "$TMP_DIR"
+
+    # Read expected checksum from file (first word on first line)
+    EXPECTED_CHECKSUM=$(head -n1 "$TMP_DIR/${ARCHIVE_NAME}.sha256" | awk '{print $1}')
+
+    # Compute actual checksum of downloaded archive
+    ACTUAL_CHECKSUM=$(compute_sha256 "$ARCHIVE_PATH")
+
+    if [ "$EXPECTED_CHECKSUM" != "$ACTUAL_CHECKSUM" ]; then
+        error "Checksum verification failed
+  Expected: $EXPECTED_CHECKSUM
+  Actual:   $ACTUAL_CHECKSUM"
+    fi
+
+    info "Checksum verified ✓"
+
+    if [[ "$UNSAFE_SKIP_VERIFY" == "1" ]]; then
+        warn "Release integrity verification skipped (--unsafe-skip-verify)."
+    elif gh_authenticated; then
+        verify_attestation "$ARCHIVE_PATH"
+    elif version_gt "$VERSION_TAG" "1.1.2"; then
+        if command -v gpg >/dev/null 2>&1; then
+            info "Verifying GPG signature..."
+            download_file "$VERSION_TAG" "${ARCHIVE_NAME}.asc" "$TMP_DIR"
+
+            # Import the release signing key if not already present
+            if ! gpg --list-keys "$GPG_KEY_FINGERPRINT" >/dev/null 2>&1; then
+                GPG_KEY_URL="https://keyserver.ubuntu.com/pks/lookup?op=get&search=0x${GPG_KEY_FINGERPRINT}"
+                info "Fetching Tempo release signing key..."
+                if curl -sSfL "$GPG_KEY_URL" 2>/dev/null | gpg --import 2>/dev/null; then
+                    : # key imported via HTTPS
+                else
+                    error "Failed to fetch GPG key. Re-run with --unsafe-skip-verify to bypass integrity verification."
+                fi
+            fi
+
+            if gpg --list-keys "$GPG_KEY_FINGERPRINT" >/dev/null 2>&1; then
+                if gpg --batch --verify "$TMP_DIR/${ARCHIVE_NAME}.asc" "$ARCHIVE_PATH" 2>/dev/null; then
+                    info "GPG signature verified ✓"
+                else
+                    error "GPG signature verification failed. The binary may have been tampered with."
+                fi
+            else
+                error "GPG key is not available. Re-run with --unsafe-skip-verify to bypass integrity verification."
+            fi
+        else
+            error "gh is unavailable or unauthenticated, and gpg was not found. Run 'gh auth login', install gpg, or re-run with --unsafe-skip-verify to bypass integrity verification."
+        fi
+    else
+        info "Skipping GPG signature verification (not available for versions <= 1.1.1)"
+    fi
+
+    # Extract archive
+    info "Extracting archive..."
+    if [[ "$ARCHIVE_EXT" == "tar.gz" ]]; then
+        tar -xzf "$ARCHIVE_PATH" -C "$TMP_DIR"
+    elif [[ "$ARCHIVE_EXT" == "zip" ]]; then
+        unzip -q "$ARCHIVE_PATH" -d "$TMP_DIR"
+    fi
+
+    # Find tempo binary in extracted files
+    # Binary is named: tempo-{VERSION}-{TARGET}
+    BINARY_PATTERN="tempo-${VERSION_TAG}-${TARGET}"
+    if [[ "$PLATFORM" == "win32" ]]; then
+        BINARY_PATTERN="${BINARY_PATTERN}.exe"
+    fi
+
+    BINARY_PATH=$(find "$TMP_DIR" -name "$BINARY_PATTERN" -type f | head -n 1)
+
+    if [[ -z "$BINARY_PATH" ]]; then
+        error "Could not find tempo binary in downloaded archive"
+    fi
+    ensure_runtime_dependencies "$PLATFORM" "$BINARY_PATH"
+
+    # Final binary name (just "tempo" or "tempo.exe")
+    BINARY_NAME="tempo"
+    if [[ "$PLATFORM" == "win32" ]]; then
+        BINARY_NAME="tempo.exe"
+    fi
+
+    # Install binary
+    # Move old binary out of the way to avoid ETXTBSY ("Text file busy") when
+    # overwriting a running executable (e.g. `tempo update` calls tempoup
+    # while the tempo binary is still mapped). If the script fails at any
+    # point after this, the trap restores the old binary.
+    info "Installing to $BIN_DIR/$BINARY_NAME..."
+    TEMPOUP_INSTALL_TARGET="$BIN_DIR/$BINARY_NAME"
+    TEMPOUP_OLD_BINARY="$TEMPOUP_INSTALL_TARGET.old"
+    TEMPOUP_HAD_OLD_BINARY=0
+    if [[ -e "$TEMPOUP_INSTALL_TARGET" ]]; then
+        mv -f "$TEMPOUP_INSTALL_TARGET" "$TEMPOUP_OLD_BINARY" 2>/dev/null || true
+        TEMPOUP_HAD_OLD_BINARY=1
+    else
+        rm -f "$TEMPOUP_OLD_BINARY" 2>/dev/null || true
+    fi
+    trap rollback_tempo_install EXIT
+    if cp "$BINARY_PATH" "$TEMPOUP_INSTALL_TARGET" 2>/dev/null; then
+        chmod 755 "$TEMPOUP_INSTALL_TARGET"
+    elif sudo cp "$BINARY_PATH" "$TEMPOUP_INSTALL_TARGET" 2>/dev/null; then
+        sudo chmod 755 "$TEMPOUP_INSTALL_TARGET"
+    else
+        error "Failed to install to $BIN_DIR. Try running with sudo."
+    fi
+    verify_tempo_binary "$TEMPOUP_INSTALL_TARGET"
+
+    # Installation succeeded — remove backup and clear the trap
+    rm -f "$TEMPOUP_OLD_BINARY" 2>/dev/null || true
+    trap - EXIT
+
+    # Success message
+    echo ""
+    info "✓ Tempo $VERSION_TAG installed successfully!"
+    echo ""
+
+    # Warn only if BIN_DIR is not in PATH
+    if [[ ":$PATH:" != *":$BIN_DIR:"* ]]; then
+        warn "$BIN_DIR is not in your PATH"
+        echo "  Add it to your shell config:"
+        echo "    export PATH=\"$BIN_DIR:\$PATH\""
+        echo ""
+    else
+        info "Run 'tempo --version' to verify installation"
+    fi
+}
+
+main

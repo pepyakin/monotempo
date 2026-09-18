@@ -1,0 +1,433 @@
+//! e2e tests using the [`commonware_runtime::deterministic`].
+//!
+//! This crate mimics how a full tempo node is run in production but runs the
+//! consensus engine in a deterministic runtime while maintaining a tokio
+//! async environment to launch execution nodes.
+//!
+//! All definitions herein are only intended to support the the tests defined
+//! in tests/.
+
+#![cfg_attr(not(test), warn(unused_crate_dependencies))]
+#![cfg_attr(docsrs, feature(doc_cfg))]
+
+use std::{iter::repeat_with, net::SocketAddr, time::Duration};
+
+use alloy_primitives::Address;
+use commonware_cryptography::{
+    Signer as _,
+    bls12381::{
+        dkg::feldman_desmedt as dkg,
+        primitives::{group::Share, sharing::Mode},
+    },
+    ed25519::{PrivateKey, PublicKey},
+};
+use commonware_math::algebra::Random as _;
+use commonware_p2p::simulated::{self, Link, Network, Oracle};
+
+use commonware_codec::Encode;
+use commonware_runtime::{
+    Runner as _, Supervisor as _,
+    deterministic::{self, Context, Runner},
+};
+use commonware_utils::{N3f1, TryFromIterator as _, ordered};
+use futures::future::join_all;
+use itertools::Itertools as _;
+use rand_core::CryptoRng;
+use reth_node_metrics::recorder::PrometheusRecorder;
+use tempo_consensus::feed::FeedStateHandle;
+
+pub mod consensus_snapshot;
+pub mod execution_runtime;
+pub mod metrics;
+pub use execution_runtime::ExecutionNodeConfig;
+pub mod testing_node;
+pub use execution_runtime::ExecutionRuntime;
+use tempo_dkg_onchain_artifacts::OnchainDkgOutcome;
+pub use testing_node::TestingNode;
+
+#[cfg(test)]
+mod tests;
+
+pub const CONSENSUS_NODE_PREFIX: &str = "consensus";
+pub const EXECUTION_NODE_PREFIX: &str = "execution";
+
+const MAX_MESSAGE_SIZE: u32 = 1024 * 1024;
+
+fn generate_consensus_node_config(
+    rng: &mut impl CryptoRng,
+    signers: u32,
+    verifiers: u32,
+    fee_recipient: Address,
+) -> (
+    OnchainDkgOutcome,
+    ordered::Map<PublicKey, ConsensusNodeConfig>,
+) {
+    let signer_keys = repeat_with(|| PrivateKey::random(&mut *rng))
+        .take(signers as usize)
+        .collect::<Vec<_>>();
+
+    let (initial_dkg_outcome, shares) = dkg::deal::<_, _, N3f1>(
+        &mut *rng,
+        Mode::NonZeroCounter,
+        ordered::Set::try_from_iter(signer_keys.iter().map(|key| key.public_key())).unwrap(),
+    )
+    .unwrap();
+
+    let onchain_dkg_outcome = OnchainDkgOutcome {
+        epoch: 0,
+        output: initial_dkg_outcome,
+        next_players: shares.keys().clone(),
+        is_next_full_dkg: false,
+    };
+
+    let verifier_keys = repeat_with(|| PrivateKey::random(&mut *rng))
+        .take(verifiers as usize)
+        .collect::<Vec<_>>();
+
+    let validators = ordered::Map::try_from_iter(
+        signer_keys
+            .into_iter()
+            .chain(verifier_keys)
+            .enumerate()
+            .map(|(i, private_key)| {
+                let public_key = private_key.public_key();
+                let config = ConsensusNodeConfig {
+                    address: crate::execution_runtime::validator(i as u32),
+                    ingress: SocketAddr::from(([127, 0, 0, (i + 1) as u8], 8000)),
+                    egress: SocketAddr::from(([127, 0, 0, (i + 1) as u8], 0)),
+                    fee_recipient,
+                    private_key,
+                    share: shares.get_value(&public_key).cloned(),
+                };
+                (public_key, config)
+            }),
+    )
+    .unwrap();
+
+    (onchain_dkg_outcome, validators)
+}
+
+/// Configuration for a validator.
+#[derive(Clone, Debug)]
+pub struct ConsensusNodeConfig {
+    pub address: Address,
+    pub ingress: SocketAddr,
+    pub egress: SocketAddr,
+    pub fee_recipient: Address,
+    pub private_key: PrivateKey,
+    pub share: Option<Share>,
+}
+
+/// The test setup run by [`run`].
+#[derive(Clone)]
+pub struct Setup {
+    /// How many signing validators to launch.
+    pub how_many_signers: u32,
+
+    /// How many non-signing validators (verifiers) to launch.
+    /// These nodes participate in consensus but don't have shares.
+    pub how_many_verifiers: u32,
+
+    /// The seed used for setting up the deterministic runtime.
+    pub seed: u64,
+
+    /// The linkage between individual validators.
+    pub linkage: Link,
+
+    /// The number of heights in an epoch.
+    pub epoch_length: u64,
+
+    /// Local proposal return budget, excluding the network propagation allowance.
+    pub proposal_return_budget: Duration,
+
+    /// The fee recipient written into the V2 contract for each validator.
+    pub fee_recipient: Address,
+
+    /// Whether validators announce `tempo/1` and publish finalization
+    /// certificates over it.
+    pub with_gossip: bool,
+}
+
+impl Setup {
+    pub fn new() -> Self {
+        Self {
+            how_many_signers: 4,
+            how_many_verifiers: 0,
+            seed: 0,
+            linkage: Link {
+                latency: Duration::from_millis(10),
+                jitter: Duration::from_millis(1),
+                success_rate: commonware_utils::probability!(1.0),
+            },
+            epoch_length: 20,
+            proposal_return_budget: Duration::from_millis(300),
+            fee_recipient: Address::ZERO,
+            with_gossip: false,
+        }
+    }
+
+    pub fn how_many_signers(self, how_many_signers: u32) -> Self {
+        Self {
+            how_many_signers,
+            ..self
+        }
+    }
+
+    pub fn how_many_verifiers(self, how_many_verifiers: u32) -> Self {
+        Self {
+            how_many_verifiers,
+            ..self
+        }
+    }
+
+    pub fn seed(self, seed: u64) -> Self {
+        Self { seed, ..self }
+    }
+
+    pub fn linkage(self, linkage: Link) -> Self {
+        Self { linkage, ..self }
+    }
+
+    pub fn epoch_length(self, epoch_length: u64) -> Self {
+        Self {
+            epoch_length,
+            ..self
+        }
+    }
+
+    pub fn proposal_return_budget(self, proposal_return_budget: Duration) -> Self {
+        Self {
+            proposal_return_budget,
+            ..self
+        }
+    }
+
+    pub fn fee_recipient(self, fee_recipient: Address) -> Self {
+        Self {
+            fee_recipient,
+            ..self
+        }
+    }
+
+    /// Announces `tempo/1` on every validator so they publish finalization
+    /// certificates to their devp2p peers.
+    pub fn gossip(self, with_gossip: bool) -> Self {
+        Self {
+            with_gossip,
+            ..self
+        }
+    }
+}
+
+impl Default for Setup {
+    fn default() -> Self {
+        Self::new()
+    }
+}
+
+/// Sets up validators and returns the nodes and execution runtime.
+///
+/// The execution runtime is created internally with a chainspec configured
+/// according to the Setup parameters (epoch_length, validators, polynomial).
+///
+/// The oracle is accessible via `TestingNode::oracle()` if needed for dynamic linking.
+pub async fn setup_validators(
+    context: &mut Context,
+    Setup {
+        epoch_length,
+        how_many_signers,
+        how_many_verifiers,
+        linkage,
+        proposal_return_budget,
+        fee_recipient,
+        with_gossip,
+        ..
+    }: Setup,
+) -> (Vec<TestingNode<Context>>, ExecutionRuntime) {
+    let (network, mut oracle) = Network::new(
+        context.child("network"),
+        simulated::Config {
+            max_size: MAX_MESSAGE_SIZE,
+            disconnect_on_block: true,
+            // Mirror production (`PEERSETS_TO_TRACK`): peers that leave the
+            // registered set are disconnected at the boundary.
+            tracked_peer_sets: commonware_utils::NZUsize!(1),
+            max_peers_per_set: std::num::NonZeroUsize::new(
+                (how_many_signers + how_many_verifiers).max(1) as usize,
+            )
+            .expect("maximum peers per set is non-zero"),
+        },
+    );
+    network.start();
+
+    let (onchain_dkg_outcome, validators) = generate_consensus_node_config(
+        context,
+        how_many_signers,
+        how_many_verifiers,
+        fee_recipient,
+    );
+
+    let network_identity = tempo_chainspec::NetworkIdentity {
+        from_epoch: onchain_dkg_outcome.epoch,
+        identity: *onchain_dkg_outcome.network_identity(),
+    };
+
+    let execution_runtime = ExecutionRuntime::builder()
+        .with_epoch_length(epoch_length)
+        .with_initial_dkg_outcome(onchain_dkg_outcome)
+        .with_validators(validators.clone())
+        .launch()
+        .unwrap();
+
+    let execution_configs = ExecutionNodeConfig::generator()
+        .with_count(how_many_signers + how_many_verifiers)
+        .generate();
+
+    let mut nodes = vec![];
+
+    for ((public_key, consensus_node_config), mut execution_config) in
+        validators.into_iter().zip_eq(execution_configs)
+    {
+        let ConsensusNodeConfig {
+            address,
+            ingress,
+            private_key,
+            share,
+            ..
+        } = consensus_node_config;
+        let oracle = oracle.clone();
+        let uid = format!("{CONSENSUS_NODE_PREFIX}_{public_key}");
+        let feed_state = FeedStateHandle::new();
+
+        execution_config.validator_key = Some(public_key.encode().as_ref().try_into().unwrap());
+        execution_config.feed_state = Some(feed_state.clone());
+        // Validators publish but never ingest; they already receive certificates
+        // over their authenticated consensus network.
+        execution_config.gossip = with_gossip.then(|| execution_runtime::gossip_config(false));
+
+        nodes.push(TestingNode::new(
+            uid,
+            private_key,
+            oracle.clone(),
+            share,
+            network_identity.clone(),
+            feed_state,
+            proposal_return_budget,
+            execution_runtime.handle(),
+            execution_config,
+            ingress,
+            address,
+        ));
+    }
+
+    link_validators(&mut oracle, &nodes, linkage, None).await;
+
+    (nodes, execution_runtime)
+}
+
+/// Runs a test configured by [`Setup`].
+pub fn run(setup: Setup, mut stop_condition: impl FnMut(&metrics::Metrics) -> bool) -> String {
+    let cfg = deterministic::Config::default().with_seed(setup.seed);
+    let executor = Runner::from(cfg);
+
+    executor.start(|mut context| async move {
+        // Setup and run all validators.
+        let (mut nodes, _execution_runtime) = setup_validators(&mut context, setup.clone()).await;
+        join_all(nodes.iter_mut().map(|node| node.start(&context))).await;
+
+        metrics::wait_for_metrics(&context, |metrics| {
+            metrics.assert_no_blocked_peers();
+            stop_condition(metrics)
+        })
+        .await;
+
+        context.auditor().state()
+    })
+}
+
+/// Connects a running node to a set of peers
+///
+/// Useful when a node is restarted and needs to re-connect to its previous peers as
+/// ports are not statically defined.
+pub async fn connect_execution_to_peers<TClock: commonware_runtime::Clock>(
+    node: &TestingNode<TClock>,
+    nodes: &[TestingNode<TClock>],
+) {
+    for other in nodes {
+        if node.public_key() == other.public_key() {
+            continue;
+        }
+
+        if let (Some(a), Some(b)) = (node.execution_node.as_ref(), other.execution_node.as_ref()) {
+            a.connect_peer(b).await;
+        }
+    }
+}
+
+/// Connects all running execution nodes as peers.
+///
+/// This must be called after nodes are started so that the ports are known
+pub async fn connect_execution_peers<TClock: commonware_runtime::Clock>(
+    nodes: &[TestingNode<TClock>],
+) {
+    for i in 0..nodes.len() {
+        connect_execution_to_peers(&nodes[i], &nodes[(i + 1)..]).await;
+    }
+}
+
+/// Links (or unlinks) validators using the oracle.
+///
+/// The `restrict_to` function can be used to restrict the linking to certain connections,
+/// otherwise all validators will be linked to all other validators.
+pub async fn link_validators<TClock: commonware_runtime::Clock>(
+    oracle: &mut Oracle<PublicKey, TClock>,
+    validators: &[TestingNode<TClock>],
+    link: Link,
+    restrict_to: Option<fn(usize, usize, usize) -> bool>,
+) {
+    for (i1, v1) in validators.iter().enumerate() {
+        for (i2, v2) in validators.iter().enumerate() {
+            // Ignore self
+            if v1.public_key() == v2.public_key() {
+                continue;
+            }
+
+            // Restrict to certain connections
+            if let Some(f) = restrict_to
+                && !f(validators.len(), i1, i2)
+            {
+                continue;
+            }
+
+            // Add link
+            match oracle
+                .add_link(
+                    v1.public_key().clone(),
+                    v2.public_key().clone(),
+                    link.clone(),
+                )
+                .await
+            {
+                Ok(()) => (),
+                // TODO: it should be possible to remove the below if Commonware simulated network exposes list of registered peers.
+                //
+                // This is fine because some of the peers might be registered later
+                Err(commonware_p2p::simulated::Error::PeerMissing) => (),
+                // This is fine because we might call this multiple times as peers are joining the network.
+                Err(commonware_p2p::simulated::Error::LinkExists) => (),
+                res @ Err(_) => res.unwrap(),
+            }
+        }
+    }
+}
+
+/// Get the number of pipeline runs from the Prometheus metrics recorder
+pub fn get_pipeline_runs(recorder: &PrometheusRecorder) -> u64 {
+    recorder
+        .handle()
+        .render()
+        .lines()
+        .find(|line| line.starts_with("reth_consensus_engine_beacon_pipeline_runs"))
+        .and_then(|line| line.split_whitespace().nth(1)?.parse().ok())
+        .unwrap_or(0)
+}

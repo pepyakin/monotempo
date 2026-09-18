@@ -1,0 +1,741 @@
+//! A testing node that can start and stop both consensus and execution layers.
+
+use crate::execution_runtime::{
+    self, ExecutionNode, ExecutionNodeConfig, ExecutionRuntimeHandle, test_db_args,
+};
+use alloy_primitives::{Address, B256};
+use commonware_cryptography::{
+    Signer as _,
+    bls12381::primitives::group::Share,
+    ed25519::{PrivateKey, PublicKey},
+};
+use commonware_p2p::simulated::Oracle;
+use commonware_runtime::{Handle, Supervisor as _, deterministic::Context};
+use reth_config::config::StageConfig;
+use reth_db::{Database, DatabaseEnv, open_db_read_only};
+use reth_downloaders::{bodies::noop::NoopBodiesDownloader, headers::noop::NoopHeaderDownloader};
+use reth_ethereum::{
+    consensus::noop::NoopConsensus,
+    provider::{
+        DatabaseProviderFactory, ProviderFactory, RocksDBProviderFactory,
+        providers::{BlockchainProvider, RocksDBProvider, StaticFileProvider},
+    },
+    storage::BlockNumReader,
+};
+use reth_node_builder::NodeTypesWithDBAdapter;
+use reth_prune_types::PruneModes;
+use reth_stages::{Pipeline, sets::DefaultStages};
+use reth_static_file::StaticFileProducer;
+use std::{
+    net::{IpAddr, SocketAddr},
+    path::PathBuf,
+    sync::Arc,
+    time::Duration,
+};
+use tempo_consensus::{
+    BROADCASTER_CHANNEL_IDENT, BROADCASTER_LIMIT, CERTIFICATES_CHANNEL_IDENT, CERTIFICATES_LIMIT,
+    DKG_CHANNEL_IDENT, DKG_LIMIT, MARSHAL_CHANNEL_IDENT, MARSHAL_LIMIT, RESOLVER_CHANNEL_IDENT,
+    RESOLVER_LIMIT, VOTES_CHANNEL_IDENT, VOTES_LIMIT, consensus, feed::FeedStateHandle,
+};
+use tempo_evm::TempoEvmConfig;
+use tempo_node::node::TempoNode;
+use tracing::{debug, instrument};
+
+/// Gossiped certificates verified per second. Matches the production default.
+const GOSSIP_VERIFY_RATE: std::num::NonZeroU32 = commonware_utils::NZU32!(32);
+
+/// A testing node that can start and stop both consensus and execution layers.
+pub struct TestingNode<TClock>
+where
+    TClock: commonware_runtime::Clock,
+{
+    /// Unique identifier for this node
+    pub uid: String,
+    /// Public key of the validator
+    pub private_key: PrivateKey,
+    /// Simulated network oracle for test environments
+    pub oracle: Oracle<PublicKey, TClock>,
+    /// Running consensus handle (None if consensus is stopped)
+    pub consensus_handle: Option<Handle<eyre::Result<()>>>,
+    /// Path to the execution node's data directory
+    pub execution_node_datadir: PathBuf,
+    /// Running execution node (None if execution is stopped)
+    pub execution_node: Option<ExecutionNode>,
+    /// Handle to the execution runtime for spawning new execution nodes
+    pub execution_runtime: ExecutionRuntimeHandle,
+    /// Configuration for the execution node
+    pub execution_config: ExecutionNodeConfig,
+    /// Database instance for the execution node
+    pub execution_database: Option<DatabaseEnv>,
+    /// RocksDB provider for the execution node
+    pub execution_rocksdb: Option<RocksDBProvider>,
+    /// The execution node name assigned at initialization. Important when
+    /// constructing the datadir at which to find the node.
+    pub execution_node_name: String,
+    /// Last block number in database when stopped (used for restart verification)
+    pub last_db_block_on_stop: Option<u64>,
+    /// Network address of the node. Used for execution the validator-config
+    /// addValidator contract call.
+    pub network_address: SocketAddr,
+    /// The chain address of the node. Used for executing validator-config smart
+    /// contract calls.
+    pub chain_address: Address,
+
+    /// Partition prefix used for consensus storage.
+    pub partition_prefix: String,
+    /// Initial share used whenever the consensus engine starts.
+    pub share: Option<Share>,
+    /// Network identity registered whenever the consensus engine starts.
+    pub network_identity: tempo_chainspec::NetworkIdentity,
+    /// Feed state shared by the consensus and execution layers.
+    pub feed_state: FeedStateHandle,
+    /// Local proposal work budget used whenever the consensus engine starts.
+    pub proposal_return_budget: Duration,
+    n_starts: u32,
+}
+
+impl<TClock> TestingNode<TClock>
+where
+    TClock: commonware_runtime::Clock,
+{
+    /// Create a new TestingNode without spawning execution or starting consensus.
+    ///
+    /// Call `start()` to start both consensus and execution.
+    // FIXME: replace this by a `Config` to make this more digestible.
+    #[expect(clippy::too_many_arguments, reason = "quickly threw this together")]
+    pub fn new(
+        uid: String,
+        private_key: PrivateKey,
+        oracle: Oracle<PublicKey, TClock>,
+        share: Option<Share>,
+        network_identity: tempo_chainspec::NetworkIdentity,
+        feed_state: FeedStateHandle,
+        proposal_return_budget: Duration,
+        execution_runtime: ExecutionRuntimeHandle,
+        execution_config: ExecutionNodeConfig,
+        network_address: SocketAddr,
+        chain_address: Address,
+    ) -> Self {
+        let public_key = private_key.public_key();
+        let partition_prefix = uid.clone();
+        let execution_node_datadir = execution_runtime
+            .nodes_dir()
+            .join(execution_runtime::execution_node_name(&public_key));
+
+        let execution_node_name = execution_runtime::execution_node_name(&public_key);
+        Self {
+            uid,
+            private_key,
+            oracle,
+            share,
+            network_identity,
+            feed_state,
+            proposal_return_budget,
+            consensus_handle: None,
+            execution_node: None,
+            execution_node_datadir,
+            execution_runtime,
+            execution_config,
+            execution_node_name,
+            execution_database: None,
+            execution_rocksdb: None,
+            last_db_block_on_stop: None,
+            network_address,
+            chain_address,
+            partition_prefix,
+
+            n_starts: 0,
+        }
+    }
+
+    pub fn fee_recipient(&self) -> Address {
+        Address::ZERO
+    }
+
+    pub fn private_key(&self) -> &PrivateKey {
+        &self.private_key
+    }
+
+    /// Get the validator public key of this node.
+    pub fn public_key(&self) -> PublicKey {
+        self.private_key.public_key()
+    }
+
+    /// Get the unique identifier of this node.
+    pub fn uid(&self) -> &str {
+        &self.uid
+    }
+
+    /// Get the metric prefix used by the most recently started instance.
+    ///
+    /// # Panics
+    /// Panics if the node has was never started.
+    pub fn metric_prefix(&self) -> String {
+        assert!(self.n_starts > 0, "node has never been started");
+        format!("{}_{}", self.uid, self.n_starts - 1)
+    }
+
+    pub fn adopt_identity_from(&mut self, identity_source: Self) {
+        self.uid = identity_source.uid;
+        self.private_key = identity_source.private_key;
+        self.partition_prefix = identity_source.partition_prefix;
+        self.share = identity_source.share;
+        self.network_identity = identity_source.network_identity;
+        self.feed_state = identity_source.feed_state;
+        self.proposal_return_budget = identity_source.proposal_return_budget;
+        self.network_address = identity_source.network_address;
+        self.chain_address = identity_source.chain_address;
+    }
+
+    /// Get a reference to the oracle.
+    pub fn oracle(&self) -> &Oracle<PublicKey, TClock> {
+        &self.oracle
+    }
+
+    pub fn ingress(&self) -> SocketAddr {
+        self.network_address
+    }
+
+    pub fn egress(&self) -> IpAddr {
+        self.network_address.ip()
+    }
+
+    /// A verifier is a node that has a share.
+    pub fn is_signer(&self) -> bool {
+        self.share.is_some()
+    }
+
+    /// A verifier is a node that has no share.
+    pub fn is_verifier(&self) -> bool {
+        self.share.is_none()
+    }
+
+    /// Start both consensus and execution layers.
+    ///
+    ///
+    /// # Panics
+    /// Panics if either consensus or execution is already running.
+    pub async fn start(&mut self, context: &Context) {
+        Box::pin(self.start_inner(context)).await
+    }
+
+    async fn start_inner(&mut self, context: &Context) {
+        self.start_execution().await;
+        self.start_consensus(context).await;
+        self.n_starts += 1;
+    }
+
+    /// Start the execution node and update consensus config to reference it.
+    ///
+    /// # Panics
+    /// Panics if execution node is already running.
+    #[instrument(skip_all, fields(last_db_block = self.last_db_block_on_stop))]
+    async fn start_execution(&mut self) {
+        assert!(
+            self.execution_node.is_none(),
+            "execution node is already running for {}",
+            self.uid
+        );
+
+        // Create database if not exists
+        if self.execution_database.is_none() {
+            let db_path = self.execution_node_datadir.join("db");
+            self.execution_database = Some(
+                reth_db::init_db(db_path, test_db_args())
+                    .expect("failed to init database")
+                    .with_metrics(),
+            );
+        }
+
+        let execution_node = self
+            .execution_runtime
+            .spawn_node(
+                &self.execution_node_name,
+                self.execution_config.clone(),
+                self.execution_database.as_ref().unwrap().clone(),
+                self.execution_rocksdb.clone(),
+            )
+            .await
+            .expect("must be able to spawn execution node");
+
+        if self.execution_rocksdb.is_none() {
+            self.execution_rocksdb = Some(execution_node.node.provider().rocksdb_provider());
+        }
+
+        // verify database persistence on restart
+        if let Some(expected_block) = self.last_db_block_on_stop {
+            let current_db_block = execution_node
+                .node
+                .provider
+                .database_provider_ro()
+                .expect("failed to get database provider")
+                .last_block_number()
+                .expect("failed to get last block number from database");
+
+            assert!(current_db_block >= expected_block,);
+        }
+
+        self.execution_node = Some(execution_node);
+        debug!(%self.uid, "started execution node for testing node");
+    }
+
+    /// Start the consensus engine with oracle registration.
+    ///
+    /// # Panics
+    /// Panics if consensus is already running.
+    async fn start_consensus(&mut self, context: &Context) {
+        assert!(
+            self.consensus_handle.is_none(),
+            "consensus is already running for {}",
+            self.uid
+        );
+        let engine_context = context.child(Box::leak(
+            format!("{}_{}", self.uid, self.n_starts).into_boxed_str(),
+        ));
+        // The transport carries receivers, so the consensus engine takes it
+        // rather than sharing it with the execution node.
+        let gossip = self
+            .execution_node
+            .as_mut()
+            .expect("execution node must be running before consensus")
+            .gossip
+            .take()
+            .map(|transport| tempo_consensus::gossip::Config {
+                transport,
+                verify_rate: GOSSIP_VERIFY_RATE,
+            });
+        let execution_node = self
+            .execution_node
+            .as_ref()
+            .expect("execution node must be running before consensus")
+            .node
+            .clone()
+            .into();
+        let config = consensus::Builder {
+            execution_node: Some(execution_node),
+            network_identity: self.network_identity.clone(),
+            gossip,
+            blocker: self.oracle.control(self.public_key()),
+            peer_manager: self.oracle.socket_manager(),
+            partition_prefix: self.partition_prefix.clone(),
+            signer: self.private_key.clone(),
+            share: self.share.clone(),
+            mailbox_size: commonware_utils::NZUsize!(1024),
+            deque_size: 10,
+            max_message_size: crate::MAX_MESSAGE_SIZE,
+            time_to_propose: Duration::from_secs(2),
+            time_to_collect_notarizations: Duration::from_secs(3),
+            time_to_retry_nullify_broadcast: Duration::from_secs(10),
+            time_for_peer_response: Duration::from_secs(2),
+            views_to_track: 10,
+            // Floor (10s nullify rebroadcast) plus one 2s proposal wait.
+            inactive_time_before_leader_skip: Duration::from_secs(12),
+            proposal_return_budget: self.proposal_return_budget,
+            fcu_heartbeat_interval: Duration::from_secs(3),
+            feed_state: self.feed_state.clone(),
+            // Plenty of headroom for any test; the marshal will fall back to
+            // reth past this depth via the hybrid finalized blocks store.
+            finalized_blocks_retention: 1024,
+        };
+        let engine = config
+            .try_init(engine_context)
+            .await
+            .expect("must be able to start the engine");
+
+        let votes = self
+            .oracle
+            .control(self.public_key())
+            .register(VOTES_CHANNEL_IDENT, VOTES_LIMIT)
+            .await
+            .unwrap();
+        let certificates = self
+            .oracle
+            .control(self.public_key())
+            .register(CERTIFICATES_CHANNEL_IDENT, CERTIFICATES_LIMIT)
+            .await
+            .unwrap();
+        let resolver = self
+            .oracle
+            .control(self.public_key())
+            .register(RESOLVER_CHANNEL_IDENT, RESOLVER_LIMIT)
+            .await
+            .unwrap();
+        let broadcast = self
+            .oracle
+            .control(self.public_key())
+            .register(BROADCASTER_CHANNEL_IDENT, BROADCASTER_LIMIT)
+            .await
+            .unwrap();
+        let marshal = self
+            .oracle
+            .control(self.public_key())
+            .register(MARSHAL_CHANNEL_IDENT, MARSHAL_LIMIT)
+            .await
+            .unwrap();
+        let dkg = self
+            .oracle
+            .control(self.public_key())
+            .register(DKG_CHANNEL_IDENT, DKG_LIMIT)
+            .await
+            .unwrap();
+        let consensus_handle = engine.start(votes, certificates, resolver, broadcast, marshal, dkg);
+
+        self.consensus_handle = Some(consensus_handle);
+        debug!(%self.uid, "started consensus for testing node");
+    }
+
+    /// Stop both consensus and execution layers.
+    ///
+    /// # Panics
+    /// Panics if either consensus or execution is not running.
+    pub async fn stop(&mut self) {
+        self.stop_consensus().await;
+        self.stop_execution().await;
+    }
+
+    /// Stop only the consensus engine.
+    ///
+    /// # Panics
+    /// Panics if consensus is not running.
+    #[instrument(skip_all)]
+    pub async fn stop_consensus(&mut self) {
+        let handle = self
+            .consensus_handle
+            .take()
+            .unwrap_or_else(|| panic!("consensus is not running for {}, cannot stop", self.uid));
+        handle.abort();
+
+        // Wait for the consensus handle to actually finish
+        let _ = handle.await;
+
+        debug!(%self.uid, "stopped consensus for testing node");
+    }
+
+    /// Stop only the execution node.
+    ///
+    /// This triggers a critical task failure which will cause the execution node's
+    /// executor to shutdown.
+    ///
+    /// # Panics
+    /// Panics if execution node is not running.
+    #[instrument(skip_all)]
+    async fn stop_execution(&mut self) {
+        debug!(%self.uid, "stopping execution node for testing node");
+        let execution_node = self.execution_node.take().unwrap_or_else(|| {
+            panic!(
+                "execution node is not running for {}, cannot stop",
+                self.uid
+            )
+        });
+
+        let last_db_block = execution_node
+            .node
+            .provider
+            .database_provider_ro()
+            .expect("failed to get database provider")
+            .last_block_number()
+            .expect("failed to get last block number from database");
+        tracing::debug!(
+            last_db_block,
+            "storing last block block number to verify restart"
+        );
+        self.last_db_block_on_stop = Some(last_db_block);
+
+        execution_node.shutdown().await;
+
+        // Acquire a RW transaction and immediately drop it. This blocks until any
+        // pending write transaction completes, ensuring all database writes are
+        // fully flushed. Without this, a pending write could still be in-flight
+        // after shutdown returns, leading to database/static-file inconsistencies
+        // when the node restarts.
+        drop(
+            self.execution_database
+                .as_ref()
+                .expect("database should exist")
+                .tx_mut()
+                .expect("failed to acquire rw transaction"),
+        );
+
+        debug!(%self.uid, "stopped execution node for testing node");
+    }
+
+    /// Check if both consensus and execution are running
+    pub fn is_running(&self) -> bool {
+        self.consensus_handle.is_some() && self.execution_node.is_some()
+    }
+
+    /// Check if consensus is running
+    pub fn is_consensus_running(&self) -> bool {
+        self.consensus_handle.is_some()
+    }
+
+    /// Check if execution is running
+    pub fn is_execution_running(&self) -> bool {
+        self.execution_node.is_some()
+    }
+
+    /// Get a reference to the running execution node.
+    ///
+    /// # Panics
+    /// Panics if the execution node is not running.
+    pub fn execution(&self) -> &tempo_node::TempoFullNode {
+        &self
+            .execution_node
+            .as_ref()
+            .expect("execution node is not running")
+            .node
+    }
+
+    /// Get a reference to the running consensus handle.
+    ///
+    /// # Panics
+    /// Panics if the consensus engine is not running.
+    pub fn consensus(&self) -> &Handle<eyre::Result<()>> {
+        self.consensus_handle
+            .as_ref()
+            .expect("consensus is not running")
+    }
+
+    /// Get a blockchain provider for the execution node.
+    ///
+    /// # Panics
+    /// Panics if the execution node is not running.
+    pub fn execution_provider(
+        &self,
+    ) -> BlockchainProvider<NodeTypesWithDBAdapter<TempoNode, DatabaseEnv>> {
+        self.execution().provider.clone()
+    }
+
+    /// Get a blockchain provider for when the execution node is down.
+    ///
+    /// This provider MUST BE DROPPED before starting the node again.
+    pub fn execution_provider_offline(
+        &self,
+    ) -> BlockchainProvider<NodeTypesWithDBAdapter<TempoNode, DatabaseEnv>> {
+        // Open a read-only provider to the database
+        // Note: MDBX allows multiple readers, so this is safe even if another process
+        // has the database open for reading
+        let database = open_db_read_only(self.execution_node_datadir.join("db"), test_db_args())
+            .expect("failed to open execution node database")
+            .with_metrics();
+
+        let static_file_provider =
+            StaticFileProvider::read_only(self.execution_node_datadir.join("static_files"))
+                .expect("failed to open static files");
+
+        let rocksdb = RocksDBProvider::builder(self.execution_node_datadir.join("rocksdb"))
+            .build()
+            .unwrap();
+
+        let provider_factory = ProviderFactory::<NodeTypesWithDBAdapter<TempoNode, _>>::new(
+            database,
+            Arc::new(execution_runtime::chainspec()),
+            static_file_provider,
+            rocksdb,
+            reth_ethereum::tasks::Runtime::test(),
+        )
+        .expect("failed to create provider factory");
+
+        BlockchainProvider::new(provider_factory).expect("failed to create blockchain provider")
+    }
+
+    /// Simulates a crash by unwinding the execution layer database by `n` blocks.
+    /// This creates a gap between CL (untouched) and EL state, triggering
+    /// `backfill_on_start` on the next restart.
+    ///
+    /// Returns `(height_before, height_after)`.
+    ///
+    /// # Panics
+    /// Panics if the execution node is currently running.
+    pub fn unwind(&mut self, n: u64) -> (u64, u64) {
+        assert!(
+            self.execution_node.is_none(),
+            "execution node must be stopped before unwinding for {}",
+            self.uid
+        );
+
+        let db = self
+            .execution_database
+            .as_ref()
+            .expect("database should exist")
+            .clone();
+
+        let static_file_provider =
+            StaticFileProvider::read_write(self.execution_node_datadir.join("static_files"))
+                .expect("failed to open static files for rw");
+
+        let rocksdb = self
+            .execution_rocksdb
+            .as_ref()
+            .expect("rocksdb should exist")
+            .clone();
+
+        let provider_factory = ProviderFactory::<NodeTypesWithDBAdapter<TempoNode, _>>::new(
+            db,
+            Arc::new(execution_runtime::chainspec()),
+            static_file_provider,
+            rocksdb,
+            reth_ethereum::tasks::Runtime::test(),
+        )
+        .expect("failed to create provider factory");
+
+        let current = provider_factory
+            .provider()
+            .expect("failed to get provider")
+            .last_block_number()
+            .expect("failed to get last block number");
+
+        let target = current.saturating_sub(n);
+        debug!(
+            %self.uid, current, target, n,
+            "unwinding execution layer to simulate crash"
+        );
+
+        let evm_config = TempoEvmConfig::new(Arc::new(execution_runtime::chainspec()));
+        let prune_modes = PruneModes::default();
+        let (_tip_tx, tip_rx) = tokio::sync::watch::channel(B256::ZERO);
+
+        let mut pipeline = Pipeline::<NodeTypesWithDBAdapter<TempoNode, _>>::builder()
+            .add_stages(DefaultStages::new(
+                provider_factory.clone(),
+                tip_rx,
+                NoopConsensus::arc(),
+                NoopHeaderDownloader::default(),
+                NoopBodiesDownloader::default(),
+                evm_config,
+                StageConfig::default(),
+                prune_modes.clone(),
+                None,
+            ))
+            .build(
+                provider_factory.clone(),
+                StaticFileProducer::new(provider_factory, prune_modes),
+            );
+
+        pipeline
+            .unwind(target, None)
+            .expect("failed to unwind pipeline");
+
+        // Update to the unwound height so the restart assertion still checks
+        // that the DB didn't regress further.
+        self.last_db_block_on_stop = Some(target);
+
+        debug!(%self.uid, target, "execution layer unwound successfully");
+        (current, target)
+    }
+}
+
+#[cfg(test)]
+mod tests {
+    use crate::{Setup, setup_validators};
+    use alloy::providers::{Provider, ProviderBuilder};
+    use commonware_p2p::simulated::Link;
+    use commonware_runtime::{
+        Runner as _,
+        deterministic::{Config, Runner},
+    };
+    use std::time::Duration;
+    use tokio::sync::{oneshot, oneshot::Sender};
+
+    enum Message {
+        Stop(Sender<()>),
+        Start(Sender<std::net::SocketAddr>),
+    }
+
+    /// Start node and verify RPC is accessible
+    async fn start_and_verify(tx_msg: &tokio::sync::mpsc::UnboundedSender<Message>) -> String {
+        let (tx_rpc_addr, rx_rpc_addr) = oneshot::channel();
+        let _ = tx_msg.send(Message::Start(tx_rpc_addr));
+        let rpc_addr = rx_rpc_addr.await.unwrap();
+        let rpc_url = format!("http://{rpc_addr}");
+
+        // Verify RPC is accessible
+        let provider = ProviderBuilder::new().connect_http(rpc_url.parse().unwrap());
+        let block_number = provider.get_block_number().await;
+        assert!(block_number.is_ok(), "RPC should be accessible after start");
+
+        rpc_url
+    }
+
+    #[tokio::test]
+    async fn just_restart() {
+        // Ensures that the node can be stopped completely and brought up inside a test.
+        let _ = tempo_eyre::install();
+
+        let runner = Runner::from(Config::default().with_seed(0));
+        let (tx_msg, mut rx_msg) = tokio::sync::mpsc::unbounded_channel::<Message>();
+
+        std::thread::spawn(move || {
+            runner.start(|mut context| async move {
+                let setup = Setup::new()
+                    .how_many_signers(1)
+                    .linkage(Link {
+                        latency: Duration::from_millis(10),
+                        jitter: Duration::from_millis(1),
+                        success_rate: commonware_utils::probability!(1.0),
+                    })
+                    .epoch_length(100);
+
+                let (mut nodes, _execution_runtime) = setup_validators(&mut context, setup).await;
+
+                let mut node = nodes.pop().unwrap();
+
+                loop {
+                    match rx_msg.blocking_recv() {
+                        Some(Message::Stop(tx_stopped)) => {
+                            node.stop().await;
+                            assert!(!node.is_running(), "node should not be running after stop");
+                            assert!(
+                                !node.is_consensus_running(),
+                                "consensus should not be running after stop"
+                            );
+                            assert!(
+                                !node.is_execution_running(),
+                                "execution should not be running after stop"
+                            );
+
+                            let _ = tx_stopped.send(());
+                        }
+                        Some(Message::Start(tx_rpc_addr)) => {
+                            node.start(&context).await;
+                            assert!(node.is_running(), "node should be running after start");
+
+                            // Get the RPC HTTP address while running
+                            let rpc_addr = node
+                                .execution()
+                                .rpc_server_handles
+                                .rpc
+                                .http_local_addr()
+                                .expect("http rpc server should be running");
+
+                            let _ = tx_rpc_addr.send(rpc_addr);
+                        }
+                        None => {
+                            break;
+                        }
+                    }
+                }
+            });
+        });
+
+        // Start the node initially
+        let rpc_url = start_and_verify(&tx_msg).await;
+
+        // Signal to stop the node
+        let (tx_stopped, rx_stopped) = oneshot::channel();
+        let _ = tx_msg.send(Message::Stop(tx_stopped));
+        rx_stopped.await.unwrap();
+
+        // Verify RPC is no longer accessible after stopping
+        let provider = ProviderBuilder::new().connect_http(rpc_url.parse().unwrap());
+        let result =
+            tokio::time::timeout(Duration::from_millis(500), provider.get_block_number()).await;
+        assert!(
+            result.is_err() || result.unwrap().is_err(),
+            "RPC should not be accessible after stopping"
+        );
+
+        // Start the node again
+        start_and_verify(&tx_msg).await;
+    }
+}

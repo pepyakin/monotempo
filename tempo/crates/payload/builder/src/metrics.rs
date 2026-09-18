@@ -1,0 +1,234 @@
+use alloy_primitives::{Address, B256, BlockNumber, Bytes, StorageKey, StorageValue};
+use metrics::Gauge;
+use reth_errors::ProviderResult;
+use reth_metrics::{Metrics, metrics::Histogram};
+use reth_primitives_traits::{Account, Bytecode};
+use reth_storage_api::{
+    AccountReader, BlockHashReader, BytecodeReader, HashedPostStateProvider, StateProofProvider,
+    StateProvider, StateRootProvider, StorageRootProvider,
+};
+use reth_trie_common::{
+    AccountProof, DecodedMultiProofV2, ExecutionWitnessMode, HashedPostState, HashedStorage,
+    MultiProof, MultiProofTargets, MultiProofTargetsV2, StorageMultiProof, StorageProof, TrieInput,
+    updates::TrieUpdates,
+};
+use std::time::Instant;
+use tracing::debug_span;
+
+#[derive(Metrics, Clone)]
+#[metrics(scope = "tempo_payload_builder")]
+pub(crate) struct TempoPayloadBuilderMetrics {
+    /// Block time in milliseconds.
+    pub(crate) block_time_millis: Histogram,
+    /// Block time in milliseconds.
+    pub(crate) block_time_millis_last: Gauge,
+    /// Number of transactions in the payload.
+    pub(crate) total_transactions: Histogram,
+    /// Number of transactions in the payload.
+    pub(crate) total_transactions_last: Gauge,
+    /// Number of payment transactions in the payload.
+    pub(crate) payment_transactions: Histogram,
+    /// Number of payment transactions in the payload.
+    pub(crate) payment_transactions_last: Gauge,
+    /// Number of reverted transactions in the payload.
+    pub(crate) reverted_transactions: Histogram,
+    /// Number of reverted transactions in the last payload.
+    pub(crate) reverted_transactions_last: Gauge,
+    /// Number of pool transactions yielded by the best transactions iterator.
+    pub(crate) pool_transactions_yielded: Histogram,
+    /// Number of pool transactions yielded by the best transactions iterator for the last payload.
+    pub(crate) pool_transactions_yielded_last: Gauge,
+    /// Number of yielded pool transactions included in the payload.
+    pub(crate) pool_transactions_included: Histogram,
+    /// Number of yielded pool transactions included in the last payload.
+    pub(crate) pool_transactions_included_last: Gauge,
+    /// Number of pool transactions committed through parallel storage-action replay.
+    pub(crate) parallel_transactions_executed: Histogram,
+    /// Number of pool transactions committed through parallel storage-action replay in the last payload.
+    pub(crate) parallel_transactions_executed_last: Gauge,
+    /// Number of pool transaction execution attempts rejected as invalid.
+    pub(crate) invalid_pool_transaction_execution_attempts: Histogram,
+    /// Ratio of yielded pool transactions that were included in the payload.
+    pub(crate) pool_transactions_inclusion_ratio: Histogram,
+    /// Ratio of yielded pool transactions that were included in the last payload.
+    pub(crate) pool_transactions_inclusion_ratio_last: Gauge,
+    /// Amount of gas used in the payload.
+    pub(crate) gas_used: Histogram,
+    /// Amount of gas used in the payload.
+    pub(crate) gas_used_last: Gauge,
+    /// State gas used in the payload (TIP-1016).
+    pub(crate) state_gas_used: Histogram,
+    /// State gas used in the last payload (TIP-1016).
+    pub(crate) state_gas_used_last: Gauge,
+    /// Gas used by general (non-payment) transactions in the payload.
+    pub(crate) general_gas_used_last: Gauge,
+    /// Gas used by payment transactions in the payload.
+    pub(crate) payment_gas_used_last: Gauge,
+    /// General lane gas limit.
+    pub(crate) general_gas_limit_last: Gauge,
+    /// Payment lane gas limit.
+    pub(crate) payment_gas_limit_last: Gauge,
+    /// Time to create the pool's `BestTransactions` iterator, including lock acquisition and snapshot.
+    pub(crate) pool_fetch_duration_seconds: Histogram,
+    /// Time to acquire the state provider and initialize the state DB.
+    pub(crate) state_setup_duration_seconds: Histogram,
+    /// Total wall-clock time spent filling the block with normal pool transactions.
+    pub(crate) total_normal_transaction_fill_duration_seconds: Histogram,
+    /// Time spent waiting for more normal transactions during block fill.
+    pub(crate) normal_transaction_fill_idle_duration_seconds: Histogram,
+    /// Total wall-clock time spent in transaction execution phases.
+    pub(crate) total_transaction_execution_duration_seconds: Histogram,
+    /// The time it took to finalize the payload in seconds. Includes merging transitions and calculating the state root.
+    pub(crate) payload_finalization_duration_seconds: Histogram,
+    /// Wall-clock time spent waiting for the shared sparse trie state root.
+    pub(crate) sparse_trie_state_root_wait_duration_seconds: Histogram,
+    /// Wall-clock time spent in `builder.finish()`.
+    pub(crate) builder_finish_duration_seconds: Histogram,
+    /// Total time it took to build the payload in seconds.
+    pub(crate) payload_build_duration_seconds: Histogram,
+    /// Gas per second calculated as gas_used / payload_build_duration.
+    pub(crate) gas_per_second: Histogram,
+    /// Gas per second for the last payload calculated as gas_used / payload_build_duration.
+    pub(crate) gas_per_second_last: Gauge,
+    /// Serialized payload size in bytes, including optional RLP-encoded BAL sidecar bytes.
+    pub(crate) rlp_block_size_bytes: Histogram,
+    /// Serialized payload size in bytes for the last payload.
+    pub(crate) rlp_block_size_bytes_last: Gauge,
+    /// Time to compute the hashed post-state from the bundle state.
+    pub(crate) hashed_post_state_duration_seconds: Histogram,
+    /// Time to compute the state root and trie updates via `state_root_with_updates`.
+    pub(crate) state_root_with_updates_duration_seconds: Histogram,
+}
+
+/// Reason the payload builder stopped adding pool transactions to the block.
+pub(crate) enum BlockBuildStopReason {
+    GasLimit,
+    RlpBlockSizeLimit,
+    TxPoolEmpty,
+    BuildBudget,
+}
+
+impl BlockBuildStopReason {
+    const fn as_str(&self) -> &'static str {
+        match self {
+            Self::GasLimit => "gas_limit",
+            Self::RlpBlockSizeLimit => "rlp_block_size_limit",
+            Self::TxPoolEmpty => "tx_pool_empty",
+            Self::BuildBudget => "build_budget",
+        }
+    }
+}
+
+impl TempoPayloadBuilderMetrics {
+    /// Increments the unified pool transaction skip counter with the given reason label.
+    ///
+    /// Note: `mark_invalid` may also prune descendant transactions from the iterator,
+    /// so the skip count represents skip *events*, not total transactions removed.
+    #[inline]
+    pub(crate) fn inc_pool_tx_skipped(&self, reason: &'static str) {
+        metrics::counter!("tempo_payload_builder_pool_transactions_skipped_total", "reason" => reason)
+            .increment(1);
+    }
+
+    /// Increments the counter for why the payload builder stopped adding pool transactions.
+    #[inline]
+    pub(crate) fn inc_block_build_stop_reason(&self, reason: BlockBuildStopReason) {
+        metrics::counter!("tempo_payload_builder_block_build_stop_total", "reason" => reason.as_str())
+            .increment(1);
+    }
+}
+
+/// Wraps a [`StateProvider`] reference to instrument `hashed_post_state` and
+/// `state_root_with_updates` with tracing spans and histogram metrics during `builder.finish()`.
+pub(crate) struct InstrumentedFinishProvider<'a> {
+    pub(crate) inner: &'a dyn StateProvider,
+    pub(crate) metrics: TempoPayloadBuilderMetrics,
+}
+
+impl<'a> AsRef<dyn StateProvider + 'a> for InstrumentedFinishProvider<'a> {
+    fn as_ref(&self) -> &(dyn StateProvider + 'a) {
+        self.inner
+    }
+}
+
+reth_storage_api::delegate_impls_to_as_ref!(
+    for InstrumentedFinishProvider<'_> =>
+    AccountReader {
+        fn basic_account(&self, address: &Address) -> ProviderResult<Option<Account>>;
+    }
+    BlockHashReader {
+        fn block_hash(&self, number: u64) -> ProviderResult<Option<B256>>;
+        fn canonical_hashes_range(&self, start: BlockNumber, end: BlockNumber) -> ProviderResult<Vec<B256>>;
+    }
+    StateProvider {
+        fn storage(&self, account: Address, storage_key: StorageKey) -> ProviderResult<Option<StorageValue>>;
+    }
+    BytecodeReader {
+        fn bytecode_by_hash(&self, code_hash: &B256) -> ProviderResult<Option<Bytecode>>;
+    }
+    StorageRootProvider {
+        fn storage_root(&self, address: Address, storage: HashedStorage) -> ProviderResult<B256>;
+        fn storage_proof(&self, address: Address, slot: B256, storage: HashedStorage) -> ProviderResult<StorageProof>;
+        fn storage_multiproof(&self, address: Address, slots: &[B256], storage: HashedStorage) -> ProviderResult<StorageMultiProof>;
+    }
+    StateProofProvider {
+        fn proof(&self, input: TrieInput, address: Address, slots: &[B256]) -> ProviderResult<AccountProof>;
+        fn multiproof(&self, input: TrieInput, targets: MultiProofTargets) -> ProviderResult<MultiProof>;
+        fn multiproof_v2(&self, input: TrieInput, targets: MultiProofTargetsV2) -> ProviderResult<DecodedMultiProofV2>;
+        fn witness(&self, input: TrieInput, target: HashedPostState, mode: ExecutionWitnessMode) -> ProviderResult<Vec<Bytes>>;
+    }
+);
+
+impl HashedPostStateProvider for InstrumentedFinishProvider<'_> {
+    fn hashed_post_state(
+        &self,
+        bundle_state: &reth_revm::db::BundleState,
+    ) -> ProviderResult<HashedPostState> {
+        let start = Instant::now();
+        let _span = debug_span!(target: "payload_builder", "hashed_post_state").entered();
+        let result = self.inner.hashed_post_state(bundle_state);
+        drop(_span);
+        self.metrics
+            .hashed_post_state_duration_seconds
+            .record(start.elapsed());
+        result
+    }
+}
+
+impl StateRootProvider for InstrumentedFinishProvider<'_> {
+    fn state_root(&self, hashed_state: HashedPostState) -> ProviderResult<B256> {
+        let start = Instant::now();
+        let _span = debug_span!(target: "payload_builder", "state_root").entered();
+        let result = self.inner.state_root(hashed_state);
+        drop(_span);
+        self.metrics
+            .state_root_with_updates_duration_seconds
+            .record(start.elapsed());
+        result
+    }
+
+    fn state_root_from_nodes(&self, input: TrieInput) -> ProviderResult<B256> {
+        self.inner.state_root_from_nodes(input)
+    }
+
+    fn state_root_with_updates(
+        &self,
+        hashed_state: HashedPostState,
+    ) -> ProviderResult<(B256, TrieUpdates)> {
+        let start = Instant::now();
+        let _span = debug_span!(target: "payload_builder", "state_root_with_updates").entered();
+        let result = self.inner.state_root_with_updates(hashed_state);
+        drop(_span);
+        self.metrics
+            .state_root_with_updates_duration_seconds
+            .record(start.elapsed());
+        result
+    }
+
+    fn state_root_from_nodes_with_updates(
+        &self,
+        input: TrieInput,
+    ) -> ProviderResult<(B256, TrieUpdates)> {
+        self.inner.state_root_from_nodes_with_updates(input)
+    }
+}

@@ -1,0 +1,422 @@
+name: Specs
+
+permissions: {}
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - "Cargo.lock"
+      - "**/Cargo.toml"
+      - "tips/verify/**"
+      - "crates/alloy/**"
+      - "crates/chainspec/**"
+      - "crates/contracts/**"
+      - "crates/dkg-onchain-artifacts/**"
+      - "crates/evm/**"
+      - "crates/hardfork/**"
+      - "crates/precompiles/**"
+      - "crates/precompiles-macros/**"
+      - "crates/primitives/**"
+      - "crates/revm/**"
+      - "scripts/foundry-patch.sh"
+      - ".github/workflows/specs.yml"
+      - ".github/workflows/update-reth.yml"
+  merge_group:
+  pull_request:
+
+env:
+  # Allow Aegis to finish its 90-second Socket lookup before Cargo times out.
+  CARGO_HTTP_TIMEOUT: "180"
+  CARGO_TERM_COLOR: always
+  RUSTC_WRAPPER: "sccache"
+
+jobs:
+  check-specs-changes:
+    name: Check specs changes
+    runs-on: ubuntu-latest
+    permissions:
+      id-token: write
+      contents: read
+      pull-requests: read
+    outputs:
+      should_run: ${{ contains(fromJSON(steps.filter.outputs.changes), 'specs') }}
+      foundry_smoke: ${{ contains(fromJSON(steps.filter.outputs.changes), 'foundry_smoke') }}
+    steps:
+      - name: Secure runner
+        uses: tempoxyz/gh-actions/actions/secure-runner@ca2b15de1d1f6edd2276736187d7e4c2d898972c
+
+      - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
+        with:
+          fetch-depth: 0
+          persist-credentials: false
+      - uses: tempoxyz/gh-actions/actions/changed-paths@ab45d76f6e7420a094281a22aee1973ecc0754f8
+        id: filter
+        with:
+          filters: |
+            specs:
+              # Dependency updates can change native precompile behavior without Rust source changes.
+              - 'Cargo.lock'
+              - '**/Cargo.toml'
+              - 'tips/verify/**'
+              - 'crates/alloy/**'
+              - 'crates/chainspec/**'
+              - 'crates/contracts/**'
+              - 'crates/dkg-onchain-artifacts/**'
+              - 'crates/evm/**'
+              - 'crates/hardfork/**'
+              - 'crates/precompiles/**'
+              - 'crates/precompiles-macros/**'
+              - 'crates/primitives/**'
+              - 'crates/revm/**'
+              - 'scripts/foundry-patch.sh'
+              - '.github/workflows/specs.yml'
+            foundry_smoke:
+              - 'Cargo.lock'
+              - '**/Cargo.toml'
+              - 'scripts/foundry-patch.sh'
+              - '.github/workflows/specs.yml'
+              - '.github/workflows/update-reth.yml'
+
+  foundry-resolver-smoke:
+    name: Foundry Resolver Smoke
+    needs: check-specs-changes
+    runs-on: ubuntu-latest
+    permissions:
+      id-token: write
+      contents: read
+    steps:
+      - name: Secure runner
+        uses: tempoxyz/gh-actions/actions/secure-runner@ca2b15de1d1f6edd2276736187d7e4c2d898972c
+
+      - name: Skip Foundry resolver smoke
+        if: needs.check-specs-changes.outputs.foundry_smoke != 'true'
+        run: |
+          echo "Skipping Foundry resolver smoke: no dependency-sensitive files changed."
+
+      - name: Checkout tempo
+        if: needs.check-specs-changes.outputs.foundry_smoke == 'true'
+        uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
+        with:
+          path: tempo
+          persist-credentials: false
+
+      - name: Checkout foundry
+        if: needs.check-specs-changes.outputs.foundry_smoke == 'true'
+        uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
+        with:
+          repository: foundry-rs/foundry
+          # Keep Foundry on revm 43.0.2 to match the version used by reth and Tempo.
+          ref: 4e9eba80e77a8e696a9c888c6af058da65c12fc8
+          path: foundry
+          persist-credentials: false
+
+      - name: Setup Rust
+        if: needs.check-specs-changes.outputs.foundry_smoke == 'true'
+        uses: tempoxyz/gh-actions/vendor/dtolnay/rust-toolchain@3626124474a987bc74b41fc7ae65b2e23f8e4e4e
+
+      - name: Patch foundry to use checked-out tempo crates
+        if: needs.check-specs-changes.outputs.foundry_smoke == 'true'
+        env:
+          RUSTC_WRAPPER: ""
+        run: tempo/scripts/foundry-patch.sh "$GITHUB_WORKSPACE/tempo" "$GITHUB_WORKSPACE/foundry"
+
+  check-precompiles:
+    name: Check precompiles changes
+    needs: check-specs-changes
+    if: needs.check-specs-changes.outputs.should_run == 'true'
+    runs-on: ubuntu-latest
+    permissions:
+      id-token: write
+      contents: read
+    outputs:
+      coverage: ${{ steps.check.outputs.coverage }}
+    steps:
+      - name: Secure runner
+        uses: tempoxyz/gh-actions/actions/secure-runner@ca2b15de1d1f6edd2276736187d7e4c2d898972c
+
+      - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
+        with:
+          fetch-depth: 0
+          persist-credentials: false
+      - name: Check for precompiles changes
+        id: check
+        env:
+          EVENT_NAME: ${{ github.event_name }}
+          BASE_REF: ${{ github.base_ref }}
+        run: |
+          # Only run coverage on pull_request events when precompiles/contracts changed
+          if [[ "$EVENT_NAME" != "pull_request" ]]; then
+            echo "coverage=false" >> "$GITHUB_OUTPUT"
+            echo "Skipping coverage: not a pull_request event (event: $EVENT_NAME)"
+          elif git diff --name-only origin/"$BASE_REF"...HEAD \
+            | grep -qE '^(crates/(precompiles|contracts)/|tips/verify/)' \
+            && ! git diff --name-only origin/"$BASE_REF"...HEAD \
+              | grep -vE '^(crates/(precompiles|contracts)/(Cargo\.toml|CHANGELOG\.md))$' \
+              | grep -qE '^(crates/(precompiles|contracts)/|tips/verify/)'; then
+            echo "coverage=false" >> "$GITHUB_OUTPUT"
+            echo "Skipping coverage: only precompiles/contracts release metadata changed"
+          elif git diff --name-only origin/"$BASE_REF"...HEAD | grep -qE '^(crates/(precompiles|contracts)/|tips/verify/)'; then
+            echo "coverage=true" >> "$GITHUB_OUTPUT"
+            echo "Running coverage: precompiles/contracts changed"
+          else
+            echo "coverage=false" >> "$GITHUB_OUTPUT"
+            echo "Skipping coverage: no precompiles/contracts changes"
+          fi
+
+  build:
+    name: Forge Build
+    needs: check-specs-changes
+    if: needs.check-specs-changes.outputs.should_run == 'true'
+    runs-on: ubuntu-latest
+    permissions:
+      id-token: write
+      contents: read
+    steps:
+      - name: Secure runner
+        uses: tempoxyz/gh-actions/actions/secure-runner@ca2b15de1d1f6edd2276736187d7e4c2d898972c
+
+      - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
+        with:
+          submodules: recursive
+          persist-credentials: false
+
+      - name: Install Foundry
+        uses: tempoxyz/gh-actions/actions/setup-foundry@16356ec5155405ba5e33f5558e80b5bf77eb70ab
+        with:
+          version: nightly
+
+      - name: Run Forge build
+        working-directory: tips/verify
+        run: forge build --sizes
+
+  abi-alignment-check:
+    name: ABI Alignment Check
+    needs: check-specs-changes
+    if: needs.check-specs-changes.outputs.should_run == 'true'
+    runs-on: ubuntu-latest
+    permissions:
+      id-token: write
+      contents: read
+    steps:
+      - name: Secure runner
+        uses: tempoxyz/gh-actions/actions/secure-runner@ca2b15de1d1f6edd2276736187d7e4c2d898972c
+
+      - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
+        with:
+          submodules: recursive
+          persist-credentials: false
+
+      - name: Setup Rust
+        uses: tempoxyz/gh-actions/vendor/dtolnay/rust-toolchain@3626124474a987bc74b41fc7ae65b2e23f8e4e4e
+
+      - uses: tempoxyz/gh-actions/vendor/mozilla-actions/sccache-action@3626124474a987bc74b41fc7ae65b2e23f8e4e4e
+      - uses: tempoxyz/gh-actions/vendor/Swatinem/rust-cache@3626124474a987bc74b41fc7ae65b2e23f8e4e4e
+
+      - name: Install Foundry
+        uses: tempoxyz/gh-actions/actions/setup-foundry@16356ec5155405ba5e33f5558e80b5bf77eb70ab
+        with:
+          version: nightly
+
+      - name: Build tempo-std interfaces
+        working-directory: tips/verify/lib/tempo-std
+        run: forge build --sizes
+
+      - name: Run ABI alignment check
+        run: cargo run -p tempo-xtask -- check-abi
+
+  lint:
+    name: Forge Fmt
+    needs: check-specs-changes
+    if: needs.check-specs-changes.outputs.should_run == 'true'
+    runs-on: ubuntu-latest
+    permissions:
+      id-token: write
+      contents: read
+    steps:
+      - name: Secure runner
+        uses: tempoxyz/gh-actions/actions/secure-runner@ca2b15de1d1f6edd2276736187d7e4c2d898972c
+
+      - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
+        with:
+          submodules: recursive
+          persist-credentials: false
+
+      - name: Install Foundry
+        uses: tempoxyz/gh-actions/actions/setup-foundry@16356ec5155405ba5e33f5558e80b5bf77eb70ab
+        with:
+          version: nightly
+
+      - name: Run Forge fmt check
+        working-directory: tips/verify
+        run: forge fmt --check
+
+  foundry-build:
+    name: Build patched Forge
+    needs: [check-specs-changes, check-precompiles]
+    if: github.repository == 'tempoxyz/tempo' && needs.check-specs-changes.outputs.should_run == 'true'
+    runs-on: depot-ubuntu-latest-8
+    timeout-minutes: 60
+    permissions:
+      id-token: write
+      contents: read
+    steps:
+      - name: Secure runner
+        uses: tempoxyz/gh-actions/actions/secure-runner@ca2b15de1d1f6edd2276736187d7e4c2d898972c
+
+      - name: Checkout tempo
+        uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
+        with:
+          submodules: recursive
+          path: tempo
+          persist-credentials: false
+
+      - name: Checkout foundry
+        uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
+        with:
+          repository: foundry-rs/foundry
+          # Keep Foundry on revm 43.0.2 to match the version used by reth and Tempo.
+          ref: 4e9eba80e77a8e696a9c888c6af058da65c12fc8
+          path: foundry
+          persist-credentials: false
+
+      - name: Setup Rust
+        uses: tempoxyz/gh-actions/vendor/dtolnay/rust-toolchain@3626124474a987bc74b41fc7ae65b2e23f8e4e4e
+
+      - name: Install system dependencies
+        run: sudo apt-get update && sudo apt-get install -y libudev-dev
+
+      - uses: tempoxyz/gh-actions/actions/setup-mold@a65420ff2c90fcc46fe778c044aa7998ae9f246c
+      - uses: tempoxyz/gh-actions/vendor/mozilla-actions/sccache-action@3626124474a987bc74b41fc7ae65b2e23f8e4e4e
+      - uses: tempoxyz/gh-actions/vendor/Swatinem/rust-cache@3626124474a987bc74b41fc7ae65b2e23f8e4e4e
+        with:
+          workspaces: foundry
+
+      - name: Install llvm-tools
+        if: needs.check-precompiles.outputs.coverage == 'true'
+        run: rustup component add llvm-tools-preview
+
+      - name: Patch foundry to use checked-out tempo crates
+        run: tempo/scripts/foundry-patch.sh "$GITHUB_WORKSPACE/tempo" "$GITHUB_WORKSPACE/foundry"
+
+      # Build and run WITH coverage (only on PR when precompiles changed)
+      - name: Build foundry forge with coverage instrumentation
+        if: needs.check-precompiles.outputs.coverage == 'true'
+        working-directory: foundry
+        run: RUSTFLAGS="-C instrument-coverage" cargo build --bin forge --profile release --no-default-features
+
+      # Build WITHOUT coverage on main/merge-group runs.
+      - name: Build foundry forge
+        if: needs.check-precompiles.outputs.coverage != 'true'
+        working-directory: foundry
+        run: cargo build --bin forge --profile release --no-default-features
+
+      - name: Upload patched Forge
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
+        with:
+          name: patched-forge
+          path: foundry/target/release/forge
+          retention-days: 1
+
+  foundry-test:
+    name: Forge Test (Rust Precompiles, ${{ matrix.profile }})
+    needs: [check-specs-changes, check-precompiles, foundry-build]
+    if: needs.foundry-build.result == 'success'
+    strategy:
+      fail-fast: false
+      matrix:
+        profile: [default, next]
+    runs-on: depot-ubuntu-latest-8
+    timeout-minutes: 60
+    permissions:
+      id-token: write
+      contents: read
+    steps:
+      - name: Secure runner
+        uses: tempoxyz/gh-actions/actions/secure-runner@ca2b15de1d1f6edd2276736187d7e4c2d898972c
+
+      - name: Checkout tempo
+        uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
+        with:
+          submodules: recursive
+          path: tempo
+          persist-credentials: false
+
+      - name: Setup Rust
+        if: needs.check-precompiles.outputs.coverage == 'true' && matrix.profile == 'default'
+        uses: tempoxyz/gh-actions/vendor/dtolnay/rust-toolchain@3626124474a987bc74b41fc7ae65b2e23f8e4e4e
+        with:
+          components: llvm-tools-preview
+
+      - name: Download patched Forge
+        uses: actions/download-artifact@3e5f45b2cfb9172054b4087a40e8e0b5a5461e7c # v8.0.1
+        with:
+          name: patched-forge
+          path: foundry/target/release
+
+      - name: Run Forge tests with Rust precompiles
+        working-directory: tempo/tips/verify
+        env:
+          FOUNDRY_PROFILE: ${{ matrix.profile }}
+          LLVM_PROFILE_FILE: ${{ needs.check-precompiles.outputs.coverage == 'true' && format('{0}/forge-coverage-%p.profraw', github.workspace) || '' }}
+        run: |
+          chmod +x ../../../foundry/target/release/forge
+          echo "Running Forge tests with the ${{ matrix.profile }} profile"
+          ../../../foundry/target/release/forge test -vvv
+
+      - name: Generate coverage profdata
+        if: needs.check-precompiles.outputs.coverage == 'true' && matrix.profile == 'default'
+        run: |
+          LLVM_BIN="$(rustc --print sysroot)/lib/rustlib/$(rustc -vV | grep host | cut -d' ' -f2)/bin"
+          mkdir -p coverage
+          "$LLVM_BIN/llvm-profdata" merge -sparse forge-coverage-*.profraw -o coverage/forge-test.profdata
+
+      - name: Upload forge coverage artifacts
+        if: needs.check-precompiles.outputs.coverage == 'true' && matrix.profile == 'default'
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
+        with:
+          name: forge-test-coverage
+          path: |
+            coverage/forge-test.profdata
+            foundry/target/release/forge
+          retention-days: 1
+
+  specs-success:
+    name: specs success
+    runs-on: ubuntu-latest
+    if: always()
+    permissions:
+      id-token: write
+    needs:
+      - check-specs-changes
+      - foundry-resolver-smoke
+      - check-precompiles
+      - build
+      - abi-alignment-check
+      - lint
+      - foundry-build
+      - foundry-test
+    timeout-minutes: 5
+    steps:
+      - name: Secure runner
+        uses: tempoxyz/gh-actions/actions/secure-runner@ca2b15de1d1f6edd2276736187d7e4c2d898972c
+
+      - name: Decide whether the needed jobs succeeded or failed
+        uses: tempoxyz/gh-actions/actions/check-needs@ab45d76f6e7420a094281a22aee1973ecc0754f8
+        with:
+          allowed-skips: check-precompiles,build,abi-alignment-check,lint,foundry-build,foundry-test
+          jobs: ${{ toJSON(needs) }}
+
+  precompiles-coverage:
+    name: Precompiles Coverage
+    needs: [check-precompiles, specs-success]
+    if: success() && needs.check-precompiles.outputs.coverage == 'true'
+    uses: ./.github/workflows/coverage.yml
+    with:
+      commit_sha: ${{ github.event.pull_request.head.sha || github.sha }}
+      pr_number: ${{ github.event.pull_request.number || 0 }}
+    permissions:
+      id-token: write
+      contents: read
+      pull-requests: write
+      actions: read

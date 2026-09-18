@@ -1,0 +1,1140 @@
+//! The environment to launch tempo execution nodes in.
+use std::{
+    net::{IpAddr, SocketAddr},
+    path::{Path, PathBuf},
+    sync::Arc,
+    time::Duration,
+};
+
+use alloy::{
+    providers::ProviderBuilder,
+    rpc::types::TransactionReceipt,
+    signers::{local::MnemonicBuilder, utils::secret_key_to_address},
+    transports::http::reqwest::Url,
+};
+use alloy_evm::{EvmFactory as _, revm::context::JournalTr};
+use alloy_genesis::{Genesis, GenesisAccount};
+use alloy_primitives::{Address, B256, Keccak256, U256};
+use commonware_codec::Encode;
+use commonware_cryptography::{
+    Signer,
+    ed25519::{PrivateKey, PublicKey, Signature},
+};
+use commonware_runtime::Clock;
+use commonware_utils::ordered;
+use eyre::{OptionExt as _, WrapErr as _};
+use futures::{StreamExt, future::BoxFuture};
+use reth_chainspec::EthChainSpec;
+use reth_db::mdbx::DatabaseEnv;
+use reth_ethereum::{
+    evm::{
+        primitives::EvmEnv,
+        revm::db::{CacheDB, EmptyDB},
+    },
+    network::{
+        Peers as _,
+        api::{NetworkEventListenerProvider, PeerKind, PeersInfo, events::NetworkEvent},
+    },
+    provider::providers::RocksDBProvider,
+    tasks::Runtime,
+};
+use reth_node_builder::{NodeBuilder, NodeConfig};
+use reth_node_core::{
+    args::{DatadirArgs, PayloadBuilderArgs, RpcServerArgs},
+    exit::NodeExitFuture,
+};
+use reth_rpc_builder::RpcModuleSelection;
+use tempfile::TempDir;
+use tempo_chainspec::TempoChainSpec;
+use tempo_consensus::feed::FeedStateHandle;
+use tempo_dkg_onchain_artifacts::OnchainDkgOutcome;
+use tempo_node::{
+    TempoFullNode,
+    evm::{TempoEvmFactory, evm::TempoEvm},
+    node::TempoNode,
+    rpc::consensus::{TempoConsensusApiServer, TempoConsensusRpc},
+};
+use tempo_precompiles::{
+    VALIDATOR_CONFIG_V2_ADDRESS,
+    storage::{StorageActions, StorageCtx},
+    validator_config_v2::{
+        IValidatorConfigV2, VALIDATOR_NS_ADD, VALIDATOR_NS_ROTATE, ValidatorConfigV2,
+    },
+};
+use tokio::sync::oneshot;
+
+use crate::{ConsensusNodeConfig, TestingNode};
+
+const ADMIN_INDEX: u32 = 0;
+const VALIDATOR_START_INDEX: u32 = 1;
+
+/// Same mnemonic as used in the imported test-genesis and in the `tempo-node` integration tests.
+pub const TEST_MNEMONIC: &str = "test test test test test test test test test test test junk";
+
+#[derive(Default, Debug)]
+pub struct Builder {
+    epoch_length: Option<u64>,
+    initial_dkg_outcome: Option<OnchainDkgOutcome>,
+    validators: Option<ordered::Map<PublicKey, ConsensusNodeConfig>>,
+}
+
+impl Builder {
+    pub fn new() -> Self {
+        Self {
+            epoch_length: None,
+            initial_dkg_outcome: None,
+            validators: None,
+        }
+    }
+
+    pub fn with_epoch_length(self, epoch_length: u64) -> Self {
+        Self {
+            epoch_length: Some(epoch_length),
+            ..self
+        }
+    }
+
+    pub fn with_initial_dkg_outcome(self, initial_dkg_outcome: OnchainDkgOutcome) -> Self {
+        Self {
+            initial_dkg_outcome: Some(initial_dkg_outcome),
+            ..self
+        }
+    }
+
+    pub fn with_validators(self, validators: ordered::Map<PublicKey, ConsensusNodeConfig>) -> Self {
+        Self {
+            validators: Some(validators),
+            ..self
+        }
+    }
+
+    pub fn launch(self) -> eyre::Result<ExecutionRuntime> {
+        let Self {
+            epoch_length,
+            initial_dkg_outcome,
+            validators,
+        } = self;
+
+        let epoch_length = epoch_length.ok_or_eyre("must specify epoch length")?;
+        let initial_dkg_outcome =
+            initial_dkg_outcome.ok_or_eyre("must specify initial DKG outcome")?;
+        let validators = validators.ok_or_eyre("must specify validators")?;
+
+        assert_eq!(
+            initial_dkg_outcome.next_players(),
+            &ordered::Set::from_iter_dedup(
+                validators
+                    .iter_pairs()
+                    .filter_map(|(key, val)| val.share.is_some().then_some(key.clone()))
+            )
+        );
+
+        let mut genesis = genesis();
+        genesis
+            .config
+            .extra_fields
+            .insert_value("epochLength".to_string(), epoch_length)
+            .unwrap();
+
+        genesis.extra_data = initial_dkg_outcome.encode().to_vec().into();
+
+        // Just remove whatever is already written into chainspec.
+        genesis.alloc.remove(&VALIDATOR_CONFIG_V2_ADDRESS);
+
+        let mut evm = setup_tempo_evm(genesis.config.chain_id);
+        {
+            let cx = evm.ctx_mut();
+            StorageCtx::enter_evm(
+                &mut cx.journaled_state,
+                &cx.block,
+                &cx.cfg,
+                &cx.tx,
+                StorageActions::disabled(),
+                || {
+                    let mut validator_config_v2 = ValidatorConfigV2::new();
+                    validator_config_v2
+                        .initialize(admin())
+                        .wrap_err("failed to initialize validator config v2")
+                        .unwrap();
+
+                    for (public_key, validator) in validators {
+                        if let ConsensusNodeConfig {
+                            address,
+                            ingress,
+                            egress,
+                            fee_recipient,
+                            private_key,
+                            share: Some(_),
+                        } = validator
+                        {
+                            validator_config_v2
+                                .add_validator(
+                                    admin(),
+                                    IValidatorConfigV2::addValidatorCall {
+                                        validatorAddress: address,
+                                        publicKey: public_key.encode().as_ref().try_into().unwrap(),
+                                        ingress: ingress.to_string(),
+                                        egress: egress.ip().to_string(),
+                                        feeRecipient: fee_recipient,
+                                        signature: sign_add_validator_args(
+                                            genesis.config.chain_id,
+                                            &private_key,
+                                            address,
+                                            ingress,
+                                            egress.ip(),
+                                            fee_recipient,
+                                        )
+                                        .encode()
+                                        .to_vec()
+                                        .into(),
+                                    },
+                                )
+                                .unwrap();
+                        }
+                    }
+                },
+            );
+        }
+
+        let evm_state = evm.ctx_mut().journaled_state.evm_state();
+        for (address, account) in evm_state.iter() {
+            let storage = if !account.storage.is_empty() {
+                Some(
+                    account
+                        .storage
+                        .iter()
+                        .map(|(key, val)| ((*key).into(), val.present_value.into()))
+                        .collect(),
+                )
+            } else {
+                None
+            };
+            genesis.alloc.insert(
+                *address,
+                GenesisAccount {
+                    nonce: Some(account.info.nonce),
+                    code: account.info.code.as_ref().map(|c| c.original_bytes()),
+                    storage,
+                    ..Default::default()
+                },
+            );
+        }
+
+        Ok(ExecutionRuntime::with_chain_spec(
+            TempoChainSpec::from_genesis(genesis),
+        ))
+    }
+}
+
+/// Configuration for launching an execution node.
+#[derive(Clone, Debug)]
+pub struct ExecutionNodeConfig {
+    /// Network secret key for the node's identity.
+    pub secret_key: B256,
+    /// Validator public key exposed through the admin RPC API.
+    pub validator_key: Option<B256>,
+    /// Feed state handle for consensus RPC (if validator).
+    pub feed_state: Option<FeedStateHandle>,
+    /// Share the engine's sparse trie pipeline with the payload builder.
+    pub share_sparse_trie_with_payload_builder: bool,
+    /// `tempo/1` transport settings. `None` leaves the subprotocol unannounced.
+    ///
+    /// The protocol is registered before the network starts because `RLPx`
+    /// negotiates capabilities during the handshake.
+    pub gossip: Option<tempo_node::gossip::Config>,
+}
+
+impl ExecutionNodeConfig {
+    /// Create a default generator for building multiple execution node configs.
+    pub fn generator() -> ExecutionNodeConfigGenerator {
+        ExecutionNodeConfigGenerator::default()
+    }
+
+    pub fn generate() -> Self {
+        Self {
+            secret_key: B256::random(),
+            validator_key: None,
+            feed_state: None,
+            share_sparse_trie_with_payload_builder: false,
+            gossip: None,
+        }
+    }
+}
+
+/// `tempo/1` transport settings for nodes launched by tests.
+///
+/// Validators publish only. A follower ingests so gossiped certificates reach
+/// its driver, which is the only component able to verify them.
+pub fn gossip_config(ingest: bool) -> tempo_node::gossip::Config {
+    tempo_node::gossip::Config {
+        ingest,
+        peer_frame_rate: commonware_utils::NZU32!(8),
+        frame_queue: 256,
+        route_queue: 256,
+    }
+}
+
+/// Generator for creating multiple execution node configurations.
+#[derive(Default)]
+pub struct ExecutionNodeConfigGenerator {
+    count: u32,
+}
+
+impl ExecutionNodeConfigGenerator {
+    /// Set the number of nodes to generate.
+    pub fn with_count(mut self, count: u32) -> Self {
+        self.count = count;
+        self
+    }
+
+    /// Generate the execution node configurations.
+    pub fn generate(self) -> Vec<ExecutionNodeConfig> {
+        (0..self.count)
+            .map(|_| ExecutionNodeConfig::generate())
+            .collect()
+    }
+}
+
+/// An execution runtime wrapping a thread running a [`tokio::runtime::Runtime`].
+///
+/// This is needed to spawn tempo execution nodes, which require a tokio runtime.
+///
+/// The commonware itself is launched in their
+/// [`commonware_runtime::deterministic`] and so this extra effort is necessary.
+pub struct ExecutionRuntime {
+    // The tokio runtime launched on a different thread.
+    rt: std::thread::JoinHandle<()>,
+
+    // Base directory where all reth databases will be initialized.
+    _tempdir: TempDir,
+
+    // Channel to request the runtime to launch new execution nodes.
+    to_runtime: tokio::sync::mpsc::UnboundedSender<Message>,
+}
+
+impl ExecutionRuntime {
+    pub fn builder() -> Builder {
+        Builder::new()
+    }
+
+    /// Constructs a new execution runtime to launch execution nodes.
+    pub fn with_chain_spec(chain_spec: TempoChainSpec) -> Self {
+        let tempdir = tempfile::Builder::new()
+            // TODO(janis): cargo manifest prefix?
+            .prefix("tempo_e2e_test")
+            .disable_cleanup(true)
+            .tempdir()
+            .expect("must be able to create a temp directory run tun tests");
+
+        let (to_runtime, mut from_handle) = tokio::sync::mpsc::unbounded_channel();
+
+        let datadir = tempdir.path().to_path_buf();
+        let rt = std::thread::spawn(move || {
+            let rt = tokio::runtime::Runtime::new()
+                .expect("must be able to initialize a runtime to run execution/reth nodes");
+            let wallet = MnemonicBuilder::from_phrase(crate::execution_runtime::TEST_MNEMONIC)
+                .build()
+                .unwrap();
+            rt.block_on(async move {
+                while let Some(msg) = from_handle.recv().await {
+                    // create a new task manager for the new node instance
+                    let runtime = Runtime::test();
+                    match msg {
+                        Message::AddValidatorV2(add_validator_v2) => {
+                            let AddValidatorV2 {
+                                http_url,
+                                private_key,
+                                address,
+                                ingress,
+                                egress,
+                                fee_recipient,
+                                response,
+                            } = add_validator_v2;
+                            let provider = ProviderBuilder::new()
+                                .wallet(wallet.clone())
+                                .connect_http(http_url);
+                            let validator_config =
+                                IValidatorConfigV2::new(VALIDATOR_CONFIG_V2_ADDRESS, provider);
+                            let receipt = validator_config
+                                .addValidator(
+                                    address,
+                                    private_key
+                                        .public_key()
+                                        .encode()
+                                        .as_ref()
+                                        .try_into()
+                                        .unwrap(),
+                                    ingress.to_string(),
+                                    egress.to_string(),
+                                    fee_recipient,
+                                    sign_add_validator_args(
+                                        EthChainSpec::chain(&chain_spec).id(),
+                                        &private_key,
+                                        address,
+                                        ingress,
+                                        egress,
+                                        fee_recipient,
+                                    )
+                                    .encode()
+                                    .to_vec()
+                                    .into(),
+                                )
+                                .send()
+                                .await
+                                .unwrap()
+                                .get_receipt()
+                                .await
+                                .unwrap();
+                            let _ = response.send(receipt);
+                        }
+                        Message::DeactivateValidatorV2(deacivate_validator_v2) => {
+                            let DeactivateValidatorV2 {
+                                http_url,
+                                address,
+                                response,
+                            } = deacivate_validator_v2;
+                            let provider = ProviderBuilder::new()
+                                .wallet(wallet.clone())
+                                .connect_http(http_url);
+                            let validator_config_v2 =
+                                IValidatorConfigV2::new(VALIDATOR_CONFIG_V2_ADDRESS, provider);
+                            let id = validator_config_v2
+                                .validatorByAddress(address)
+                                .call()
+                                .await
+                                .unwrap()
+                                .index;
+                            let receipt = validator_config_v2
+                                .deactivateValidator(id)
+                                .send()
+                                .await
+                                .unwrap()
+                                .get_receipt()
+                                .await
+                                .unwrap();
+                            let _ = response.send(receipt);
+                        }
+                        Message::GetV2Validators(get_v2_validators) => {
+                            let GetV2Validators { http_url, response } = get_v2_validators;
+                            let provider = ProviderBuilder::new()
+                                .wallet(wallet.clone())
+                                .connect_http(http_url);
+                            let validator_config =
+                                IValidatorConfigV2::new(VALIDATOR_CONFIG_V2_ADDRESS, provider);
+                            let validators =
+                                validator_config.getActiveValidators().call().await.unwrap();
+                            let _ = response.send(validators);
+                        }
+                        Message::RotateValidator(rotate_validator) => {
+                            let RotateValidator {
+                                http_url,
+                                private_key,
+                                address,
+                                ingress,
+                                egress,
+                                response,
+                            } = rotate_validator;
+                            let provider = ProviderBuilder::new()
+                                .wallet(wallet.clone())
+                                .connect_http(http_url);
+                            let validator_config =
+                                IValidatorConfigV2::new(VALIDATOR_CONFIG_V2_ADDRESS, provider);
+                            let id = validator_config
+                                .validatorByAddress(address)
+                                .call()
+                                .await
+                                .unwrap()
+                                .index;
+                            let receipt = validator_config
+                                .rotateValidator(
+                                    id,
+                                    private_key
+                                        .public_key()
+                                        .encode()
+                                        .as_ref()
+                                        .try_into()
+                                        .unwrap(),
+                                    ingress.to_string(),
+                                    egress.to_string(),
+                                    sign_rotate_validator_args(
+                                        EthChainSpec::chain(&chain_spec).id(),
+                                        &private_key,
+                                        address,
+                                        ingress,
+                                        egress,
+                                    )
+                                    .encode()
+                                    .to_vec()
+                                    .into(),
+                                )
+                                .send()
+                                .await
+                                .unwrap()
+                                .get_receipt()
+                                .await
+                                .unwrap();
+                            let _ = response.send(receipt);
+                        }
+                        Message::SetFeeRecipientV2(set_fee_recipient_v2) => {
+                            let SetFeeRecipientV2 {
+                                http_url,
+                                index,
+                                fee_recipient,
+                                response,
+                            } = set_fee_recipient_v2;
+                            let provider = ProviderBuilder::new()
+                                .wallet(wallet.clone())
+                                .connect_http(http_url);
+                            let validator_config_v2 =
+                                IValidatorConfigV2::new(VALIDATOR_CONFIG_V2_ADDRESS, provider);
+                            let receipt = validator_config_v2
+                                .setFeeRecipient(index, fee_recipient)
+                                .send()
+                                .await
+                                .unwrap()
+                                .get_receipt()
+                                .await
+                                .unwrap();
+                            let _ = response.send(receipt);
+                        }
+                        Message::SetNextFullDkgCeremonyV2(set_next_full_dkg_ceremony_v2) => {
+                            let SetNextFullDkgCeremonyV2 {
+                                http_url,
+                                epoch,
+                                response,
+                            } = set_next_full_dkg_ceremony_v2;
+                            let provider = ProviderBuilder::new()
+                                .wallet(wallet.clone())
+                                .connect_http(http_url);
+                            let validator_config =
+                                IValidatorConfigV2::new(VALIDATOR_CONFIG_V2_ADDRESS, provider);
+                            let receipt = validator_config
+                                .setNetworkIdentityRotationEpoch(epoch)
+                                .send()
+                                .await
+                                .unwrap()
+                                .get_receipt()
+                                .await
+                                .unwrap();
+                            let _ = response.send(receipt);
+                        }
+                        Message::SpawnNode {
+                            name,
+                            config,
+                            database,
+                            rocksdb,
+                            response,
+                        } => {
+                            let node = launch_execution_node(
+                                runtime,
+                                chain_spec.clone(),
+                                datadir.join(name),
+                                *config,
+                                database,
+                                rocksdb,
+                            )
+                            .await
+                            .expect("must be able to launch execution nodes");
+                            response.send(node).expect(
+                                "receiver must hold the return channel until the node is returned",
+                            );
+                        }
+                        Message::RunAsync(fut) => {
+                            fut.await;
+                        }
+                        Message::Stop => {
+                            break;
+                        }
+                    }
+                }
+            })
+        });
+
+        Self {
+            rt,
+            _tempdir: tempdir,
+            to_runtime,
+        }
+    }
+
+    /// Returns a handle to this runtime.
+    ///
+    /// Can be used to spawn nodes.
+    pub fn handle(&self) -> ExecutionRuntimeHandle {
+        ExecutionRuntimeHandle {
+            to_runtime: self.to_runtime.clone(),
+            nodes_dir: self._tempdir.path().to_path_buf(),
+        }
+    }
+
+    pub async fn add_validator_v2<C: Clock>(
+        &self,
+        http_url: Url,
+        validator: &TestingNode<C>,
+    ) -> eyre::Result<TransactionReceipt> {
+        let (tx, rx) = oneshot::channel();
+        self.to_runtime
+            .send(
+                AddValidatorV2 {
+                    http_url,
+                    private_key: validator.private_key().clone(),
+                    address: validator.chain_address,
+                    ingress: validator.ingress(),
+                    egress: validator.egress(),
+                    fee_recipient: validator.fee_recipient(),
+                    response: tx,
+                }
+                .into(),
+            )
+            .map_err(|_| eyre::eyre!("the execution runtime went away"))?;
+        rx.await
+            .wrap_err("the execution runtime dropped the response channel before sending a receipt")
+    }
+
+    pub async fn deactivate_validator_v2<C: Clock>(
+        &self,
+        http_url: Url,
+        validator: &TestingNode<C>,
+    ) -> eyre::Result<TransactionReceipt> {
+        let (tx, rx) = oneshot::channel();
+        self.to_runtime
+            .send(
+                DeactivateValidatorV2 {
+                    http_url,
+                    address: validator.chain_address,
+                    response: tx,
+                }
+                .into(),
+            )
+            .map_err(|_| eyre::eyre!("the execution runtime went away"))?;
+        rx.await
+            .wrap_err("the execution runtime dropped the response channel before sending a receipt")
+    }
+
+    pub async fn set_fee_recipient_v2(
+        &self,
+        http_url: Url,
+        index: u64,
+        fee_recipient: Address,
+    ) -> eyre::Result<TransactionReceipt> {
+        let (tx, rx) = oneshot::channel();
+        self.to_runtime
+            .send(
+                SetFeeRecipientV2 {
+                    http_url,
+                    index,
+                    fee_recipient,
+                    response: tx,
+                }
+                .into(),
+            )
+            .map_err(|_| eyre::eyre!("the execution runtime went away"))?;
+        rx.await
+            .wrap_err("the execution runtime dropped the response channel before sending a receipt")
+    }
+
+    pub async fn get_v2_validators(
+        &self,
+        http_url: Url,
+    ) -> eyre::Result<Vec<IValidatorConfigV2::Validator>> {
+        let (tx, rx) = oneshot::channel();
+        self.to_runtime
+            .send(
+                GetV2Validators {
+                    http_url,
+                    response: tx,
+                }
+                .into(),
+            )
+            .map_err(|_| eyre::eyre!("the execution runtime went away"))?;
+        rx.await
+            .wrap_err("the execution runtime dropped the response channel before sending a receipt")
+    }
+
+    pub async fn rotate_validator<C: Clock>(
+        &self,
+        http_url: Url,
+        validator: &TestingNode<C>,
+    ) -> eyre::Result<TransactionReceipt> {
+        let (response, rx) = oneshot::channel();
+        self.to_runtime
+            .send(
+                RotateValidator {
+                    http_url,
+                    private_key: validator.private_key().clone(),
+                    address: validator.chain_address,
+                    ingress: validator.ingress(),
+                    egress: validator.egress(),
+                    response,
+                }
+                .into(),
+            )
+            .map_err(|_| eyre::eyre!("the execution runtime went away"))?;
+        rx.await
+            .wrap_err("the execution runtime dropped the response channel before sending a receipt")
+    }
+
+    pub async fn set_next_full_dkg_ceremony_v2(
+        &self,
+        http_url: Url,
+        epoch: u64,
+    ) -> eyre::Result<TransactionReceipt> {
+        let (tx, rx) = oneshot::channel();
+        self.to_runtime
+            .send(
+                SetNextFullDkgCeremonyV2 {
+                    http_url,
+                    epoch,
+                    response: tx,
+                }
+                .into(),
+            )
+            .map_err(|_| eyre::eyre!("the execution runtime went away"))?;
+        rx.await
+            .wrap_err("the execution runtime dropped the response channel before sending a receipt")
+    }
+
+    /// Run an async task on the execution runtime's tokio runtime.
+    ///
+    /// This is useful for running code that requires a tokio runtime (like jsonrpsee clients)
+    /// from within the deterministic executor context.
+    pub async fn run_async<Fut, T>(&self, fut: Fut) -> eyre::Result<T>
+    where
+        Fut: std::future::Future<Output = T> + Send + 'static,
+        T: Send + 'static,
+    {
+        let (tx, rx) = oneshot::channel();
+        self.to_runtime
+            .send(Message::RunAsync(Box::pin(async move {
+                let result = fut.await;
+                let _ = tx.send(result);
+            })))
+            .map_err(|_| eyre::eyre!("the execution runtime went away"))?;
+        rx.await
+            .wrap_err("the execution runtime dropped the response channel")
+    }
+
+    /// Instructs the runtime to stop and exit.
+    pub fn stop(self) -> eyre::Result<()> {
+        self.to_runtime
+            .send(Message::Stop)
+            .map_err(|_| eyre::eyre!("the execution runtime went away"))?;
+        match self.rt.join() {
+            Ok(()) => Ok(()),
+            Err(e) => std::panic::resume_unwind(e),
+        }
+    }
+}
+
+/// A handle to the execution runtime.
+///
+/// Can be used to spawn nodes.
+#[derive(Clone)]
+pub struct ExecutionRuntimeHandle {
+    to_runtime: tokio::sync::mpsc::UnboundedSender<Message>,
+    nodes_dir: PathBuf,
+}
+
+impl ExecutionRuntimeHandle {
+    /// Returns the base directory where execution node data is stored.
+    pub fn nodes_dir(&self) -> &Path {
+        &self.nodes_dir
+    }
+
+    /// Requests a new execution node and blocks until its returned.
+    pub async fn spawn_node(
+        &self,
+        name: &str,
+        config: ExecutionNodeConfig,
+        database: DatabaseEnv,
+        rocksdb: Option<RocksDBProvider>,
+    ) -> eyre::Result<ExecutionNode> {
+        let (tx, rx) = oneshot::channel();
+        self.to_runtime
+            .send(Message::SpawnNode {
+                name: name.to_string(),
+                config: Box::new(config),
+                database,
+                rocksdb,
+                response: tx,
+            })
+            .map_err(|_| eyre::eyre!("the execution runtime went away"))?;
+        rx.await.wrap_err(
+            "the execution runtime dropped the response channel before sending an execution node",
+        )
+    }
+}
+
+/// An execution node spawned by the execution runtime.
+///
+/// This is essentially the same as [`reth_node_builder::NodeHandle`], but
+/// avoids the type parameters.
+pub struct ExecutionNode {
+    /// All handles to interact with the launched node instances and services.
+    pub node: Box<TempoFullNode>,
+    /// The [`Runtime`] that drives the node's services.
+    pub runtime: Runtime,
+    /// The exist future that resolves when the node's engine future resolves.
+    pub exit_fut: NodeExitFuture,
+    /// The consensus-facing end of the `tempo/1` transport, if announced.
+    ///
+    /// The consensus layer takes this when it starts. It carries receivers, so
+    /// only one consensus instance can own it.
+    pub gossip: Option<tempo_node::gossip::TransportHandle>,
+}
+
+impl ExecutionNode {
+    /// Connect peers bidirectionally.
+    pub async fn connect_peer(&self, other: &Self) {
+        let self_record = self.node.network.local_node_record();
+        let other_record = other.node.network.local_node_record();
+
+        // Skip if already connected
+        if let Ok(Some(_)) = self.node.network.get_peer_by_id(other_record.id).await {
+            return;
+        }
+
+        // Remove any stale peer entries on the other side if present.
+        other
+            .node
+            .network
+            .remove_peer(self_record.id, PeerKind::Basic);
+
+        let mut events = self.node.network.event_listener();
+        self.node.network.connect_peer_kind(
+            other_record.id,
+            PeerKind::Basic,
+            other_record.tcp_addr(),
+            None,
+        );
+
+        // Wait for the active session
+        'wait_for_session: loop {
+            match events.next().await {
+                Some(NetworkEvent::ActivePeerSession { info, .. })
+                    if info.peer_id == other_record.id =>
+                {
+                    break 'wait_for_session;
+                }
+                Some(_) => continue,
+                None => panic!("Network event stream ended unexpectedly"),
+            }
+        }
+
+        tracing::debug!("Connected: {:?} -> {:?}", self_record.id, other_record.id);
+    }
+
+    /// Shuts down the node and awaits until the node is terminated.
+    pub async fn shutdown(self) {
+        let _ = self.node.rpc_server_handle().clone().stop();
+        self.runtime
+            .graceful_shutdown_with_timeout(Duration::from_secs(10));
+        let _ = self.exit_fut.await;
+    }
+}
+
+/// Returns the chainspec used for e2e tests.
+///
+/// TODO(janis): allow configuring this.
+pub fn chainspec() -> TempoChainSpec {
+    TempoChainSpec::from_genesis(genesis())
+}
+
+/// Generate execution node name from public key.
+pub fn execution_node_name(public_key: &PublicKey) -> String {
+    format!("{}-{}", crate::EXECUTION_NODE_PREFIX, public_key)
+}
+
+// TODO(janis): would be nicer if we could identify the node somehow?
+impl std::fmt::Debug for ExecutionNode {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        f.debug_struct("ExecutionNode")
+            .field("node", &"<TempoFullNode>")
+            .field("exit_fut", &"<NodeExitFuture>")
+            .finish()
+    }
+}
+
+pub fn genesis() -> Genesis {
+    serde_json::from_str(include_str!("../../node/tests/assets/test-genesis.json")).unwrap()
+}
+
+/// Returns MDBX DB args sized for tests (64 MB max with 4 MB growth step).
+///
+/// The default 8 TB geometry with 4 GB growth step both exhausts process
+/// virtual-address space when many databases are open concurrently across
+/// parallel test threads, and pre-allocates multi-GB files on disk that
+/// can fill the CI runner's disk.
+pub fn test_db_args() -> reth_db::mdbx::DatabaseArguments {
+    reth_db::mdbx::DatabaseArguments::test()
+}
+
+/// Launches a tempo execution node.
+///
+/// Difference compared to starting the node through the binary:
+///
+/// 1. faucet is always disabled
+/// 2. components are not provided (looking at the node command, the components
+///    are not passed to it).
+/// 3. consensus config is not necessary
+pub async fn launch_execution_node<P: AsRef<Path>>(
+    runtime: Runtime,
+    chain_spec: TempoChainSpec,
+    datadir: P,
+    config: ExecutionNodeConfig,
+    database: DatabaseEnv,
+    rocksdb: Option<RocksDBProvider>,
+) -> eyre::Result<ExecutionNode> {
+    println!("launching node at {}", datadir.as_ref().display());
+    let ExecutionNodeConfig {
+        secret_key,
+        validator_key,
+        feed_state,
+        share_sparse_trie_with_payload_builder,
+        gossip,
+    } = config;
+    let node_config = NodeConfig::new(Arc::new(chain_spec))
+        .with_rpc(
+            RpcServerArgs::default()
+                .with_unused_ports()
+                .with_http()
+                .with_http_api(RpcModuleSelection::All)
+                .with_ws()
+                .with_ws_api(RpcModuleSelection::All),
+        )
+        .with_datadir_args(DatadirArgs {
+            datadir: datadir.as_ref().to_path_buf().into(),
+            ..DatadirArgs::default()
+        })
+        .with_payload_builder(PayloadBuilderArgs {
+            interval: Duration::from_millis(100),
+            ..Default::default()
+        })
+        .apply(|mut c| {
+            c.network.discovery.disable_discovery = true;
+            c.network = c.network.with_unused_ports();
+            c.network.p2p_secret_key_hex = Some(secret_key);
+            // Match Tempo's engine default for nodes launched by tests.
+            c.engine.suppress_persistence_during_build = true;
+            c.engine.share_sparse_trie_with_payload_builder =
+                share_sparse_trie_with_payload_builder;
+            c
+        });
+
+    // Register before launch: each RLPx session negotiates its subprotocols
+    // during the handshake, so sessions opened later cannot pick `tempo/1` up.
+    let (gossip_protocol, gossip_transport) = match gossip {
+        Some(gossip) => {
+            let (protocol, transport) = tempo_node::gossip::init(gossip, &runtime);
+            (Some(protocol), Some(transport))
+        }
+        None => (None, None),
+    };
+
+    let tempo_node = TempoNode::default().with_validator_key(validator_key);
+    let tempo_node = match gossip_protocol {
+        Some(protocol) => tempo_node.with_finalization_cert_gossip(protocol),
+        None => tempo_node,
+    };
+
+    let node_handle = if let Some(rocksdb) = rocksdb {
+        NodeBuilder::new(node_config)
+            .with_database(database)
+            .with_rocksdb_provider(rocksdb)
+    } else {
+        NodeBuilder::new(node_config).with_database(database)
+    }
+    .with_launch_context(runtime.clone())
+    .node(tempo_node)
+    .extend_rpc_modules(move |ctx| {
+        if let Some(feed_state) = feed_state {
+            ctx.modules
+                .merge_configured(TempoConsensusRpc::new(feed_state).into_rpc())?;
+        }
+        Ok(())
+    })
+    .launch()
+    .await
+    .wrap_err_with(|| {
+        format!(
+            "failed launching node; databasedir: `{}`",
+            datadir.as_ref().display()
+        )
+    })?;
+
+    Ok(ExecutionNode {
+        node: Box::new(node_handle.node),
+        runtime,
+        exit_fut: node_handle.node_exit_future,
+        gossip: gossip_transport,
+    })
+}
+
+enum Message {
+    AddValidatorV2(AddValidatorV2),
+    DeactivateValidatorV2(DeactivateValidatorV2),
+    GetV2Validators(GetV2Validators),
+    RotateValidator(RotateValidator),
+    SetFeeRecipientV2(SetFeeRecipientV2),
+    SetNextFullDkgCeremonyV2(SetNextFullDkgCeremonyV2),
+    SpawnNode {
+        name: String,
+        config: Box<ExecutionNodeConfig>,
+        database: DatabaseEnv,
+        rocksdb: Option<RocksDBProvider>,
+        response: tokio::sync::oneshot::Sender<ExecutionNode>,
+    },
+    RunAsync(BoxFuture<'static, ()>),
+    Stop,
+}
+
+impl From<AddValidatorV2> for Message {
+    fn from(value: AddValidatorV2) -> Self {
+        Self::AddValidatorV2(value)
+    }
+}
+
+impl From<DeactivateValidatorV2> for Message {
+    fn from(value: DeactivateValidatorV2) -> Self {
+        Self::DeactivateValidatorV2(value)
+    }
+}
+
+impl From<GetV2Validators> for Message {
+    fn from(value: GetV2Validators) -> Self {
+        Self::GetV2Validators(value)
+    }
+}
+
+impl From<RotateValidator> for Message {
+    fn from(value: RotateValidator) -> Self {
+        Self::RotateValidator(value)
+    }
+}
+
+impl From<SetFeeRecipientV2> for Message {
+    fn from(value: SetFeeRecipientV2) -> Self {
+        Self::SetFeeRecipientV2(value)
+    }
+}
+
+impl From<SetNextFullDkgCeremonyV2> for Message {
+    fn from(value: SetNextFullDkgCeremonyV2) -> Self {
+        Self::SetNextFullDkgCeremonyV2(value)
+    }
+}
+
+#[derive(Debug)]
+struct AddValidatorV2 {
+    /// URL of the node to send this to.
+    http_url: Url,
+    private_key: PrivateKey,
+    address: Address,
+    ingress: SocketAddr,
+    egress: IpAddr,
+    fee_recipient: Address,
+    response: oneshot::Sender<TransactionReceipt>,
+}
+
+#[derive(Debug)]
+struct DeactivateValidatorV2 {
+    /// URL of the node to send this to.
+    http_url: Url,
+    address: Address,
+    response: oneshot::Sender<TransactionReceipt>,
+}
+
+struct GetV2Validators {
+    http_url: Url,
+    response: oneshot::Sender<Vec<IValidatorConfigV2::Validator>>,
+}
+
+#[derive(Debug)]
+struct RotateValidator {
+    /// URL of the node to send this to.
+    http_url: Url,
+    private_key: PrivateKey,
+    address: Address,
+    ingress: SocketAddr,
+    egress: IpAddr,
+    response: oneshot::Sender<TransactionReceipt>,
+}
+
+#[derive(Debug)]
+struct SetFeeRecipientV2 {
+    /// URL of the node to send this to.
+    http_url: Url,
+    index: u64,
+    fee_recipient: Address,
+    response: oneshot::Sender<TransactionReceipt>,
+}
+
+#[derive(Debug)]
+struct SetNextFullDkgCeremonyV2 {
+    /// URL of the node to send this to.
+    http_url: Url,
+    epoch: u64,
+    response: oneshot::Sender<TransactionReceipt>,
+}
+
+pub fn admin() -> Address {
+    address(ADMIN_INDEX)
+}
+
+pub fn validator(idx: u32) -> Address {
+    address(VALIDATOR_START_INDEX + idx)
+}
+
+pub fn address(index: u32) -> Address {
+    secret_key_to_address(MnemonicBuilder::from_phrase_nth(TEST_MNEMONIC, index).credential())
+}
+
+fn setup_tempo_evm(chain_id: u64) -> TempoEvm<CacheDB<EmptyDB>> {
+    let db = CacheDB::default();
+    // revm sets timestamp to 1 by default, override it to 0 for genesis initializations
+    let mut env = EvmEnv::default().with_timestamp(U256::ZERO);
+    env.cfg_env.chain_id = chain_id;
+
+    let factory = TempoEvmFactory::default();
+    factory.create_evm(db, env)
+}
+
+fn sign_add_validator_args(
+    chain_id: u64,
+    key: &PrivateKey,
+    address: Address,
+    ingress: SocketAddr,
+    egress: IpAddr,
+    fee_recipient: Address,
+) -> Signature {
+    let mut hasher = Keccak256::new();
+    hasher.update(chain_id.to_be_bytes());
+    hasher.update(VALIDATOR_CONFIG_V2_ADDRESS.as_slice());
+    hasher.update(address.as_slice());
+    hasher.update([ingress.to_string().len() as u8]);
+    hasher.update(ingress.to_string().as_bytes());
+    hasher.update([egress.to_string().len() as u8]);
+    hasher.update(egress.to_string().as_bytes());
+    hasher.update(fee_recipient.as_slice());
+    let msg = hasher.finalize();
+    key.sign(VALIDATOR_NS_ADD, msg.as_slice())
+}
+
+fn sign_rotate_validator_args(
+    chain_id: u64,
+    key: &PrivateKey,
+    address: Address,
+    ingress: SocketAddr,
+    egress: IpAddr,
+) -> Signature {
+    let mut hasher = Keccak256::new();
+    hasher.update(chain_id.to_be_bytes());
+    hasher.update(VALIDATOR_CONFIG_V2_ADDRESS.as_slice());
+    hasher.update(address.as_slice());
+    hasher.update([ingress.to_string().len() as u8]);
+    hasher.update(ingress.to_string().as_bytes());
+    hasher.update([egress.to_string().len() as u8]);
+    hasher.update(egress.to_string().as_bytes());
+    let msg = hasher.finalize();
+    key.sign(VALIDATOR_NS_ROTATE, msg.as_slice())
+}

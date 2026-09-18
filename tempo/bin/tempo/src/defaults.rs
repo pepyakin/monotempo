@@ -1,0 +1,288 @@
+use base64::{Engine, prelude::BASE64_STANDARD};
+use eyre::Context as _;
+use jiff::SignedDuration;
+use reth_cli_commands::download::DownloadDefaults;
+use reth_ethereum::node::core::args::{
+    DefaultDiscoveryArgs, DefaultEngineValues, DefaultNetworkArgs, DefaultPayloadBuilderValues,
+    DefaultPruningValues, DefaultTraceValues, DefaultTxPoolValues,
+};
+use reth_prune_types::{PruneMode, PruneModes};
+use std::{borrow::Cow, str::FromStr, time::Duration};
+use tempo_chainspec::spec::TEMPO_T7_BASE_FEE_FLOOR;
+use url::Url;
+
+pub(crate) const DEFAULT_DOWNLOAD_URL: &str = "https://snapshots.tempoxyz.dev/4217";
+const SNAPSHOT_API_URL: &str = "https://snapshots.tempoxyz.dev/api/snapshots";
+const MAINNET_TESTNET_EPOCH_LENGTH_BLOCKS: u64 = 21_600;
+const MINIMAL_PEER_SYNC_FINALIZED_BLOCKS: u64 = 3 * MAINNET_TESTNET_EPOCH_LENGTH_BLOCKS;
+const MINIMAL_PEER_SYNC_RETENTION_BLOCKS: u64 = MINIMAL_PEER_SYNC_FINALIZED_BLOCKS + 64;
+
+/// CLI arguments for telemetry configuration.
+#[derive(Debug, Clone, clap::Args)]
+pub(crate) struct TelemetryArgs {
+    /// Enables telemetry export (OTLP logs & Prometheus metrics push). Coupled
+    /// to VictoriaMetrics which supports both with different api paths.
+    ///
+    /// The URL must include credentials: `https://user:pass@metrics.example.com`
+    #[arg(
+        long,
+        value_name = "URL",
+        conflicts_with = "logs_otlp",
+        env = "TEMPO_TELEMETRY_URL"
+    )]
+    pub(crate) telemetry_url: Option<UrlWithAuth>,
+
+    /// The interval at which to push Prometheus metrics.
+    #[arg(long, default_value = "10s")]
+    pub(crate) telemetry_metrics_interval: SignedDuration,
+}
+
+impl TelemetryArgs {
+    /// Converts the telemetry args into a [`TelemetryConfig`].
+    ///
+    /// Returns `None` if telemetry is not enabled (no URL provided).
+    pub(crate) fn try_to_config(&self) -> eyre::Result<Option<TelemetryConfig>> {
+        let Some(telemetry_url) = self.telemetry_url.clone().map(Url::from) else {
+            return Ok(None);
+        };
+
+        // Extract credentials - both username and password are required
+        let username = telemetry_url.username();
+        let password = telemetry_url.password().expect("ensured when parsing args");
+
+        // Build auth header for metrics push and OTLP logs
+        let credentials = format!("{username}:{password}");
+        let encoded = BASE64_STANDARD.encode(credentials.as_bytes());
+        let auth_header = format!("Basic {encoded}");
+
+        // Set OTEL_EXPORTER_OTLP_HEADERS for OTLP logs authentication
+        if std::env::var_os("OTEL_EXPORTER_OTLP_HEADERS").is_none() {
+            let header_value = format!("Authorization={auth_header}");
+            // SAFETY: Must be called at startup before any other threads are spawned
+            unsafe {
+                std::env::set_var("OTEL_EXPORTER_OTLP_HEADERS", header_value);
+            }
+        }
+
+        // Build URL without credentials
+        let mut base_url_no_creds = telemetry_url.clone();
+        base_url_no_creds.set_username("").ok();
+        base_url_no_creds.set_password(None).ok();
+
+        // Build logs OTLP URL (Victoria Metrics OTLP path)
+        let logs_otlp_url = base_url_no_creds
+            .join("opentelemetry/v1/logs")
+            .wrap_err("failed to construct logs OTLP URL")?;
+
+        // Build metrics prometheus URL (Victoria Metrics Prometheus import path)
+        let metrics_prometheus_url = base_url_no_creds
+            .join("api/v1/import/prometheus")
+            .wrap_err("failed to construct metrics URL")?;
+
+        Ok(Some(TelemetryConfig {
+            logs_otlp_url,
+            metrics_prometheus_url,
+            metrics_prometheus_interval: self.telemetry_metrics_interval,
+            metrics_auth_header: Some(auth_header),
+        }))
+    }
+}
+
+/// A `Url` with username and password set.
+///
+/// `Debug` redacts credentials so they don't leak in clap error output or logs.
+#[derive(Clone)]
+pub(crate) struct UrlWithAuth(Url);
+
+impl UrlWithAuth {
+    /// Returns a copy of the URL with the password replaced by `***`.
+    fn redacted(&self) -> Url {
+        let mut url = self.0.clone();
+        url.set_password(Some("***")).ok();
+        url
+    }
+}
+
+impl std::fmt::Debug for UrlWithAuth {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        write!(f, "{}", self.redacted())
+    }
+}
+
+impl std::fmt::Display for UrlWithAuth {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        write!(f, "{}", self.redacted())
+    }
+}
+
+impl FromStr for UrlWithAuth {
+    type Err = Box<dyn std::error::Error + Send + Sync + 'static>;
+
+    fn from_str(s: &str) -> Result<Self, Self::Err> {
+        let url = s.parse::<Url>()?;
+        if url.username().is_empty() || url.password().is_none() {
+            return Err("URL must include username and password".into());
+        }
+        Ok(Self(url))
+    }
+}
+impl From<UrlWithAuth> for Url {
+    fn from(value: UrlWithAuth) -> Self {
+        value.0
+    }
+}
+
+/// Telemetry configuration derived from a unified telemetry URL.
+#[derive(Debug, Clone)]
+pub(crate) struct TelemetryConfig {
+    /// OTLP logs endpoint (without credentials).
+    pub(crate) logs_otlp_url: Url,
+    /// Prometheus metrics push endpoint (without credentials).
+    /// Used for both consensus and execution metrics.
+    pub(crate) metrics_prometheus_url: Url,
+    /// The interval at which to push Prometheus metrics.
+    pub(crate) metrics_prometheus_interval: SignedDuration,
+    /// Authorization header for metrics push
+    pub(crate) metrics_auth_header: Option<String>,
+}
+
+fn init_download_urls() {
+    let download_defaults = DownloadDefaults {
+        available_snapshots: vec![
+            Cow::Owned(format!("{DEFAULT_DOWNLOAD_URL} (mainnet)")),
+            Cow::Borrowed("https://snapshots.tempoxyz.dev/42431 (moderato)"),
+            Cow::Borrowed("https://snapshots.tempoxyz.dev/42429 (andantino)"),
+        ],
+        default_base_url: Cow::Borrowed(DEFAULT_DOWNLOAD_URL),
+        default_chain_aware_base_url: None,
+        snapshot_api_url: Cow::Borrowed(SNAPSHOT_API_URL),
+        long_help: None,
+    };
+
+    download_defaults
+        .try_init()
+        .expect("failed to initialize download URLs");
+}
+
+fn init_payload_builder_defaults() {
+    DefaultPayloadBuilderValues::default()
+        .with_interval(Duration::from_millis(100))
+        .with_max_payload_tasks(1)
+        .with_deadline(4)
+        .try_init()
+        .expect("failed to initialize payload builder defaults");
+}
+
+fn init_txpool_defaults() {
+    DefaultTxPoolValues::default()
+        .with_pending_max_count(50000)
+        .with_basefee_max_count(50000)
+        .with_queued_max_count(50000)
+        .with_pending_max_size(100)
+        .with_basefee_max_size(100)
+        .with_queued_max_size(100)
+        .with_no_locals(true)
+        .with_max_queued_lifetime(Duration::from_secs(120))
+        .with_max_new_pending_txs_notifications(150000)
+        .with_max_account_slots(150000)
+        .with_pending_tx_listener_buffer_size(50000)
+        .with_new_tx_listener_buffer_size(50000)
+        .with_disable_transactions_backup(true)
+        .with_additional_validation_tasks(8)
+        .with_minimal_protocol_basefee(TEMPO_T7_BASE_FEE_FLOOR)
+        .with_minimum_priority_fee(Some(0))
+        .with_max_batch_size(50000)
+        .try_init()
+        .expect("failed to initialize txpool defaults");
+}
+
+fn init_engine_defaults() {
+    DefaultEngineValues::default()
+        // In Commonware consensus, it might happen that a head is notarized (causing it to become a canonical tip for reth),
+        // and immediately nullified (allowing to build a payload on top of its parent). In that case reth might be asked to
+        // build a payload on top an ancestor of canonical tip, which is not possible without this flag.
+        //
+        // Another case when this might happen is if we optimistically canonicalize a valid block that is later getting nullified (reorged).
+        // In that case, if we are asked to propose, we would have to build a payload on top of its parent, which is an ancestor of the canonical tip as well.
+        //
+        // This setting allows reth to process payload attributes even if `headBlockHash` is an ancestor of the canonical tip.
+        .with_always_process_payload_attributes_on_canonical_head(true)
+        // Defer persistence I/O during active payload builds.
+        .with_suppress_persistence_during_build(true)
+        .with_share_sparse_trie_with_payload_builder(true)
+        .with_share_execution_cache_with_payload_builder(true)
+        .try_init()
+        .expect("failed to initialize engine defaults");
+}
+
+fn init_pruning_defaults() {
+    let minimal_history_retention = Some(PruneMode::Distance(MINIMAL_PEER_SYNC_RETENTION_BLOCKS));
+    // This defines Tempo's minimum history retention window: nodes should retain
+    // enough block and state history for peers and unwinds up to three mainnet
+    // epochs behind the finalized tip, plus Reth's normal 64-block safety margin.
+    let minimal_prune_modes = PruneModes {
+        account_history: minimal_history_retention,
+        storage_history: minimal_history_retention,
+        bodies_history: minimal_history_retention,
+        ..DefaultPruningValues::default().minimal_prune_modes
+    };
+
+    DefaultPruningValues::default()
+        .with_minimal_prune_modes(minimal_prune_modes)
+        .try_init()
+        .expect("failed to initialize pruning defaults");
+}
+
+fn init_trace_defaults() {
+    DefaultTraceValues::default()
+        .with_service_name("tempo")
+        .with_service_version(env!("CARGO_PKG_VERSION"))
+        .with_logs_otlp_filter("debug")
+        .try_init()
+        .expect("failed to initialize trace defaults");
+}
+
+fn init_otlp_defaults() {
+    // Override the default OTLP max queue size (2048) to prevent trace/log dropping under load.
+    // See also reth-bench-compare which uses the same approach via env vars.
+    if std::env::var_os("OTEL_BSP_MAX_QUEUE_SIZE").is_none() {
+        // SAFETY: Must be called at startup before any other threads are spawned
+        unsafe {
+            std::env::set_var("OTEL_BSP_MAX_QUEUE_SIZE", "65536");
+        }
+    }
+    if std::env::var_os("OTEL_BLRP_MAX_QUEUE_SIZE").is_none() {
+        // SAFETY: Must be called at startup before any other threads are spawned
+        unsafe {
+            std::env::set_var("OTEL_BLRP_MAX_QUEUE_SIZE", "65536");
+        }
+    }
+}
+
+fn init_network_defaults() {
+    DefaultNetworkArgs::default()
+        .with_enforce_enr_fork_id(true)
+        .try_init()
+        .expect("failed to initialize network defaults");
+}
+
+fn init_discovery_defaults() {
+    DefaultDiscoveryArgs::default()
+        // Set `None` as default for discv5 ports to make discv5 share the regular discovery port with discv4.
+        .with_discv5_port(None)
+        .with_discv5_port_ipv6(None)
+        .try_init()
+        .expect("failed to initialize discovery defaults");
+}
+
+pub(crate) fn init_defaults() {
+    init_download_urls();
+    init_payload_builder_defaults();
+    init_txpool_defaults();
+    init_engine_defaults();
+    init_pruning_defaults();
+    init_trace_defaults();
+    init_otlp_defaults();
+    init_network_defaults();
+    init_discovery_defaults();
+}

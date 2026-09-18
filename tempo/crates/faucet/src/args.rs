@@ -1,0 +1,175 @@
+use alloy::{
+    network::EthereumWallet,
+    primitives::{Address, B256, U256},
+    providers::{DynProvider, Provider, ProviderBuilder},
+    signers::local::PrivateKeySigner,
+    transports::http::reqwest::Url,
+};
+use clap::Args;
+use tempo_alloy::{TempoNetwork, fillers::FeeTokenFiller, provider::ext::TempoProviderBuilderExt};
+use tempo_precompiles::DEFAULT_FEE_TOKEN;
+
+/// Default endpoint the faucet talks to when `--faucet.node-address` is absent.
+const DEFAULT_NODE_ADDRESS: &str = "http://localhost:8545";
+
+/// Faucet-specific CLI arguments
+#[derive(Debug, Clone, Args, PartialEq, Eq)]
+#[command(next_help_heading = "Faucet")]
+pub struct FaucetArgs {
+    /// Whether the faucet is enabled
+    #[arg(
+        id = "faucet.enabled",
+        long = "faucet.enabled",
+        default_value_t = false
+    )]
+    pub enabled: bool,
+
+    /// Faucet funding private key
+    #[arg(
+        long = "faucet.private-key",
+        requires = "faucet.enabled",
+        required_if_eq("faucet.enabled", "true")
+    )]
+    pub private_key: Option<B256>,
+
+    /// Amount for each faucet funding transaction
+    #[arg(
+        long = "faucet.amount",
+        requires = "faucet.enabled",
+        required_if_eq("faucet.enabled", "true")
+    )]
+    pub amount: Option<U256>,
+
+    /// Target token address for the faucet to be funding with
+    #[arg(
+        long = "faucet.address",
+        requires = "faucet.enabled",
+        required_if_eq("faucet.enabled", "true"),
+        num_args(0..)
+    )]
+    pub token_addresses: Option<Vec<Address>>,
+
+    #[arg(
+        long = "faucet.node-address",
+        default_value = DEFAULT_NODE_ADDRESS,
+        requires = "faucet.enabled"
+    )]
+    pub node_address: Url,
+}
+
+impl Default for FaucetArgs {
+    fn default() -> Self {
+        Self {
+            enabled: false,
+            private_key: None,
+            amount: None,
+            token_addresses: None,
+            node_address: Url::parse(DEFAULT_NODE_ADDRESS)
+                .expect("DEFAULT_NODE_ADDRESS is a valid URL"),
+        }
+    }
+}
+
+impl FaucetArgs {
+    pub fn wallet(&self) -> EthereumWallet {
+        let signer: PrivateKeySigner = PrivateKeySigner::from_bytes(
+            &self.private_key.expect("No faucet private key provided"),
+        )
+        .expect("Failed to decode private key");
+        EthereumWallet::new(signer)
+    }
+
+    pub fn addresses(&self) -> Vec<Address> {
+        self.token_addresses
+            .clone()
+            .expect("No TIP20 token addresses provided")
+    }
+
+    pub fn amount(&self) -> U256 {
+        self.amount.expect("No TIP20 token amount provided")
+    }
+
+    pub fn provider(&self) -> DynProvider<TempoNetwork> {
+        ProviderBuilder::new_with_network::<TempoNetwork>()
+            .with_expiring_nonces()
+            .filler(FeeTokenFiller::new(DEFAULT_FEE_TOKEN))
+            .wallet(self.wallet())
+            .connect_http(self.node_address.clone())
+            .erased()
+    }
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+    use clap::Parser;
+
+    /// A helper type to parse Args more easily
+    #[derive(Parser)]
+    struct CommandParser {
+        #[command(flatten)]
+        args: FaucetArgs,
+    }
+
+    #[test]
+    fn faucet_args_default_sanity_test() {
+        assert!(CommandParser::try_parse_from(["tempo"]).is_ok());
+    }
+
+    /// Arguments for an enabled faucet, with `node-address` supplied by the caller.
+    fn enabled_faucet_args(node_address: &str) -> [&str; 10] {
+        [
+            "tempo",
+            "--faucet.enabled",
+            "--faucet.private-key",
+            "0x0000000000000000000000000000000000000000000000000000000000000001",
+            "--faucet.amount",
+            "1",
+            "--faucet.address",
+            "0x0000000000000000000000000000000000000001",
+            "--faucet.node-address",
+            node_address,
+        ]
+    }
+
+    #[test]
+    fn rejects_node_address_that_is_not_a_url() {
+        // The field is a `Url`, so clap refuses anything that is not one
+        // instead of letting it reach `provider()`. Note that a scheme-less
+        // authority such as "localhost:8545" does parse — "localhost" is read
+        // as the scheme — so it is not covered here.
+        for address in ["not a url", "", "http://[::1"] {
+            let parsed = CommandParser::try_parse_from(enabled_faucet_args(address));
+            assert!(
+                parsed.is_err(),
+                "expected {address:?} to be rejected as a node address"
+            );
+        }
+    }
+
+    #[test]
+    fn accepts_valid_node_address() {
+        let parsed = CommandParser::try_parse_from(enabled_faucet_args("http://127.0.0.1:9545"))
+            .expect("valid node address should parse");
+        assert_eq!(parsed.args.node_address.as_str(), "http://127.0.0.1:9545/");
+    }
+
+    #[test]
+    fn default_node_address_is_a_valid_url() {
+        let parsed = CommandParser::try_parse_from([
+            "tempo",
+            "--faucet.enabled",
+            "--faucet.private-key",
+            "0x0000000000000000000000000000000000000000000000000000000000000001",
+            "--faucet.amount",
+            "1",
+            "--faucet.address",
+            "0x0000000000000000000000000000000000000001",
+        ])
+        .expect("default node address should parse");
+        assert_eq!(
+            parsed.args.node_address,
+            Url::parse(DEFAULT_NODE_ADDRESS).unwrap()
+        );
+    }
+}

@@ -1,0 +1,774 @@
+use crate::utils::{ForkSchedule, TestNodeBuilder, run_schedule_cases, setup_test_token};
+use alloy::{
+    primitives::{Address, B256, Bytes, U256},
+    providers::{Provider, ProviderBuilder, ext::TraceApi},
+    rpc::types::{
+        Filter, TransactionRequest,
+        trace::parity::{ChangedType, Delta},
+    },
+    signers::local::MnemonicBuilder,
+    sol_types::{SolCall, SolError, SolEvent},
+};
+use alloy_eips::BlockId;
+use alloy_rpc_types_eth::{
+    TransactionInput,
+    state::{AccountOverride, StateOverride},
+};
+use reth_evm::revm::interpreter::instructions::utility::IntoU256;
+use tempo_chainspec::{hardfork::TempoHardfork, spec::TEMPO_T1_BASE_FEE};
+use tempo_contracts::precompiles::{
+    IFeeManager,
+    ITIP20::{self, transferCall},
+    ITIPFeeAMM, IValidatorConfig, UnknownFunctionSelector,
+};
+use tempo_precompiles::{
+    PATH_USD_ADDRESS, TIP20_FACTORY_ADDRESS, error::TempoPrecompileError, storage::ContractStorage,
+    tip20::TIP20Token, validator_config::ValidatorConfig,
+};
+use test_case::test_case;
+
+/// Extracts ABI-encoded revert data from an RPC error response.
+fn extract_revert_data(
+    err: &alloy::transports::RpcError<alloy::transports::TransportErrorKind>,
+) -> Bytes {
+    serde_json::from_str(err.as_error_resp().unwrap().data.as_ref().unwrap().get()).unwrap()
+}
+
+/// Expected revert bytes for `Panic(UnderOverflow)`.
+fn under_overflow_revert() -> Bytes {
+    TempoPrecompileError::under_overflow()
+        .into_precompile_result(0, 0)
+        .unwrap()
+        .bytes
+}
+
+/// Builds a `StateOverride` targeting `address` with the given slot→value diffs.
+fn state_diff(address: Address, diffs: &[(B256, U256)]) -> StateOverride {
+    [(
+        address,
+        AccountOverride::default().with_state_diff(
+            diffs
+                .iter()
+                .map(|(slot, val)| (*slot, B256::from(*val)))
+                .collect::<Vec<_>>(),
+        ),
+    )]
+    .into_iter()
+    .collect()
+}
+
+#[test_case(ForkSchedule::Devnet ; "devnet")]
+#[test_case(ForkSchedule::Testnet ; "testnet")]
+#[test_case(ForkSchedule::Mainnet ; "mainnet")]
+#[tokio::test(flavor = "multi_thread")]
+async fn test_eth_call(schedule: ForkSchedule) -> eyre::Result<()> {
+    run_schedule_cases(schedule, |schedule| async move {
+        reth_tracing::init_test_tracing();
+
+        let setup = TestNodeBuilder::new()
+            .with_schedule(schedule)
+            .build_http_only()
+            .await?;
+        let http_url = setup.http_url;
+
+        let wallet = MnemonicBuilder::from_phrase(crate::utils::TEST_MNEMONIC).build()?;
+        let caller = wallet.address();
+        let provider = ProviderBuilder::new().wallet(wallet).connect_http(http_url);
+
+        // Setup test token
+        let token = setup_test_token(provider.clone(), caller).await?;
+
+        // First, mint some tokens to the caller for testing
+        let mint_amount = U256::from(rand_09::random::<u128>());
+        token
+            .mint(caller, mint_amount)
+            .gas_price(TEMPO_T1_BASE_FEE as u128)
+            .gas(1_000_000)
+            .send()
+            .await?
+            .get_receipt()
+            .await?;
+
+        let recipient = Address::random();
+        let calldata = token.transfer(recipient, mint_amount).calldata().clone();
+        let tx = TransactionRequest::default()
+            .to(*token.address())
+            .gas_price(0)
+            .input(TransactionInput::new(calldata));
+
+        let res = provider.call(tx).await?;
+        let success = transferCall::abi_decode_returns(&res)?;
+        assert!(success);
+
+        Ok(())
+    })
+    .await
+}
+
+#[test_case(ForkSchedule::Devnet ; "devnet")]
+#[test_case(ForkSchedule::Testnet ; "testnet")]
+#[test_case(ForkSchedule::Mainnet ; "mainnet")]
+#[tokio::test(flavor = "multi_thread")]
+async fn test_eth_trace_call(schedule: ForkSchedule) -> eyre::Result<()> {
+    run_schedule_cases(schedule, |schedule| async move {
+        reth_tracing::init_test_tracing();
+
+        let setup = TestNodeBuilder::new()
+            .with_schedule(schedule)
+            .build_http_only()
+            .await?;
+        let http_url = setup.http_url;
+
+        let wallet = MnemonicBuilder::from_phrase(crate::utils::TEST_MNEMONIC).build()?;
+        let caller = wallet.address();
+        let provider = ProviderBuilder::new().wallet(wallet).connect_http(http_url);
+
+        // Setup test token
+        let token = setup_test_token(provider.clone(), caller).await?;
+        let token_address = *token.address();
+
+        // First, mint some tokens to the caller for testing
+        let mint_amount = U256::from(rand_09::random::<u128>());
+        token
+            .mint(caller, mint_amount)
+            .gas_price(TEMPO_T1_BASE_FEE as u128)
+            .gas(1_000_000)
+            .send()
+            .await?
+            .get_receipt()
+            .await?;
+
+        let recipient = Address::random();
+        let calldata = token.transfer(recipient, mint_amount).calldata().clone();
+        let tx = TransactionRequest::default()
+            .from(caller)
+            .to(*token.address())
+            .input(TransactionInput::new(calldata));
+
+        let res = provider.call(tx.clone()).await?;
+        let success = transferCall::abi_decode_returns(&res)?;
+        assert!(success);
+
+        let trace_res = provider.trace_call(&tx).state_diff().await?;
+
+        let success = transferCall::abi_decode_returns(&trace_res.output)?;
+        assert!(success);
+
+        let state_diff = trace_res.state_diff.expect("Could not get state diff");
+        let caller_diff = state_diff.get(&caller).expect("Could not get caller diff");
+        assert!(caller_diff.nonce.is_changed());
+        assert!(caller_diff.balance.is_unchanged());
+        assert!(caller_diff.code.is_unchanged());
+        assert!(caller_diff.storage.is_empty());
+
+        let token_diff = state_diff
+            .get(token.address())
+            .expect("Could not get token diff");
+
+        assert!(token_diff.balance.is_unchanged());
+        assert!(token_diff.code.is_unchanged());
+        assert!(token_diff.nonce.is_unchanged());
+
+        let token_storage_diff = token_diff.storage.clone();
+        // Assert sender token balance has changed
+        let slot = TIP20Token::from_address(token_address)
+            .expect("valid TIP20 address")
+            .balances[caller]
+            .slot();
+        let sender_balance = token_storage_diff
+            .get(&B256::from(slot))
+            .expect("Could not get recipient balance delta");
+
+        assert!(sender_balance.is_changed());
+
+        let Delta::Changed(ChangedType { from, to }) = sender_balance else {
+            panic!("Unexpected delta");
+        };
+        assert_eq!(from.into_u256(), mint_amount);
+        assert_eq!(to.into_u256(), U256::ZERO);
+
+        // Assert recipient token balance is changed
+        let slot = TIP20Token::from_address(token_address)
+            .expect("valid TIP20 address")
+            .balances[recipient]
+            .slot();
+        let recipient_balance = token_storage_diff
+            .get(&B256::from(slot))
+            .expect("Could not get recipient balance delta");
+        assert!(recipient_balance.is_changed());
+
+        let Delta::Changed(ChangedType { from, to }) = recipient_balance else {
+            panic!("Unexpected delta");
+        };
+        assert_eq!(from.into_u256(), U256::ZERO);
+        assert_eq!(to.into_u256(), mint_amount);
+
+        Ok(())
+    })
+    .await
+}
+
+#[test_case(ForkSchedule::Devnet ; "devnet")]
+#[test_case(ForkSchedule::Testnet ; "testnet")]
+#[test_case(ForkSchedule::Mainnet ; "mainnet")]
+#[tokio::test(flavor = "multi_thread")]
+async fn test_eth_get_logs(schedule: ForkSchedule) -> eyre::Result<()> {
+    run_schedule_cases(schedule, |schedule| async move {
+        reth_tracing::init_test_tracing();
+
+        let setup = TestNodeBuilder::new()
+            .with_schedule(schedule)
+            .build_http_only()
+            .await?;
+        let http_url = setup.http_url;
+
+        let wallet = MnemonicBuilder::from_phrase(crate::utils::TEST_MNEMONIC).build()?;
+        let caller = wallet.address();
+        let provider = ProviderBuilder::new().wallet(wallet).connect_http(http_url);
+
+        // Setup test token
+        let token = setup_test_token(provider.clone(), caller).await?;
+
+        let mint_amount = U256::from(rand_09::random::<u128>());
+        let mint_receipt = token
+            .mint(caller, mint_amount)
+            .gas_price(TEMPO_T1_BASE_FEE as u128)
+            .gas(1_000_000)
+            .send()
+            .await?
+            .get_receipt()
+            .await?;
+
+        let recipient = Address::random();
+        token
+            .transfer(recipient, mint_amount)
+            .gas_price(TEMPO_T1_BASE_FEE as u128)
+            .gas(1_000_000)
+            .send()
+            .await?
+            .get_receipt()
+            .await?;
+
+        let filter = Filter::new()
+            .address(*token.address())
+            .from_block(mint_receipt.block_number.unwrap());
+        let logs = provider.get_logs(&filter).await?;
+        assert_eq!(logs.len(), 3);
+
+        // NOTE: this currently reflects the event emission from the reference contract. Double check
+        // this is the expected behavior
+        let transfer_event = ITIP20::Transfer::decode_log(&logs[0].inner)?;
+        assert_eq!(transfer_event.from, Address::ZERO);
+        assert_eq!(transfer_event.to, caller);
+        assert_eq!(transfer_event.amount, mint_amount);
+
+        let mint_event = ITIP20::Mint::decode_log(&logs[1].inner)?;
+        assert_eq!(mint_event.to, caller);
+        assert_eq!(mint_event.amount, mint_amount);
+
+        let transfer_event = ITIP20::Transfer::decode_log(&logs[2].inner)?;
+        assert_eq!(transfer_event.from, caller);
+        assert_eq!(transfer_event.to, recipient);
+        assert_eq!(transfer_event.amount, mint_amount);
+
+        Ok(())
+    })
+    .await
+}
+
+#[test_case(ForkSchedule::Devnet ; "devnet")]
+#[test_case(ForkSchedule::Testnet ; "testnet")]
+#[test_case(ForkSchedule::Mainnet ; "mainnet")]
+#[tokio::test(flavor = "multi_thread")]
+async fn test_eth_estimate_gas(schedule: ForkSchedule) -> eyre::Result<()> {
+    run_schedule_cases(schedule, |schedule| async move {
+        reth_tracing::init_test_tracing();
+
+        let setup = TestNodeBuilder::new()
+            .with_schedule(schedule)
+            .build_http_only()
+            .await?;
+        let http_url = setup.http_url;
+
+        let wallet = MnemonicBuilder::from_phrase(crate::utils::TEST_MNEMONIC).build()?;
+        let caller = wallet.address();
+        let provider = ProviderBuilder::new().wallet(wallet).connect_http(http_url);
+
+        let token = setup_test_token(provider.clone(), caller).await?;
+        let calldata = token.mint(caller, U256::from(1000)).calldata().clone();
+        let tx = TransactionRequest::default()
+            .to(*token.address())
+            .input(calldata.into());
+
+        let gas = provider.estimate_gas(tx.clone()).await?;
+        // gas estimation is calldata dependent, but should be consistent with same calldata
+        // TIP-1000 (T1): gas includes 250k new account cost when nonce=0
+        let expected_gas = if schedule.is_active(TempoHardfork::T11) {
+            547480
+        } else if schedule.is_active(TempoHardfork::T8) {
+            547407
+        } else if schedule.is_active(TempoHardfork::T7) {
+            555874
+        } else if schedule.is_active(TempoHardfork::T6) {
+            553657
+        } else if schedule.is_active(TempoHardfork::T3) {
+            551540
+        } else {
+            549423
+        };
+        assert_eq!(gas, expected_gas);
+
+        // ensure we can successfully send the tx with that gas
+        let receipt = provider
+            .send_transaction(tx.gas_limit(gas))
+            .await?
+            .get_receipt()
+            .await?;
+        assert!(receipt.gas_used <= gas);
+
+        Ok(())
+    })
+    .await
+}
+
+#[tokio::test(flavor = "multi_thread")]
+async fn test_eth_estimate_gas_different_fee_tokens() -> eyre::Result<()> {
+    reth_tracing::init_test_tracing();
+
+    let setup = TestNodeBuilder::new().build_http_only().await?;
+    let http_url = setup.http_url;
+
+    let wallet = MnemonicBuilder::from_phrase(crate::utils::TEST_MNEMONIC).build()?;
+    let user_address = wallet.address();
+    let provider = ProviderBuilder::new().wallet(wallet).connect_http(http_url);
+
+    // Get beneficiary (validator) from latest block
+    let block = provider
+        .get_block(BlockId::latest())
+        .await?
+        .expect("Could not get latest block");
+    let validator_address = block.header.beneficiary;
+    assert!(!validator_address.is_zero());
+
+    // Create different fee tokens for user and validator
+    let user_fee_token = setup_test_token(provider.clone(), user_address).await?;
+
+    let mint_amount = U256::from(u128::MAX);
+    user_fee_token
+        .mint(user_address, mint_amount)
+        .send()
+        .await?
+        .get_receipt()
+        .await?;
+
+    // Setup fee manager to configure different tokens
+    let fee_manager =
+        IFeeManager::new(tempo_precompiles::TIP_FEE_MANAGER_ADDRESS, provider.clone());
+
+    // Supply liquidity to enable fee token swapping
+    let validator_token_address = PATH_USD_ADDRESS;
+
+    let fee_amm = ITIPFeeAMM::new(tempo_precompiles::TIP_FEE_MANAGER_ADDRESS, provider.clone());
+
+    // Provide liquidity for the fee token pair
+    let liquidity_amount = U256::from(u32::MAX);
+    fee_amm
+        .mint(
+            *user_fee_token.address(),
+            validator_token_address,
+            liquidity_amount,
+            user_address,
+        )
+        .send()
+        .await?
+        .get_receipt()
+        .await?;
+
+    // Set different fee tokens for user and validator
+    // Note that the validator defaults to the pathUSD
+    fee_manager
+        .setUserToken(*user_fee_token.address())
+        .send()
+        .await?
+        .get_receipt()
+        .await?;
+
+    // Verify the tokens are set correctly
+    let user_token = fee_manager.userTokens(user_address).call().await?;
+    let validator_token = fee_manager
+        .validatorTokens(validator_address)
+        .call()
+        .await?;
+
+    assert_eq!(user_token, *user_fee_token.address());
+    assert_eq!(validator_token, validator_token_address);
+    assert_ne!(user_token, validator_token_address);
+
+    // Create a test transaction to estimate gas for
+    let recipient = Address::random();
+    let calldata = user_fee_token
+        .transfer(recipient, U256::ONE)
+        .calldata()
+        .clone();
+    let tx = TransactionRequest::default()
+        .from(user_address)
+        .to(*user_fee_token.address())
+        .input(TransactionInput::new(calldata));
+
+    // Estimate gas when user fee token differs from validator fee token
+    let gas = provider.estimate_gas(tx.clone()).await?;
+
+    // NOTE: this test is flaky, with gas sometimes returning as 75513 and other times as 75515.
+    // Updating to assert gas > 0 as this test is only checking if gas estimation succeeds when
+    // the user fee token differs from the validator fee token
+    assert!(gas > 0);
+
+    // Verify we can execute the transaction with the estimated gas
+    let receipt = provider
+        .send_transaction(tx.gas_limit(gas))
+        .await?
+        .get_receipt()
+        .await?;
+
+    assert!(receipt.status());
+    assert!(receipt.gas_used <= gas);
+
+    Ok(())
+}
+
+/// Regression test: eth_estimateGas fails when the latest block's beneficiary
+/// (validator) has a fee token that differs from the user's fee token, and there's no direct
+/// AMM pool between them. The user has liquidity with the default fee token (PathUSD), so
+/// the call should succeed, but it fails because evm_env uses the block header's beneficiary
+/// to resolve the validator token instead of the default.
+///
+/// Uses a dynamic validator to switch block producers mid-test. In phase 1, blocks are
+/// produced by the genesis coinbase while the test wallet sets a custom validator token.
+/// In phase 2, the test wallet becomes the block producer, reproducing the bug scenario.
+#[tokio::test(flavor = "multi_thread")]
+async fn test_eth_estimate_gas_validator_fee_token_mismatch() -> eyre::Result<()> {
+    use std::sync::{Arc, Mutex};
+
+    reth_tracing::init_test_tracing();
+
+    let wallet = MnemonicBuilder::from_phrase(crate::utils::TEST_MNEMONIC).build()?;
+    let wallet_address = wallet.address();
+
+    let dynamic_validator = Arc::new(Mutex::new(Address::ZERO));
+
+    let setup = TestNodeBuilder::new()
+        .with_dynamic_validator(dynamic_validator.clone())
+        .build_http_only()
+        .await?;
+    let http_url = setup.http_url;
+
+    let provider = ProviderBuilder::new().wallet(wallet).connect_http(http_url);
+
+    let fee_manager =
+        IFeeManager::new(tempo_precompiles::TIP_FEE_MANAGER_ADDRESS, provider.clone());
+    let fee_amm = ITIPFeeAMM::new(tempo_precompiles::TIP_FEE_MANAGER_ADDRESS, provider.clone());
+
+    let validator_custom_token = setup_test_token(provider.clone(), wallet_address).await?;
+    let user_fee_token = setup_test_token(provider.clone(), wallet_address).await?;
+
+    user_fee_token
+        .mint(wallet_address, U256::from(u128::MAX))
+        .send()
+        .await?
+        .get_receipt()
+        .await?;
+
+    fee_amm
+        .mint(
+            *user_fee_token.address(),
+            PATH_USD_ADDRESS,
+            U256::from(u32::MAX),
+            wallet_address,
+        )
+        .send()
+        .await?
+        .get_receipt()
+        .await?;
+
+    fee_amm
+        .mint(
+            *validator_custom_token.address(),
+            PATH_USD_ADDRESS,
+            U256::from(u32::MAX),
+            wallet_address,
+        )
+        .send()
+        .await?
+        .get_receipt()
+        .await?;
+
+    fee_manager
+        .setUserToken(*user_fee_token.address())
+        .send()
+        .await?
+        .get_receipt()
+        .await?;
+
+    fee_manager
+        .setValidatorToken(*validator_custom_token.address())
+        .send()
+        .await?
+        .get_receipt()
+        .await?;
+
+    let on_chain_validator_token = fee_manager.validatorTokens(wallet_address).call().await?;
+    assert_eq!(on_chain_validator_token, *validator_custom_token.address());
+
+    *dynamic_validator.lock().unwrap() = wallet_address;
+
+    tokio::time::sleep(std::time::Duration::from_millis(200)).await;
+
+    let block = provider
+        .get_block(BlockId::latest())
+        .await?
+        .expect("Could not get latest block");
+    assert_eq!(block.header.beneficiary, wallet_address);
+
+    let recipient = Address::random();
+    let calldata = user_fee_token
+        .transfer(recipient, U256::ONE)
+        .calldata()
+        .clone();
+    let tx = TransactionRequest::default()
+        .from(wallet_address)
+        .to(*user_fee_token.address())
+        .gas_price(TEMPO_T1_BASE_FEE as u128)
+        .input(TransactionInput::new(calldata));
+
+    let gas = provider.estimate_gas(tx.clone()).await?;
+    assert!(gas > 0);
+
+    Ok(())
+}
+
+/// Regression test: on mainnet, `validatorTokens[address(0)]` was pre-seeded with a
+/// DONOTUSE token in genesis. The old code used `Address::ZERO` as beneficiary for RPC gas
+/// estimation, so `get_validator_token(Address::ZERO)` returned DONOTUSE instead of falling
+/// back to `DEFAULT_FEE_TOKEN` (PathUSD), causing gas estimation to fail.
+///
+/// The fix uses `TIP_FEE_MANAGER_ADDRESS` as the sentinel beneficiary, which is guaranteed to
+/// have no validator token set (its mapping is always zero → falls back to PathUSD).
+#[tokio::test(flavor = "multi_thread")]
+async fn test_eth_estimate_gas_preseeded_zero_address_validator_token() -> eyre::Result<()> {
+    reth_tracing::init_test_tracing();
+
+    // Craft test genesis with mainnet's fee manager storage (pre-seeded with DONOTUSE token).
+    let mut test_genesis: serde_json::Value =
+        serde_json::from_str(include_str!("../assets/test-genesis.json"))?;
+    let presto_genesis: serde_json::Value =
+        serde_json::from_str(include_str!("../../../chainspec/src/genesis/presto.json"))?;
+
+    let fee_manager_addr = "0xfeec000000000000000000000000000000000000";
+    let presto_storage = presto_genesis["alloc"][fee_manager_addr]["storage"]
+        .as_object()
+        .expect("presto fee manager storage must exist");
+    let test_storage = test_genesis["alloc"][fee_manager_addr]["storage"]
+        .as_object_mut()
+        .expect("test fee manager storage must exist");
+    for (k, v) in presto_storage {
+        test_storage.insert(k.clone(), v.clone());
+    }
+
+    let wallet = MnemonicBuilder::from_phrase(crate::utils::TEST_MNEMONIC).build()?;
+    let wallet_address = wallet.address();
+
+    let setup = TestNodeBuilder::new()
+        .with_genesis(serde_json::to_string(&test_genesis)?)
+        .build_http_only()
+        .await?;
+
+    let provider = ProviderBuilder::new()
+        .wallet(wallet)
+        .connect_http(setup.http_url);
+
+    // Verify the pre-seeded state: validatorTokens[address(0)] should be non-PathUSD
+    let fee_manager =
+        IFeeManager::new(tempo_precompiles::TIP_FEE_MANAGER_ADDRESS, provider.clone());
+    let zero_addr_token = fee_manager.validatorTokens(Address::ZERO).call().await?;
+    assert_ne!(
+        zero_addr_token, PATH_USD_ADDRESS,
+        "validatorTokens[address(0)] should be the DONOTUSE token, not PathUSD"
+    );
+
+    // Setup a user fee token with liquidity so the user can pay fees
+    let user_fee_token = setup_test_token(provider.clone(), wallet_address).await?;
+
+    user_fee_token
+        .mint(wallet_address, U256::from(u128::MAX))
+        .send()
+        .await?
+        .get_receipt()
+        .await?;
+
+    let fee_amm = ITIPFeeAMM::new(tempo_precompiles::TIP_FEE_MANAGER_ADDRESS, provider.clone());
+    fee_amm
+        .mint(
+            *user_fee_token.address(),
+            PATH_USD_ADDRESS,
+            U256::from(u32::MAX),
+            wallet_address,
+        )
+        .send()
+        .await?
+        .get_receipt()
+        .await?;
+
+    fee_manager
+        .setUserToken(*user_fee_token.address())
+        .send()
+        .await?
+        .get_receipt()
+        .await?;
+
+    // Gas estimation should succeed because the fix uses TIP_FEE_MANAGER_ADDRESS as
+    // beneficiary, which has no validator token set and falls back to PathUSD.
+    let recipient = Address::random();
+    let calldata = user_fee_token
+        .transfer(recipient, U256::ONE)
+        .calldata()
+        .clone();
+    let tx = TransactionRequest::default()
+        .from(wallet_address)
+        .to(*user_fee_token.address())
+        .gas_price(TEMPO_T1_BASE_FEE as u128)
+        .input(TransactionInput::new(calldata));
+
+    let gas = provider.estimate_gas(tx).await?;
+    assert!(
+        gas > 0,
+        "gas estimation must succeed with pre-seeded validatorTokens[address(0)]"
+    );
+
+    Ok(())
+}
+
+#[test_case(ForkSchedule::Devnet ; "devnet")]
+#[test_case(ForkSchedule::Testnet ; "testnet")]
+#[test_case(ForkSchedule::Mainnet ; "mainnet")]
+#[tokio::test(flavor = "multi_thread")]
+async fn test_unknown_selector_error_via_rpc(schedule: ForkSchedule) -> eyre::Result<()> {
+    run_schedule_cases(schedule, |schedule| async move {
+        reth_tracing::init_test_tracing();
+
+        let setup = TestNodeBuilder::new()
+            .with_schedule(schedule)
+            .build_http_only()
+            .await?;
+        let http_url = setup.http_url;
+
+        let wallet = MnemonicBuilder::from_phrase(crate::utils::TEST_MNEMONIC).build()?;
+        let provider = ProviderBuilder::new().wallet(wallet).connect_http(http_url);
+
+        // Call with an unknown function selector (0x12345678)
+        let unknown_selector = [0x12u8, 0x34, 0x56, 0x78];
+        let mut calldata = unknown_selector.to_vec();
+        // Add some dummy data
+        calldata.extend_from_slice(&[0u8; 64]);
+
+        let tx = TransactionRequest::default()
+            .to(TIP20_FACTORY_ADDRESS)
+            .input(TransactionInput::new(Bytes::from(calldata)));
+
+        // The call should fail with UnknownFunctionSelector containing the unknown selector
+        let err = provider.call(tx).await.unwrap_err();
+        let expected = Bytes::from(
+            UnknownFunctionSelector {
+                selector: unknown_selector.into(),
+            }
+            .abi_encode(),
+        );
+        assert_eq!(extract_revert_data(&err), expected);
+
+        Ok(())
+    })
+    .await
+}
+
+#[tokio::test(flavor = "multi_thread")]
+async fn test_get_validators_state_override_no_oom() -> eyre::Result<()> {
+    reth_tracing::init_test_tracing();
+
+    let setup = TestNodeBuilder::new().build_http_only().await?;
+    let provider = ProviderBuilder::new().connect_http(setup.http_url);
+    let val_config = ValidatorConfig::new();
+    let tx = TransactionRequest::default()
+        .to(val_config.address())
+        .input(TransactionInput::new(
+            IValidatorConfig::getValidatorsCall::SELECTOR.into(),
+        ));
+    let len_slot: B256 = val_config.validators_array.len_slot().into();
+
+    // -- overflow: length > u32::MAX → Panic(UnderOverflow) revert --
+    let overrides = state_diff(
+        val_config.address(),
+        &[(len_slot, U256::from(0x0004000000000000u64))],
+    );
+    let err = provider
+        .call(tx.clone())
+        .overrides(overrides)
+        .await
+        .unwrap_err();
+    assert_eq!(extract_revert_data(&err), under_overflow_revert());
+
+    // -- OOG: length < u32::MAX but huge → gas exhaustion on SLOAD loop --
+    let overrides = state_diff(
+        val_config.address(),
+        &[(len_slot, U256::from(1_000_000u64))],
+    );
+    let err = provider
+        .call(tx)
+        .overrides(overrides)
+        .await
+        .unwrap_err()
+        .to_string();
+    assert!(err.contains("out of gas"), "expected OOG, got: {err}");
+
+    // Verify the node is still alive (didn't OOM)
+    provider.get_block_number().await?;
+    Ok(())
+}
+
+#[tokio::test(flavor = "multi_thread")]
+async fn test_tip20_name_state_override_no_oom() -> eyre::Result<()> {
+    reth_tracing::init_test_tracing();
+
+    let setup = TestNodeBuilder::new().build_http_only().await?;
+    let provider = ProviderBuilder::new().connect_http(setup.http_url);
+    let tx = TransactionRequest::default()
+        .to(PATH_USD_ADDRESS)
+        .input(TransactionInput::new(ITIP20::nameCall::SELECTOR.into()));
+    let name_slot = B256::from(U256::from(2)); // slot 2 in TIP20Token layout
+
+    // -- overflow: decoded len > u32::MAX → Panic(UnderOverflow) revert --
+    // 0x0008000000000001 → LSB=1 (long string), decoded len = 0x0004000000000000
+    let overrides = state_diff(
+        PATH_USD_ADDRESS,
+        &[(name_slot, U256::from(0x0008000000000001u64))],
+    );
+    let err = provider
+        .call(tx.clone())
+        .overrides(overrides)
+        .await
+        .unwrap_err();
+    assert_eq!(extract_revert_data(&err), under_overflow_revert());
+
+    // -- OOG: decoded len < u32::MAX but huge → gas exhaustion on SLOAD loop --
+    // length 1_000_000 encoded as long string: value = 1_000_000 * 2 + 1 = 2_000_001
+    let overrides = state_diff(PATH_USD_ADDRESS, &[(name_slot, U256::from(2_000_001u64))]);
+    let err = provider
+        .call(tx)
+        .overrides(overrides)
+        .await
+        .unwrap_err()
+        .to_string();
+    assert!(err.contains("out of gas"), "expected OOG, got: {err}");
+
+    // Verify the node is still alive (didn't OOM)
+    provider.get_block_number().await?;
+    Ok(())
+}

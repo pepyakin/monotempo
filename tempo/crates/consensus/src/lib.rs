@@ -1,0 +1,268 @@
+//! A Tempo node using commonware's threshold simplex as consensus.
+
+#![cfg_attr(not(test), warn(unused_crate_dependencies))]
+#![cfg_attr(docsrs, feature(doc_cfg))]
+
+pub(crate) mod alias;
+mod args;
+pub(crate) mod config;
+pub mod consensus;
+pub(crate) mod dkg;
+pub(crate) mod epoch;
+pub(crate) mod executor;
+pub mod feed;
+pub mod finalization_verifier;
+pub mod finalized_header_stream;
+pub mod follow;
+pub mod gossip;
+pub mod metrics;
+mod network;
+pub(crate) mod network_identity;
+pub(crate) mod peer_manager;
+pub mod storage;
+#[cfg(test)]
+pub(crate) mod test_utils;
+pub(crate) mod utils;
+pub(crate) mod validators;
+
+use std::sync::Arc;
+
+use commonware_consensus::types::FixedEpocher;
+use commonware_cryptography::ed25519::{PrivateKey, PublicKey};
+use commonware_p2p::authenticated::lookup;
+use commonware_runtime::Supervisor as _;
+use eyre::{OptionExt, WrapErr as _, eyre};
+use tempo_consensus_config::SigningShare;
+use tempo_node::TempoFullNode;
+use tracing::info;
+
+pub use crate::config::{
+    BROADCASTER_CHANNEL_IDENT, BROADCASTER_LIMIT, CERTIFICATES_CHANNEL_IDENT, CERTIFICATES_LIMIT,
+    DKG_CHANNEL_IDENT, DKG_LIMIT, MARSHAL_CHANNEL_IDENT, MARSHAL_LIMIT, NAMESPACE,
+    RESOLVER_CHANNEL_IDENT, RESOLVER_LIMIT, VOTES_CHANNEL_IDENT, VOTES_LIMIT,
+};
+
+pub use args::{Args, PositiveDuration};
+
+// Shared by both the consensus and follow engines such that
+// snapshots for overlapping archives can be reused.
+pub const PARTITION_PREFIX: &str = "engine";
+
+pub async fn run_consensus_stack(
+    context: commonware_runtime::tokio::Context,
+    config: Args,
+    execution_node: Arc<TempoFullNode>,
+    feed_state: feed::FeedStateHandle,
+    gossip_transport: Option<tempo_node::gossip::TransportHandle>,
+) -> eyre::Result<()> {
+    config.validate_simplex_timing()?;
+
+    let network_identity = config
+        .network_identity()
+        .or_else(|| execution_node.chain_spec().network_identity.clone())
+        .ok_or_eyre("chainspec has no network identity and none was configured")?;
+
+    let share = config
+        .signing_share
+        .as_ref()
+        .map(|share| {
+            SigningShare::read_from_file(share).wrap_err_with(|| {
+                format!(
+                    "failed reading private bls12-381 key share from file `{}`",
+                    share.display()
+                )
+            })
+        })
+        .transpose()?
+        .map(|signing_share| signing_share.into_inner());
+
+    let signing_key = config
+        .signing_key()
+        .await?
+        .ok_or_eyre("required option `consensus.signing-key` not set")?;
+
+    let backfill_quota = commonware_runtime::Quota::per_second(config.backfill_frequency);
+
+    let (mut network, oracle) =
+        instantiate_network(&context, &config, signing_key.clone().into_inner())
+            .await
+            .wrap_err("failed to start network")?;
+
+    let votes = network.register(VOTES_CHANNEL_IDENT, VOTES_LIMIT);
+    let certificates = network.register(CERTIFICATES_CHANNEL_IDENT, CERTIFICATES_LIMIT);
+    let resolver = network.register(RESOLVER_CHANNEL_IDENT, RESOLVER_LIMIT);
+    let broadcaster = network.register(BROADCASTER_CHANNEL_IDENT, BROADCASTER_LIMIT);
+    let marshal = network.register(MARSHAL_CHANNEL_IDENT, backfill_quota);
+    let dkg = network.register(DKG_CHANNEL_IDENT, DKG_LIMIT);
+    let target_block_time = config.target_block_time.into_duration();
+    // Consensus owns the end-to-end local proposal window. The network budget
+    // is reserved for propagation, and the remaining time is passed down to
+    // proposal handling and local payload building.
+    let proposal_return_budget =
+        target_block_time.saturating_sub(config.network_budget.into_duration());
+
+    let consensus_engine = crate::consensus::engine::Builder {
+        network_identity,
+        execution_node: Some(execution_node),
+        gossip: gossip_transport.map(|transport| gossip::Config {
+            transport,
+            verify_rate: config.gossip_verify_rate,
+        }),
+        blocker: oracle.clone(),
+        peer_manager: oracle.clone(),
+
+        // TODO: Set this through config?
+        partition_prefix: PARTITION_PREFIX.into(),
+        signer: signing_key.into_inner(),
+        share,
+
+        mailbox_size: config.mailbox_size,
+        deque_size: config.deque_size,
+        max_message_size: config.max_message_size_bytes,
+
+        time_to_propose: config.wait_for_proposal.into_duration(),
+        time_to_collect_notarizations: config.wait_for_notarizations.into_duration(),
+        time_to_retry_nullify_broadcast: config.wait_to_rebroadcast_nullify.into_duration(),
+        time_for_peer_response: config.wait_for_peer_response.into_duration(),
+        views_to_track: config.views_to_track,
+        inactive_time_before_leader_skip: config.inactive_time_before_leader_skip.into_duration(),
+        proposal_return_budget,
+        fcu_heartbeat_interval: config.fcu_heartbeat_interval.into_duration(),
+
+        feed_state,
+
+        finalized_blocks_retention: config.finalized_blocks_retention,
+    }
+    .try_init(context.child("engine"))
+    .await
+    .wrap_err("failed initializing consensus engine")?;
+
+    let (network, consensus_engine) = (
+        network.start(),
+        consensus_engine.start(votes, certificates, resolver, broadcaster, marshal, dkg),
+    );
+
+    tokio::select! {
+        ret = network => {
+            ret.map_err(eyre::Report::from)
+                .and_then(|()| Err(eyre!("exited unexpectedly")))
+                .wrap_err("network task failed")
+        }
+
+        ret = consensus_engine => {
+            ret.map_err(eyre::Report::from)
+                .and_then(|ret| ret.and_then(|()| Err(eyre!("exited unexpectedly"))))
+                .wrap_err("consensus engine task failed")
+        }
+    }
+}
+
+/// Run the follower stack. This uses RPC to sync consensus state and drive
+/// the execution layer from the upstream node.
+pub async fn run_follow_stack(
+    context: commonware_runtime::tokio::Context,
+    config: Args,
+    upstream_url: String,
+    upstream_request_timeout: std::time::Duration,
+    execution_node: Arc<TempoFullNode>,
+    feed_state: feed::FeedStateHandle,
+    gossip_transport: Option<tempo_node::gossip::TransportHandle>,
+) -> eyre::Result<()> {
+    let chain_spec = execution_node.chain_spec();
+
+    let epoch_length = chain_spec
+        .info
+        .epoch_length()
+        .ok_or_eyre("chainspec did not contain epochLength")?;
+
+    let chain_spec_network_identity = chain_spec
+        .network_identity
+        .clone()
+        .ok_or_eyre("chainspec has no dkg outcome in genesis header")?;
+
+    let network_identity = config
+        .network_identity()
+        .unwrap_or(chain_spec_network_identity);
+
+    info!(%network_identity.from_epoch, %network_identity.identity, "registered network identity");
+
+    let (upstream, upstream_mailbox) = crate::follow::upstream::init(
+        context.child("upstream"),
+        crate::follow::upstream::Config { upstream_url },
+    )
+    .wrap_err("failed to initialize client to upstream node")?;
+
+    let follow_engine = follow::Config {
+        execution_node,
+        gossip: gossip_transport.map(|transport| gossip::Config {
+            transport,
+            verify_rate: config.gossip_verify_rate,
+        }),
+        feed_state,
+        upstream,
+        upstream_mailbox,
+        network_identity,
+        partition_prefix: PARTITION_PREFIX.into(),
+        epoch_strategy: FixedEpocher::new(epoch_length),
+        mailbox_size: config.mailbox_size,
+        upstream_request_timeout,
+        fcu_heartbeat_interval: config.fcu_heartbeat_interval.into_duration(),
+        finalized_blocks_retention: config.finalized_blocks_retention,
+    };
+
+    let ret = follow_engine
+        .try_init(context.child("engine"))
+        .await
+        .wrap_err("failed initializing follow engine")?
+        .start()
+        .await;
+
+    ret.map_err(eyre::Report::from)
+        .and_then(|ret| ret.and_then(|()| Err(eyre!("exited unexpectedly"))))
+        .wrap_err("follow engine task failed")
+}
+
+async fn instantiate_network(
+    context: &commonware_runtime::tokio::Context,
+    config: &Args,
+    signing_key: PrivateKey,
+) -> eyre::Result<(
+    lookup::Network<commonware_runtime::tokio::Context, PrivateKey>,
+    lookup::Oracle<PublicKey>,
+)> {
+    // TODO: Find out why `union_unique` should be used. This is the only place
+    // where `NAMESPACE` is used at all. We follow alto's example for now.
+    let namespace = commonware_utils::union_unique(crate::config::NAMESPACE, b"_P2P");
+    let cfg = lookup::Config {
+        namespace,
+        crypto: signing_key,
+        listen: config.listen_address,
+        max_message_size: config.max_message_size_bytes,
+        mailbox_size: config.mailbox_size,
+        send_batch_size: commonware_utils::NZUsize!(8),
+        bypass_ip_check: config.bypass_ip_check,
+        allow_private_ips: config.allow_private_ips,
+        allow_dns: config.allow_dns,
+        tracked_peer_sets: crate::config::PEERSETS_TO_TRACK,
+        max_peers_per_set: config.max_peers_per_set,
+        synchrony_bound: config.synchrony_bound.into_duration(),
+        max_handshake_age: config.handshake_stale_after.into_duration(),
+        handshake_timeout: config.handshake_timeout.into_duration(),
+        dial_timeout: config.dial_timeout.into_duration(),
+        max_concurrent_handshakes: config.max_concurrent_handshakes,
+        block_duration: config.time_to_unblock_byzantine_peer.into_duration(),
+        dial_frequency: config.wait_before_peers_redial.into_duration(),
+        ping_frequency: config.wait_before_peers_reping.into_duration(),
+        peer_connection_cooldown: config.connection_per_peer_min_period.into_duration(),
+        allowed_handshake_rate_per_ip: commonware_runtime::Quota::with_period(
+            config.handshake_per_ip_min_period.into_duration(),
+        )
+        .ok_or_eyre("handshake per ip min period must be non-zero")?,
+        allowed_handshake_rate_per_subnet: commonware_runtime::Quota::with_period(
+            config.handshake_per_subnet_min_period.into_duration(),
+        )
+        .ok_or_eyre("handshake per subnet min period must be non-zero")?,
+    };
+
+    Ok(lookup::Network::new(context.child("network"), cfg))
+}

@@ -1,0 +1,523 @@
+use crate::ValidationLatencyEstimate;
+use alloy_primitives::{Address, B256, Bytes, Keccak256};
+use alloy_rpc_types_engine::PayloadId;
+use alloy_rpc_types_eth::Withdrawal;
+use reth_ethereum_engine_primitives::EthPayloadAttributes;
+use reth_node_api::PayloadAttributes;
+use serde::{Deserialize, Serialize};
+use std::time::Duration;
+use tempo_primitives::TempoConsensusContext;
+
+/// Container type for all components required to build a payload.
+///
+/// It also carries DKG data to be included in the block's extra_data field.
+#[derive(
+    derive_more::Debug, Clone, Serialize, Deserialize, derive_more::Deref, derive_more::DerefMut,
+)]
+#[serde(rename_all = "camelCase")]
+pub struct TempoPayloadAttributes {
+    /// Inner [`EthPayloadAttributes`].
+    #[deref]
+    #[deref_mut]
+    #[serde(flatten)]
+    inner: EthPayloadAttributes,
+    /// Remaining local proposal budget available to this payload build.
+    ///
+    /// Consensus sets this to the proposal return budget left when it dispatches
+    /// the build. `None` means the build was not requested by consensus, so the
+    /// builder should not stop early for block pacing.
+    #[serde(skip)]
+    payload_build_budget: Option<Duration>,
+    /// Validation latency estimate for a consensus payload build.
+    ///
+    /// Consensus snapshots this from recent locally validated blocks. `None`
+    /// means the builder should use its conservative fallback.
+    #[serde(skip)]
+    validation_latency_estimate: Option<ValidationLatencyEstimate>,
+    /// Milliseconds portion of the timestamp.
+    timestamp_millis_part: u64,
+    /// DKG ceremony data to include in the block's extra_data header field.
+    ///
+    /// This is empty when no DKG data is available (e.g., when the DKG manager
+    /// hasn't produced ceremony outcomes yet, or when DKG operations fail).
+    extra_data: Bytes,
+    /// The proposer's public key used to resolve the fee recipient from the
+    /// validator config contract. When `None`, `suggested_fee_recipient` from
+    /// the inner attributes is used as-is.
+    proposer_public_key: Option<B256>,
+    /// Consensus view for this block
+    consensus_context: Option<TempoConsensusContext>,
+}
+
+impl Default for TempoPayloadAttributes {
+    fn default() -> Self {
+        Self::from(EthPayloadAttributes::default())
+    }
+}
+
+impl TempoPayloadAttributes {
+    /// Creates new `TempoPayloadAttributes` with `inner` attributes.
+    ///
+    /// The inner `suggested_fee_recipient` is always `Address::ZERO`; the
+    /// real beneficiary is resolved from the validator config v2 contract by
+    /// the payload builder.
+    pub fn new(
+        proposer_public_key: Option<B256>,
+        timestamp: u64,
+        timestamp_millis_part: u64,
+        extra_data: Bytes,
+        consensus_context: Option<TempoConsensusContext>,
+    ) -> Self {
+        Self {
+            inner: EthPayloadAttributes {
+                timestamp,
+                suggested_fee_recipient: Address::ZERO,
+                prev_randao: B256::ZERO,
+                withdrawals: Some(Default::default()),
+                parent_beacon_block_root: Some(B256::ZERO),
+                slot_number: None,
+                target_gas_limit: None,
+            },
+            payload_build_budget: None,
+            validation_latency_estimate: None,
+            timestamp_millis_part,
+            extra_data,
+            proposer_public_key,
+            consensus_context,
+        }
+    }
+
+    /// Returns the extra data to be included in the block header.
+    pub fn extra_data(&self) -> &Bytes {
+        &self.extra_data
+    }
+
+    /// Returns the proposer's public key.
+    pub fn proposer_public_key(&self) -> Option<&B256> {
+        self.proposer_public_key.as_ref()
+    }
+
+    /// Sets the remaining local proposal budget for a consensus payload build.
+    ///
+    /// The value should already account for any time spent before the build was
+    /// requested. The builder treats it as a shared budget for leader
+    /// build/persist work and validator replay/persist work.
+    pub fn with_payload_build_budget(mut self, budget: Duration) -> Self {
+        self.payload_build_budget = Some(budget);
+        self
+    }
+
+    /// Returns the consensus-provided build budget, if this is a paced build.
+    ///
+    /// `None` is intentional for non-consensus builds such as dev or external
+    /// payload requests; those builds are not constrained by the consensus
+    /// block-time budget.
+    pub fn payload_build_budget(&self) -> Option<Duration> {
+        self.payload_build_budget
+    }
+
+    /// Sets the validation latency estimate for a consensus payload build.
+    pub fn with_validation_latency_estimate(
+        mut self,
+        estimate: Option<ValidationLatencyEstimate>,
+    ) -> Self {
+        self.validation_latency_estimate = estimate;
+        self
+    }
+
+    /// Returns the consensus-provided validation latency estimate.
+    pub fn validation_latency_estimate(&self) -> Option<ValidationLatencyEstimate> {
+        self.validation_latency_estimate
+    }
+
+    /// Returns the milliseconds portion of the timestamp.
+    pub fn timestamp_millis_part(&self) -> u64 {
+        self.timestamp_millis_part
+    }
+
+    /// Returns the timestamp in milliseconds.
+    pub fn timestamp_millis(&self) -> u64 {
+        self.inner
+            .timestamp()
+            .saturating_mul(1000)
+            .saturating_add(self.timestamp_millis_part)
+    }
+
+    /// Returns the consensus context
+    pub fn consensus_context(&self) -> Option<TempoConsensusContext> {
+        self.consensus_context
+    }
+}
+
+// Required by reth's e2e-test-utils for integration tests.
+// The test utilities need to convert from standard Ethereum payload attributes
+// to custom chain-specific attributes.
+impl From<EthPayloadAttributes> for TempoPayloadAttributes {
+    fn from(inner: EthPayloadAttributes) -> Self {
+        Self {
+            inner,
+            payload_build_budget: None,
+            validation_latency_estimate: None,
+            timestamp_millis_part: 0,
+            extra_data: Bytes::default(),
+            proposer_public_key: None,
+            consensus_context: None,
+        }
+    }
+}
+
+impl PayloadAttributes for TempoPayloadAttributes {
+    fn payload_id(&self, parent_hash: &B256) -> PayloadId {
+        // XXX: derives the payload ID from the parent so that
+        // overlong payload builds will eventually succeed on the
+        // next iteration: if all other nodes take equally as long,
+        // the consensus engine will kill the proposal task. Then eventually
+        // consensus will circle back to an earlier node, which then
+        // has the chance of picking up the old payload.
+        //
+        // The consensus context (epoch, view, parent_view, proposer) is
+        // mixed into the ID so that distinct consensus rounds proposing on
+        // the same parent block produce distinct payload IDs and do not
+        // collide in the payload builder cache.
+        payload_id_from_parent_and_context(parent_hash, self.consensus_context.as_ref())
+    }
+
+    fn timestamp(&self) -> u64 {
+        self.inner.timestamp()
+    }
+
+    fn parent_beacon_block_root(&self) -> Option<B256> {
+        self.inner.parent_beacon_block_root()
+    }
+
+    fn withdrawals(&self) -> Option<&Vec<Withdrawal>> {
+        self.inner.withdrawals()
+    }
+
+    fn slot_number(&self) -> Option<u64> {
+        self.inner.slot_number()
+    }
+}
+
+/// Constructs a [`PayloadId`] from the first 8 bytes of `block_hash`.
+fn payload_id_from_block_hash(block_hash: &B256) -> PayloadId {
+    PayloadId::new(
+        <[u8; 8]>::try_from(&block_hash[0..8])
+            .expect("a 32 byte array always has more than 8 bytes"),
+    )
+}
+
+/// Constructs a [`PayloadId`] from the parent block hash and consensus context.
+///
+/// When `consensus_context` is `None`, this is equivalent to
+/// [`payload_id_from_block_hash`] for backwards compatibility with pre-fork
+/// blocks. Otherwise the parent hash and each field of the consensus context
+/// are streamed into a Keccak256 hasher and the first 8 bytes of the digest
+/// form the ID.
+fn payload_id_from_parent_and_context(
+    parent_hash: &B256,
+    consensus_context: Option<&TempoConsensusContext>,
+) -> PayloadId {
+    let Some(ctx) = consensus_context else {
+        return payload_id_from_block_hash(parent_hash);
+    };
+
+    let mut hasher = Keccak256::new();
+    hasher.update(parent_hash);
+    hasher.update(ctx.epoch.to_be_bytes());
+    hasher.update(ctx.view.to_be_bytes());
+    hasher.update(ctx.parent_view.to_be_bytes());
+    hasher.update(B256::from(&ctx.proposer));
+    let digest = hasher.finalize();
+
+    PayloadId::new(
+        <[u8; 8]>::try_from(&digest[0..8]).expect("a 32 byte array always has more than 8 bytes"),
+    )
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+    use alloy_rpc_types_eth::Withdrawal;
+    use tempo_primitives::ed25519::PublicKey;
+
+    trait TestExt: Sized {
+        fn random() -> Self;
+        fn with_timestamp(self, millis: u64) -> Self;
+    }
+
+    impl TestExt for TempoPayloadAttributes {
+        fn random() -> Self {
+            Self::new(
+                None,
+                1, // 1s
+                0,
+                Bytes::default(),
+                None,
+            )
+        }
+
+        fn with_timestamp(mut self, millis: u64) -> Self {
+            self.inner.timestamp = millis / 1000;
+            self.timestamp_millis_part = millis % 1000;
+            self
+        }
+    }
+
+    #[test]
+    fn test_builder_attributes_construction() {
+        let parent = B256::random();
+        let extra_data = Bytes::from(vec![1, 2, 3, 4, 5]);
+
+        // With extra_data
+        let attrs = TempoPayloadAttributes::new(
+            None,
+            1,
+            500, // 1.5s
+            extra_data.clone(),
+            None,
+        );
+        assert_eq!(attrs.extra_data(), &extra_data);
+        assert_eq!(attrs.suggested_fee_recipient, Address::ZERO);
+        assert_eq!(
+            attrs.payload_id(&parent),
+            payload_id_from_block_hash(&parent)
+        );
+        assert_eq!(attrs.timestamp(), 1);
+        assert_eq!(attrs.timestamp_millis_part(), 500);
+
+        // Hardcoded in ::new()
+        assert_eq!(attrs.prev_randao, B256::ZERO);
+        assert_eq!(attrs.parent_beacon_block_root(), Some(B256::ZERO));
+        assert!(attrs.withdrawals().is_some_and(|w| w.is_empty()));
+
+        // Without extra_data
+        let attrs2 = TempoPayloadAttributes::new(
+            None,
+            2, // +500ms
+            0,
+            Bytes::default(),
+            None,
+        );
+        assert_eq!(attrs2.extra_data(), &Bytes::default());
+        assert_eq!(attrs2.timestamp(), 2);
+        assert_eq!(attrs2.timestamp_millis_part(), 0);
+    }
+
+    #[test]
+    fn test_builder_attributes_timestamp_handling() {
+        // Exact second boundary
+        let attrs = TempoPayloadAttributes::random().with_timestamp(3000);
+        assert_eq!(attrs.timestamp(), 3);
+        assert_eq!(attrs.timestamp_millis_part(), 0);
+        assert_eq!(attrs.timestamp_millis(), 3000);
+
+        // With milliseconds remainder
+        let attrs = TempoPayloadAttributes::random().with_timestamp(3999);
+        assert_eq!(attrs.timestamp(), 3);
+        assert_eq!(attrs.timestamp_millis_part(), 999);
+        assert_eq!(attrs.timestamp_millis(), 3999);
+
+        // Zero timestamp
+        let attrs = TempoPayloadAttributes::random().with_timestamp(0);
+        assert_eq!(attrs.timestamp(), 0);
+        assert_eq!(attrs.timestamp_millis_part(), 0);
+        assert_eq!(attrs.timestamp_millis(), 0);
+
+        // Large timestamp (no overflow due to saturating ops)
+        let large_ts = u64::MAX / 1000 * 1000;
+        let attrs = TempoPayloadAttributes::random().with_timestamp(large_ts + 500);
+        assert_eq!(attrs.timestamp_millis_part(), 500);
+        assert!(attrs.timestamp_millis() >= large_ts);
+    }
+
+    #[test]
+    fn test_from_eth_payload_builder_attributes() {
+        let eth_attrs = EthPayloadAttributes {
+            timestamp: 1000,
+            suggested_fee_recipient: Address::random(),
+            prev_randao: B256::random(),
+            withdrawals: Some(Default::default()),
+            parent_beacon_block_root: Some(B256::random()),
+            slot_number: None,
+            target_gas_limit: None,
+        };
+
+        let tempo_attrs: TempoPayloadAttributes = eth_attrs.clone().into();
+
+        // Inner fields preserved
+        let parent = B256::random();
+        assert_eq!(
+            tempo_attrs.payload_id(&parent),
+            payload_id_from_block_hash(&parent)
+        );
+        assert_eq!(tempo_attrs.timestamp(), eth_attrs.timestamp);
+        assert_eq!(
+            tempo_attrs.suggested_fee_recipient,
+            eth_attrs.suggested_fee_recipient
+        );
+        assert_eq!(tempo_attrs.prev_randao, eth_attrs.prev_randao);
+        assert_eq!(tempo_attrs.withdrawals().as_ref().map(|w| w.len()), Some(0));
+        assert_eq!(
+            tempo_attrs.parent_beacon_block_root(),
+            eth_attrs.parent_beacon_block_root
+        );
+
+        // Tempo-specific defaults
+        assert_eq!(tempo_attrs.timestamp_millis_part(), 0);
+        assert_eq!(tempo_attrs.extra_data(), &Bytes::default());
+    }
+
+    #[test]
+    fn test_tempo_payload_attributes_serde() {
+        let timestamp = 1234567890;
+        let timestamp_millis_part = 999;
+        let attrs = TempoPayloadAttributes {
+            inner: EthPayloadAttributes {
+                timestamp,
+                prev_randao: B256::ZERO,
+                suggested_fee_recipient: Address::random(),
+                withdrawals: Some(vec![]),
+                parent_beacon_block_root: Some(B256::random()),
+                slot_number: None,
+                target_gas_limit: None,
+            },
+            timestamp_millis_part,
+            ..Default::default()
+        };
+
+        // Roundtrip
+        let json = serde_json::to_string(&attrs).unwrap();
+        assert!(json.contains("timestampMillisPart"));
+
+        let deserialized: TempoPayloadAttributes = serde_json::from_str(&json).unwrap();
+        assert_eq!(deserialized.inner.timestamp, timestamp);
+        assert_eq!(deserialized.timestamp_millis_part, timestamp_millis_part);
+
+        // Deref works
+        assert_eq!(attrs.timestamp, timestamp);
+
+        // DerefMut works
+        let mut attrs = attrs;
+        attrs.timestamp = 123;
+        assert_eq!(attrs.inner.timestamp, 123);
+    }
+
+    #[test]
+    fn test_tempo_payload_attributes_trait_impl() {
+        let withdrawal_addr = Address::random();
+        let beacon_root = B256::random();
+
+        let attrs = TempoPayloadAttributes {
+            inner: EthPayloadAttributes {
+                timestamp: 9999,
+                prev_randao: B256::ZERO,
+                suggested_fee_recipient: Address::random(),
+                withdrawals: Some(vec![Withdrawal {
+                    index: 0,
+                    validator_index: 1,
+                    address: withdrawal_addr,
+                    amount: 500,
+                }]),
+                parent_beacon_block_root: Some(beacon_root),
+                slot_number: None,
+                target_gas_limit: None,
+            },
+            timestamp_millis_part: 123,
+            ..Default::default()
+        };
+
+        // PayloadAttributes trait methods
+        assert_eq!(PayloadAttributes::timestamp(&attrs), 9999);
+        assert_eq!(attrs.withdrawals().unwrap().len(), 1);
+        assert_eq!(attrs.withdrawals().unwrap()[0].address, withdrawal_addr);
+        assert_eq!(attrs.parent_beacon_block_root(), Some(beacon_root));
+
+        // None cases
+        let attrs_none = TempoPayloadAttributes {
+            inner: EthPayloadAttributes {
+                timestamp: 1,
+                prev_randao: B256::ZERO,
+                suggested_fee_recipient: Address::random(),
+                withdrawals: None,
+                parent_beacon_block_root: None,
+                slot_number: None,
+                target_gas_limit: None,
+            },
+            timestamp_millis_part: 0,
+            ..Default::default()
+        };
+        assert!(attrs_none.withdrawals().is_none());
+        assert!(attrs_none.parent_beacon_block_root().is_none());
+    }
+
+    #[test]
+    fn payload_id_includes_consensus_context() {
+        let parent = B256::random();
+        let proposer = PublicKey::from_seed(0xab);
+
+        let mk = |ctx: Option<TempoConsensusContext>| -> PayloadId {
+            let mut attrs = TempoPayloadAttributes::random();
+            attrs.consensus_context = ctx;
+            attrs.payload_id(&parent)
+        };
+
+        let no_ctx = mk(None);
+        let ctx_a = mk(Some(TempoConsensusContext {
+            epoch: 1,
+            view: 1,
+            parent_view: 0,
+            proposer,
+        }));
+        let ctx_b = mk(Some(TempoConsensusContext {
+            epoch: 1,
+            view: 2,
+            parent_view: 1,
+            proposer,
+        }));
+        let ctx_c = mk(Some(TempoConsensusContext {
+            epoch: 2,
+            view: 1,
+            parent_view: 0,
+            proposer,
+        }));
+        let ctx_d = mk(Some(TempoConsensusContext {
+            epoch: 1,
+            view: 1,
+            parent_view: 0,
+            proposer: PublicKey::from_seed(0xcd),
+        }));
+
+        // Without context, falls back to parent-hash-only ID.
+        assert_eq!(no_ctx, payload_id_from_block_hash(&parent));
+
+        // Each distinct consensus context produces a distinct ID, and all
+        // differ from the no-context fallback.
+        let ids = [no_ctx, ctx_a, ctx_b, ctx_c, ctx_d];
+        for i in 0..ids.len() {
+            for j in (i + 1)..ids.len() {
+                assert_ne!(ids[i], ids[j], "payload ids {i} and {j} collide");
+            }
+        }
+
+        // Same context on the same parent is deterministic.
+        let ctx_a_again = mk(Some(TempoConsensusContext {
+            epoch: 1,
+            view: 1,
+            parent_view: 0,
+            proposer,
+        }));
+        assert_eq!(ctx_a, ctx_a_again);
+
+        // Different parent with the same context yields a different ID.
+        let other_parent = B256::random();
+        let mut attrs = TempoPayloadAttributes::random();
+        attrs.consensus_context = Some(TempoConsensusContext {
+            epoch: 1,
+            view: 1,
+            parent_view: 0,
+            proposer,
+        });
+        assert_ne!(attrs.payload_id(&parent), attrs.payload_id(&other_parent));
+    }
+}
