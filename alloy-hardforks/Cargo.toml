@@ -46,3 +46,10 @@ alloy-primitives = { version = "1.0.0", default-features = false }
 auto_impl = "1"
 serde = { version = "1.0", features = ["derive", "alloc"], default-features = false }
 dyn-clone = "1.0.17"
+
+[patch.crates-io]
+alloy-primitives = { path = "../alloy-core/crates/primitives" }
+alloy-rlp = { path = "../alloy-rlp/crates/rlp" }
+alloy-rlp-derive = { path = "../alloy-rlp/crates/rlp-derive" }
+alloy-chains = { path = "../alloy-chains" }
+alloy-eip2124 = { path = "../alloy-eips/crates/eip2124" }

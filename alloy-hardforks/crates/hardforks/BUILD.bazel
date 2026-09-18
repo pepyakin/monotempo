@@ -1,0 +1,41 @@
+# GENERATED FILE - DO NOT EDIT.
+#
+# Regenerate with `python3 bazel/generate.py` after changing Cargo.toml.
+
+load("//bazel:rust.bzl", "crate_cargo_toml_env_vars", "crate_library", "crate_unit_test")
+load("//alloy-hardforks/bazel:workspace.bzl", "WORKSPACE")
+
+FEATURES = [
+    "serde",
+]
+
+DECLARED_FEATURES = [
+    "serde",
+]
+
+crate_cargo_toml_env_vars(WORKSPACE)
+
+crate_library(
+    name = "alloy_hardforks",
+    workspace = WORKSPACE,
+    crate_features = FEATURES,
+    declared_features = DECLARED_FEATURES,
+    deps = [
+        "//alloy-chains:alloy_chains",
+        "//alloy-core/crates/primitives:alloy_primitives",
+        "//alloy-eips/crates/eip2124:alloy_eip2124",
+        "@crates//:dyn-clone",
+        "@crates//:serde",
+    ],
+    proc_macro_deps = [
+        "@crates//:auto_impl",
+    ],
+)
+
+crate_unit_test(
+    name = "alloy_hardforks_test",
+    workspace = WORKSPACE,
+    crate = ":alloy_hardforks",
+    crate_features = FEATURES,
+    declared_features = DECLARED_FEATURES,
+)
