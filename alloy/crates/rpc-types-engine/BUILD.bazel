@@ -34,11 +34,11 @@ crate_library(
     crate_features = FEATURES,
     declared_features = DECLARED_FEATURES,
     deps = [
+        "//alloy-core/crates/primitives:alloy_primitives",
+        "//alloy-rlp/crates/rlp:alloy_rlp",
         "//alloy/crates/consensus:alloy_consensus",
         "//alloy/crates/eips:alloy_eips",
         "//alloy/crates/serde:alloy_serde",
-        "@crates//:alloy-primitives",
-        "@crates//:alloy-rlp",
         "@crates//:derive_more",
         "@crates//:ethereum_ssz",
         "@crates//:jsonwebtoken",

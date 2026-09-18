@@ -17,8 +17,8 @@ crate_library(
     crate_features = FEATURES,
     declared_features = DECLARED_FEATURES,
     deps = [
-        "@crates//:alloy-primitives",
-        "@crates//:alloy-sol-types",
+        "//alloy-core/crates/primitives:alloy_primitives",
+        "//alloy-core/crates/sol-types:alloy_sol_types",
         "@crates//:http",
         "@crates//:serde",
         "@crates//:serde_json",

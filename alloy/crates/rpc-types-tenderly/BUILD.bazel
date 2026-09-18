@@ -17,11 +17,11 @@ crate_library(
     crate_features = FEATURES,
     declared_features = DECLARED_FEATURES,
     deps = [
+        "//alloy-core/crates/dyn-abi:alloy_dyn_abi",
+        "//alloy-core/crates/primitives:alloy_primitives",
         "//alloy/crates/consensus:alloy_consensus",
         "//alloy/crates/eips:alloy_eips",
         "//alloy/crates/serde:alloy_serde",
-        "@crates//:alloy-dyn-abi",
-        "@crates//:alloy-primitives",
         "@crates//:serde",
         "@crates//:serde_json",
     ],

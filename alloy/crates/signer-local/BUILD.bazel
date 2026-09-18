@@ -29,10 +29,10 @@ crate_library(
     crate_features = FEATURES,
     declared_features = DECLARED_FEATURES,
     deps = [
+        "//alloy-core/crates/primitives:alloy_primitives",
         "//alloy/crates/consensus:alloy_consensus",
         "//alloy/crates/network:alloy_network",
         "//alloy/crates/signer:alloy_signer",
-        "@crates//:alloy-primitives",
         "@crates//:coins-bip32",
         "@crates//:coins-bip39",
         "@crates//:k256",
@@ -52,8 +52,8 @@ crate_unit_test(
     crate_features = FEATURES,
     declared_features = DECLARED_FEATURES,
     deps = [
-        "@crates//:alloy-dyn-abi",
-        "@crates//:alloy-sol-types",
+        "//alloy-core/crates/dyn-abi:alloy_dyn_abi",
+        "//alloy-core/crates/sol-types:alloy_sol_types",
         "@crates//:serde",
         "@crates//:serde_json",
         "@crates//:tempfile",

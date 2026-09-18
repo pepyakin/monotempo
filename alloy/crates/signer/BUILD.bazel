@@ -19,7 +19,7 @@ crate_library(
     crate_features = FEATURES,
     declared_features = DECLARED_FEATURES,
     deps = [
-        "@crates//:alloy-primitives",
+        "//alloy-core/crates/primitives:alloy_primitives",
         "@crates//:either",
         "@crates//:elliptic-curve",
         "@crates//:k256",

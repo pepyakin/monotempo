@@ -145,6 +145,7 @@ crate_library(
     crate_features = FEATURES,
     declared_features = DECLARED_FEATURES,
     deps = [
+        "//alloy-core/crates/core:alloy_core",
         "//alloy/crates/consensus:alloy_consensus",
         "//alloy/crates/contract:alloy_contract",
         "//alloy/crates/eips:alloy_eips",
@@ -157,7 +158,6 @@ crate_library(
         "//alloy/crates/signer:alloy_signer",
         "//alloy/crates/transport-http:alloy_transport_http",
         "//alloy/crates/transport:alloy_transport",
-        "@crates//:alloy-core",
     ],
 )
 

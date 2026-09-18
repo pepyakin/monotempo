@@ -19,6 +19,8 @@ crate_library(
     crate_features = FEATURES,
     declared_features = DECLARED_FEATURES,
     deps = [
+        "//alloy-core/crates/primitives:alloy_primitives",
+        "//alloy-core/crates/sol-types:alloy_sol_types",
         "//alloy/crates/consensus-any:alloy_consensus_any",
         "//alloy/crates/consensus:alloy_consensus",
         "//alloy/crates/eips:alloy_eips",
@@ -28,8 +30,6 @@ crate_library(
         "//alloy/crates/rpc-types-eth:alloy_rpc_types_eth",
         "//alloy/crates/serde:alloy_serde",
         "//alloy/crates/signer:alloy_signer",
-        "@crates//:alloy-primitives",
-        "@crates//:alloy-sol-types",
         "@crates//:derive_more",
         "@crates//:futures-utils-wasm",
         "@crates//:serde",

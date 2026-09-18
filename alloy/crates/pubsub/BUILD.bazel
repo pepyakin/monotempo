@@ -17,9 +17,9 @@ crate_library(
     crate_features = FEATURES,
     declared_features = DECLARED_FEATURES,
     deps = [
+        "//alloy-core/crates/primitives:alloy_primitives",
         "//alloy/crates/json-rpc:alloy_json_rpc",
         "//alloy/crates/transport:alloy_transport",
-        "@crates//:alloy-primitives",
         "@crates//:bimap",
         "@crates//:futures",
         "@crates//:parking_lot",

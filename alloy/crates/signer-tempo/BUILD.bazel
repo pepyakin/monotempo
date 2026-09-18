@@ -17,8 +17,8 @@ crate_library(
     crate_features = FEATURES,
     declared_features = DECLARED_FEATURES,
     deps = [
+        "//alloy-core/crates/primitives:alloy_primitives",
         "//alloy/crates/signer-local:alloy_signer_local",
-        "@crates//:alloy-primitives",
         "@crates//:dirs",
         "@crates//:serde",
         "@crates//:thiserror",
@@ -46,9 +46,9 @@ crate_integration_test(
     crate_features = FEATURES,
     declared_features = DECLARED_FEATURES,
     deps = [
+        "//alloy-core/crates/primitives:alloy_primitives",
         "//alloy/crates/signer-local:alloy_signer_local",
         ":alloy_signer_tempo",
-        "@crates//:alloy-primitives",
         "@crates//:dirs",
         "@crates//:serde",
         "@crates//:tempfile",
@@ -66,9 +66,9 @@ crate_integration_test(
     crate_features = FEATURES,
     declared_features = DECLARED_FEATURES,
     deps = [
+        "//alloy-core/crates/primitives:alloy_primitives",
         "//alloy/crates/signer-local:alloy_signer_local",
         ":alloy_signer_tempo",
-        "@crates//:alloy-primitives",
         "@crates//:dirs",
         "@crates//:serde",
         "@crates//:tempfile",
@@ -86,9 +86,9 @@ crate_integration_test(
     crate_features = FEATURES,
     declared_features = DECLARED_FEATURES,
     deps = [
+        "//alloy-core/crates/primitives:alloy_primitives",
         "//alloy/crates/signer-local:alloy_signer_local",
         ":alloy_signer_tempo",
-        "@crates//:alloy-primitives",
         "@crates//:dirs",
         "@crates//:serde",
         "@crates//:tempfile",

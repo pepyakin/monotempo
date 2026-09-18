@@ -27,10 +27,10 @@ crate_library(
     crate_features = FEATURES,
     declared_features = DECLARED_FEATURES,
     deps = [
+        "//alloy-core/crates/primitives:alloy_primitives",
+        "//alloy-core/crates/sol-types:alloy_sol_types",
         "//alloy/crates/contract:alloy_contract",
         "//alloy/crates/provider:alloy_provider",
-        "@crates//:alloy-primitives",
-        "@crates//:alloy-sol-types",
         "@crates//:thiserror",
     ],
     proc_macro_deps = [

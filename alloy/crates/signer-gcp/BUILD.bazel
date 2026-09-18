@@ -19,10 +19,10 @@ crate_library(
     crate_features = FEATURES,
     declared_features = DECLARED_FEATURES,
     deps = [
+        "//alloy-core/crates/primitives:alloy_primitives",
         "//alloy/crates/consensus:alloy_consensus",
         "//alloy/crates/network:alloy_network",
         "//alloy/crates/signer:alloy_signer",
-        "@crates//:alloy-primitives",
         "@crates//:gcloud-sdk",
         "@crates//:k256",
         "@crates//:spki",
