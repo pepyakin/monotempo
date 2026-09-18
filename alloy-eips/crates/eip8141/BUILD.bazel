@@ -1,0 +1,81 @@
+# GENERATED FILE - DO NOT EDIT.
+#
+# Regenerate with `python3 bazel/generate.py` after changing Cargo.toml.
+
+load("//bazel:rust.bzl", "crate_cargo_toml_env_vars", "crate_integration_test", "crate_library", "crate_unit_test")
+load("//alloy-eips/bazel:workspace.bzl", "WORKSPACE")
+
+FEATURES = [
+    "default",
+    "std",
+]
+
+DECLARED_FEATURES = [
+    "arbitrary",
+    "borsh",
+    "default",
+    "serde",
+    "std",
+]
+
+crate_cargo_toml_env_vars(WORKSPACE)
+
+crate_library(
+    name = "alloy_eip8141",
+    workspace = WORKSPACE,
+    version = "0.1.0",
+    crate_features = FEATURES,
+    declared_features = DECLARED_FEATURES,
+    deps = [
+        "//alloy-core/crates/primitives:alloy_primitives",
+        "//alloy-rlp/crates/rlp:alloy_rlp",
+        "@crates//:thiserror",
+    ],
+)
+
+crate_unit_test(
+    name = "alloy_eip8141_test",
+    workspace = WORKSPACE,
+    version = "0.1.0",
+    crate = ":alloy_eip8141",
+    crate_features = FEATURES,
+    declared_features = DECLARED_FEATURES,
+    deps = [
+        "@crates//:bincode-1.3.3",
+        "@crates//:serde_json",
+    ],
+)
+
+crate_integration_test(
+    name = "alloy_eip8141_encoding_test",
+    workspace = WORKSPACE,
+    version = "0.1.0",
+    crate_root = "tests/encoding.rs",
+    crate_features = FEATURES,
+    declared_features = DECLARED_FEATURES,
+    deps = [
+        "//alloy-core/crates/primitives:alloy_primitives",
+        "//alloy-rlp/crates/rlp:alloy_rlp",
+        ":alloy_eip8141",
+        "@crates//:bincode-1.3.3",
+        "@crates//:serde_json",
+        "@crates//:thiserror",
+    ],
+)
+
+crate_integration_test(
+    name = "alloy_eip8141_serde_test",
+    workspace = WORKSPACE,
+    version = "0.1.0",
+    crate_root = "tests/serde.rs",
+    crate_features = FEATURES,
+    declared_features = DECLARED_FEATURES,
+    deps = [
+        "//alloy-core/crates/primitives:alloy_primitives",
+        "//alloy-rlp/crates/rlp:alloy_rlp",
+        ":alloy_eip8141",
+        "@crates//:bincode-1.3.3",
+        "@crates//:serde_json",
+        "@crates//:thiserror",
+    ],
+)

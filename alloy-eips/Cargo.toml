@@ -52,3 +52,8 @@ rand = "0.8"
 
 # misc
 thiserror = { version = "2.0.0", default-features = false }
+
+[patch.crates-io]
+alloy-primitives = { path = "../alloy-core/crates/primitives" }
+alloy-rlp = { path = "../alloy-rlp/crates/rlp" }
+alloy-rlp-derive = { path = "../alloy-rlp/crates/rlp-derive" }

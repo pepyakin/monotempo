@@ -1,0 +1,17 @@
+# GENERATED FILE - DO NOT EDIT.
+#
+# Regenerate with `python3 bazel/generate.py` after changing Cargo.toml.
+
+load("@rules_rust//rust:defs.bzl", "rust_lint_config")
+load("//alloy-eips/bazel:workspace.bzl", "CLIPPY_LINTS", "RUSTC_CHECK_CFG", "RUSTC_LINTS", "RUSTDOC_LINTS")
+
+package(default_visibility = ["//visibility:public"])
+
+# `[workspace.lints]` from alloy-eips/Cargo.toml, applied to every crate with `[lints] workspace = true`.
+rust_lint_config(
+    name = "lints",
+    clippy = CLIPPY_LINTS,
+    rustc = RUSTC_LINTS,
+    rustc_check_cfg = RUSTC_CHECK_CFG,
+    rustdoc = RUSTDOC_LINTS,
+)

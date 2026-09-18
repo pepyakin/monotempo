@@ -1,0 +1,48 @@
+# GENERATED FILE - DO NOT EDIT.
+#
+# Regenerate with `python3 bazel/generate.py` after changing Cargo.toml.
+
+load("//bazel:rust.bzl", "crate_cargo_toml_env_vars", "crate_library", "crate_unit_test")
+load("//alloy-eips/bazel:workspace.bzl", "WORKSPACE")
+
+FEATURES = [
+    "arbitrary",
+    "default",
+    "serde",
+    "std",
+]
+
+DECLARED_FEATURES = [
+    "arbitrary",
+    "default",
+    "serde",
+    "std",
+]
+
+crate_cargo_toml_env_vars(WORKSPACE)
+
+crate_library(
+    name = "alloy_eip2124",
+    workspace = WORKSPACE,
+    version = "0.2.0",
+    crate_features = FEATURES,
+    declared_features = DECLARED_FEATURES,
+    deps = [
+        "//alloy-core/crates/primitives:alloy_primitives",
+        "//alloy-rlp/crates/rlp:alloy_rlp",
+        "@crates//:arbitrary",
+        "@crates//:crc",
+        "@crates//:rand-0.8.6",
+        "@crates//:serde",
+        "@crates//:thiserror",
+    ],
+)
+
+crate_unit_test(
+    name = "alloy_eip2124_test",
+    workspace = WORKSPACE,
+    version = "0.2.0",
+    crate = ":alloy_eip2124",
+    crate_features = FEATURES,
+    declared_features = DECLARED_FEATURES,
+)

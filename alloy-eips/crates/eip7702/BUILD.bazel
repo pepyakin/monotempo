@@ -1,0 +1,61 @@
+# GENERATED FILE - DO NOT EDIT.
+#
+# Regenerate with `python3 bazel/generate.py` after changing Cargo.toml.
+
+load("//bazel:rust.bzl", "crate_cargo_toml_env_vars", "crate_library", "crate_unit_test")
+load("//alloy-eips/bazel:workspace.bzl", "WORKSPACE")
+
+FEATURES = [
+    "arbitrary",
+    "default",
+    "k256",
+    "serde",
+    "serde-bincode-compat",
+    "serde_with",
+    "std",
+]
+
+DECLARED_FEATURES = [
+    "arbitrary",
+    "borsh",
+    "default",
+    "k256",
+    "secp256k1",
+    "serde",
+    "serde-bincode-compat",
+    "serde_with",
+    "std",
+]
+
+crate_cargo_toml_env_vars(WORKSPACE)
+
+crate_library(
+    name = "alloy_eip7702",
+    workspace = WORKSPACE,
+    version = "0.6.3",
+    crate_features = FEATURES,
+    declared_features = DECLARED_FEATURES,
+    deps = [
+        "//alloy-core/crates/primitives:alloy_primitives",
+        "//alloy-rlp/crates/rlp:alloy_rlp",
+        "@crates//:arbitrary",
+        "@crates//:k256",
+        "@crates//:rand-0.8.6",
+        "@crates//:serde",
+        "@crates//:serde_with",
+        "@crates//:thiserror",
+    ],
+)
+
+crate_unit_test(
+    name = "alloy_eip7702_test",
+    workspace = WORKSPACE,
+    version = "0.6.3",
+    crate = ":alloy_eip7702",
+    crate_features = FEATURES,
+    declared_features = DECLARED_FEATURES,
+    deps = [
+        "@crates//:bincode-1.3.3",
+        "@crates//:serde_json",
+    ],
+)
