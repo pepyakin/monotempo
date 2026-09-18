@@ -1,8 +1,8 @@
 # GENERATED FILE - DO NOT EDIT.
 #
-# Regenerate with `python3 scripts/bazel/generate.py` after changing Cargo.toml.
+# Regenerate with `python3 reth/scripts/bazel/generate.py` after changing Cargo.toml.
 
-load("//bazel:rust.bzl", "reth_cargo_toml_env_vars", "reth_library", "reth_unit_test")
+load("//reth/bazel:rust.bzl", "reth_cargo_toml_env_vars", "reth_library", "reth_unit_test")
 
 FEATURES = [
     "asm-keccak",
@@ -40,22 +40,22 @@ reth_library(
     crate_features = FEATURES,
     declared_features = DECLARED_FEATURES,
     deps = [
-        "//crates/chainspec:reth_chainspec",
-        "//crates/cli/cli:reth_cli",
-        "//crates/cli/commands:reth_cli_commands",
-        "//crates/cli/runner:reth_cli_runner",
-        "//crates/ethereum/node:reth_node_ethereum",
-        "//crates/node/api:reth_node_api",
-        "//crates/node/builder:reth_node_builder",
-        "//crates/node/core:reth_node_core",
-        "//crates/node/metrics:reth_node_metrics",
-        "//crates/rpc/rpc-server-types:reth_rpc_server_types",
-        "//crates/storage/db:reth_db",
-        "//crates/tasks:reth_tasks",
-        "//crates/tracing:reth_tracing",
-        "@crates//:clap",
-        "@crates//:eyre",
-        "@crates//:tracing",
+        "//reth/crates/chainspec:reth_chainspec",
+        "//reth/crates/cli/cli:reth_cli",
+        "//reth/crates/cli/commands:reth_cli_commands",
+        "//reth/crates/cli/runner:reth_cli_runner",
+        "//reth/crates/ethereum/node:reth_node_ethereum",
+        "//reth/crates/node/api:reth_node_api",
+        "//reth/crates/node/builder:reth_node_builder",
+        "//reth/crates/node/core:reth_node_core",
+        "//reth/crates/node/metrics:reth_node_metrics",
+        "//reth/crates/rpc/rpc-server-types:reth_rpc_server_types",
+        "//reth/crates/storage/db:reth_db",
+        "//reth/crates/tasks:reth_tasks",
+        "//reth/crates/tracing:reth_tracing",
+        "@reth_crates//:clap",
+        "@reth_crates//:eyre",
+        "@reth_crates//:tracing",
     ],
 )
 
@@ -65,6 +65,6 @@ reth_unit_test(
     crate_features = FEATURES,
     declared_features = DECLARED_FEATURES,
     deps = [
-        "@crates//:tempfile",
+        "@reth_crates//:tempfile",
     ],
 )

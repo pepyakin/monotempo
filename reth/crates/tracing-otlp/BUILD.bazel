@@ -1,8 +1,8 @@
 # GENERATED FILE - DO NOT EDIT.
 #
-# Regenerate with `python3 scripts/bazel/generate.py` after changing Cargo.toml.
+# Regenerate with `python3 reth/scripts/bazel/generate.py` after changing Cargo.toml.
 
-load("//bazel:rust.bzl", "reth_cargo_toml_env_vars", "reth_library", "reth_unit_test")
+load("//reth/bazel:rust.bzl", "reth_cargo_toml_env_vars", "reth_library", "reth_unit_test")
 
 FEATURES = [
     "default",
@@ -35,18 +35,18 @@ reth_library(
     crate_features = FEATURES,
     declared_features = DECLARED_FEATURES,
     deps = [
-        "@crates//:base64",
-        "@crates//:clap",
-        "@crates//:eyre",
-        "@crates//:opentelemetry",
-        "@crates//:opentelemetry-appender-tracing",
-        "@crates//:opentelemetry-otlp",
-        "@crates//:opentelemetry-semantic-conventions",
-        "@crates//:opentelemetry_sdk",
-        "@crates//:tracing",
-        "@crates//:tracing-opentelemetry",
-        "@crates//:tracing-subscriber",
-        "@crates//:url",
+        "@reth_crates//:base64",
+        "@reth_crates//:clap",
+        "@reth_crates//:eyre",
+        "@reth_crates//:opentelemetry",
+        "@reth_crates//:opentelemetry-appender-tracing",
+        "@reth_crates//:opentelemetry-otlp",
+        "@reth_crates//:opentelemetry-semantic-conventions",
+        "@reth_crates//:opentelemetry_sdk",
+        "@reth_crates//:tracing",
+        "@reth_crates//:tracing-opentelemetry",
+        "@reth_crates//:tracing-subscriber",
+        "@reth_crates//:url",
     ],
 )
 

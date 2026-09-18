@@ -5,13 +5,13 @@ The wrappers hold everything that is the same for every workspace crate
 so that the generated `BUILD.bazel` files only carry per-crate facts: crate
 root, features, and dependencies.
 
-Regenerate BUILD files with `python3 scripts/bazel/generate.py`.
+Regenerate BUILD files with `python3 reth/scripts/bazel/generate.py`.
 """
 
 load("@rules_rust//cargo:defs.bzl", "cargo_build_script", "cargo_toml_env_vars")
 load("@rules_rust//rust:defs.bzl", "rust_binary", "rust_library", "rust_test")
-load("//bazel:process_per_test.bzl", "process_per_test")
-load("//bazel:workspace.bzl", "RUST_EDITION", "WORKSPACE_VERSION")
+load("//reth/bazel:process_per_test.bzl", "process_per_test")
+load("//reth/bazel:workspace.bzl", "RUST_EDITION", "WORKSPACE_VERSION")
 
 # Non-Rust files a crate may `include_str!`/`include_bytes!` at compile time.
 _COMPILE_DATA_DIRS = ["src", "res", "assets"]
@@ -23,7 +23,7 @@ _TEST_DATA_DIRS = _COMPILE_DATA_DIRS + ["tests", "testdata", "test-data", "test_
 # jsonrpsee's `#[rpc]`, among others) opens `$CARGO_MANIFEST_DIR/Cargo.toml` to
 # find out what the crate calls its dependencies, and follows `workspace = true`
 # entries up to the workspace root.
-_MANIFESTS = ["Cargo.toml", "//:Cargo.toml"]
+_MANIFESTS = ["Cargo.toml", "//reth:Cargo.toml"]
 
 # Threads per test process. libtest defaults to the core count, but every
 # test that opens an MDBX environment reserves 8 TiB of virtual address
@@ -49,7 +49,7 @@ def reth_cargo_toml_env_vars(name = "cargo_toml_env_vars"):
     cargo_toml_env_vars(
         name = name,
         src = "Cargo.toml",
-        workspace = "//:Cargo.toml",
+        workspace = "//reth:Cargo.toml",
     )
 
 def _check_cfg_flags(declared_features):
@@ -57,7 +57,7 @@ def _check_cfg_flags(declared_features):
 
     `unexpected_cfgs` is warn-by-default in rustc, so without these every
     `#[cfg(feature = "...")]`, `#[cfg(test)]` and `#[cfg(docsrs)]` would warn.
-    Workspace-level `check-cfg` entries come from `//bazel:lints`.
+    Workspace-level `check-cfg` entries come from `//reth/bazel:lints`.
     """
     values = ", ".join(['"%s"' % f for f in declared_features])
     return [
@@ -72,24 +72,24 @@ def _common_kwargs(crate_features, declared_features, workspace_lints, kwargs):
         crate_features = crate_features,
         rustc_flags = _check_cfg_flags(declared_features) + kwargs.pop("rustc_flags", []),
         rustc_env_files = [":cargo_toml_env_vars"],
-        lint_config = "//bazel:lints" if workspace_lints else None,
+        lint_config = "//reth/bazel:lints" if workspace_lints else None,
     )
     common.update(kwargs)
     return common
 
 # What `#[test_fuzz]`-instrumented tests need at run time: they shell out to
 # `cargo metadata` to find a `target/` directory for the corpus they record.
-# `//bazel/test_fuzz` is a self-contained stub package so that neither the
+# `//reth/bazel/test_fuzz` is a self-contained stub package so that neither the
 # real workspace nor a host cargo is needed; see its Cargo.toml.
 _TEST_FUZZ_DATA = [
-    "//bazel/test_fuzz:Cargo.toml",
-    "//bazel/test_fuzz:src/lib.rs",
+    "//reth/bazel/test_fuzz:Cargo.toml",
+    "//reth/bazel/test_fuzz:src/lib.rs",
     "@rules_rust//rust/toolchain:current_cargo_files",
 ]
 
 _TEST_FUZZ_ENV = {
     "CARGO": "$(rootpath @rules_rust//rust/toolchain:current_cargo_files)",
-    "TEST_FUZZ_MANIFEST_PATH": "$(rootpath //bazel/test_fuzz:Cargo.toml)",
+    "TEST_FUZZ_MANIFEST_PATH": "$(rootpath //reth/bazel/test_fuzz:Cargo.toml)",
 }
 
 def _test_kwargs(crate_features, declared_features, workspace_lints, test_fuzz, kwargs):

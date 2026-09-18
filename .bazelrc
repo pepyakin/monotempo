@@ -1,4 +1,4 @@
-# Bazel configuration for reth. See bazel/README.md.
+# Bazel configuration for the monotempo monorepo. See README.md and reth/bazel/README.md.
 
 # Keep MODULE.bazel.lock in sync automatically; CI checks it in with --lockfile_mode=error.
 common --lockfile_mode=update
@@ -26,7 +26,7 @@ test --test_output=errors
 test --test_summary=terse
 
 # Dev inner loop (Linux only, opt-in, not for CI): rustc incremental
-# compilation for workspace crates. See "Incremental rustc" in bazel/README.md;
+# compilation for workspace crates. See "Incremental rustc" in reth/bazel/README.md;
 # the cache directory is machine specific and is added in user.bazelrc.
 #
 # rules_rust bakes the action's cwd into `--remap-path-prefix` and
@@ -45,7 +45,7 @@ build:dev --sandbox_add_mount_pair=/usr
 # `//@<flag>` applies the flag to main-repo crates only, so external crates keep
 # their cache entries when switching --config=dev on or off. 256 is rustc's own
 # codegen-units default for incremental builds (more, smaller units to reuse).
-build:dev --@rules_rust//rust/settings:per_crate_rustc_flag=//crates/@-Ccodegen-units=256
+build:dev --@rules_rust//rust/settings:per_crate_rustc_flag=//reth/crates/@-Ccodegen-units=256
 
 # Release build, roughly the `release` cargo profile (opt-level 3, thin LTO,
 # no debug info).

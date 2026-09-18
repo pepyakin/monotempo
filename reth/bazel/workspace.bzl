@@ -1,6 +1,6 @@
 # GENERATED FILE - DO NOT EDIT.
 #
-# Regenerate with `python3 scripts/bazel/generate.py` after changing Cargo.toml.
+# Regenerate with `python3 reth/scripts/bazel/generate.py` after changing Cargo.toml.
 
 """Workspace-wide values derived from the root Cargo.toml."""
 

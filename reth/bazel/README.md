@@ -1,5 +1,11 @@
 # Building reth with Bazel
 
+reth is one project of the monotempo monorepo, whose root is the Bazel
+workspace: run `bazel` from the repository root, and every reth label starts
+with `//reth/`. The root `MODULE.bazel`, `.bazelrc` and `.bazelignore` are
+shared with the other projects (see the root README); this document covers
+reth's part.
+
 Bazel builds reth hermetically with [rules_rust]: a pinned Rust toolchain, a
 pinned LLVM/clang C toolchain, sandboxed actions without network access, and a
 per-crate dependency graph so that a change to one file only rebuilds (and
@@ -16,14 +22,14 @@ Install [bazelisk] as `bazel`; it reads `.bazelversion`. Nothing else is needed:
 rustc, cargo, clang and libclang are downloaded and pinned by Bazel.
 
 ```bash
-bazel build //bin/reth                     # debug build of the node binary
-bazel build --config=release //bin/reth    # opt build (thin LTO)
-bazel build //crates/storage/db:reth_db    # one crate
-bazel test //crates/tracing/...            # tests of one crate
-bazel test //...                           # everything (cached per crate)
+bazel build //reth                               # debug build of the node binary
+bazel build --config=release //reth              # opt build (thin LTO)
+bazel build //reth/crates/storage/db:reth_db     # one crate
+bazel test //reth/crates/tracing/...             # tests of one crate
+bazel test //reth/...                            # everything in reth (cached per crate)
 ```
 
-Outputs land in `bazel-bin/`, e.g. `bazel-bin/bin/reth/reth`.
+Outputs land in `bazel-bin/`, e.g. `bazel-bin/reth/bin/reth/reth`.
 
 [bazelisk]: https://github.com/bazelbuild/bazelisk
 
@@ -31,8 +37,9 @@ Outputs land in `bazel-bin/`, e.g. `bazel-bin/bin/reth/reth`.
 
 | Path | Purpose |
 | --- | --- |
-| `MODULE.bazel` | Bazel module: rules_rust, Rust toolchain version, LLVM toolchain, crate_universe (`@crates`). |
-| `.bazelrc` | Hermeticity flags, `--config=release`, `--config=ci`. |
+| `/MODULE.bazel` | Root module (shared): rules_rust, Rust toolchain version, LLVM toolchain; `include()`s the file below. |
+| `reth.MODULE.bazel` | reth's part of the module: crate_universe (`@reth_crates`) and its crate annotations. |
+| `/.bazelrc` | Hermeticity flags, `--config=release`, `--config=ci`, `--config=dev`. |
 | `Cargo.Bazel.lock` | crate_universe's rendered view of `Cargo.lock` (which crates, features, and build scripts each external crate needs). |
 | `bazel/rust.bzl` | `reth_library`, `reth_binary`, `reth_unit_test`, `reth_integration_test`, `reth_build_script` wrappers around rules_rust. |
 | `bazel/workspace.bzl` | Generated: workspace version, edition, `[workspace.lints]`. |
@@ -42,12 +49,13 @@ Outputs land in `bazel-bin/`, e.g. `bazel-bin/bin/reth/reth`.
 | `bazel/test_fuzz/` | Stub cargo package that `#[test_fuzz]`-instrumented tests point `cargo metadata` at. |
 | `bazel/patches/` | Patches applied to external crates by crate_universe annotations. |
 | `<crate>/BUILD.bazel` | Generated per crate from its `Cargo.toml`. |
-| `scripts/bazel/generate.py` | The generator. |
+| `scripts/bazel/generate.py` | The generator (derives the `//reth/` label prefix from its location under the workspace root). |
 
-Every workspace crate `foo-bar` becomes `//path/to/crate:foo_bar` (its lib),
-`//path/to/crate:foo_bar_test` (its `#[cfg(test)]` tests) and
-`//path/to/crate:foo_bar_<name>_test` per `tests/<name>.rs`. Binaries keep their
-Cargo name (`//bin/reth:reth`). External crates are `@crates//:<name>`.
+Every workspace crate `foo-bar` becomes `//reth/path/to/crate:foo_bar` (its lib),
+`//reth/path/to/crate:foo_bar_test` (its `#[cfg(test)]` tests) and
+`//reth/path/to/crate:foo_bar_<name>_test` per `tests/<name>.rs`. Binaries keep
+their Cargo name (`//reth/bin/reth:reth`, aliased as `//reth`). External crates
+are `@reth_crates//:<name>`.
 
 ## When you change a `Cargo.toml` or `Cargo.lock`
 
@@ -55,11 +63,11 @@ Run the generator, then repin crate_universe if external dependencies or
 features changed:
 
 ```bash
-python3 scripts/bazel/generate.py         # rewrites BUILD.bazel files (~2 s)
-CARGO_BAZEL_REPIN=1 bazel mod deps         # rewrites Cargo.Bazel.lock (~2 min)
+python3 reth/scripts/bazel/generate.py    # rewrites BUILD.bazel files (~2 s)
+CARGO_BAZEL_REPIN=1 bazel mod deps         # rewrites reth/Cargo.Bazel.lock (~2 min)
 ```
 
-CI runs `scripts/bazel/generate.py --check` and builds with
+CI runs `reth/scripts/bazel/generate.py --check` and builds with
 `--config=ci` (`--lockfile_mode=error`), so a stale generated file or lockfile
 fails the build with a message naming the file.
 
@@ -140,28 +148,28 @@ path, both lines):
 mkdir -p ~/.cache/reth-bazel-incremental
 cat >> user.bazelrc <<EOF
 build:dev --sandbox_add_mount_pair=/home/<you>/.cache/reth-bazel-incremental
-build:dev --@rules_rust//rust/settings:per_crate_rustc_flag=//crates/@-Cincremental=/home/<you>/.cache/reth-bazel-incremental
+build:dev --@rules_rust//rust/settings:per_crate_rustc_flag=//reth/crates/@-Cincremental=/home/<you>/.cache/reth-bazel-incremental
 EOF
-bazel test --config=dev //crates/net/network/...
+bazel test --config=dev //reth/crates/net/network/...
 ```
 
 Both lines are needed: without the mount pair rustc silently writes its cache
 inside the throwaway sandbox and nothing is reused. Notes:
 
 * Measured on 16 cores, touching `crates/net/eth-wire/src/lib.rs` and
-  building `//crates/net/eth-wire/... //crates/net/network/...`: 20 s default,
+  building `//reth/crates/net/eth-wire/... //reth/crates/net/network/...`: 20 s default,
   9–12 s with `--config=dev` (the rustc process for a touched crate drops from
   ~6 s to ~2 s; the rest is Bazel overhead and test-binary linking).
   `-C codegen-units=256` on its own changes nothing measurable.
 * `per_crate_rustc_flag=<label prefix>@<flag>` applies the flag only to
-  crates whose label starts with the prefix. `//crates/` covers the libraries
-  and their test binaries but not `//bin/...` or `//examples/...`: those leaf
+  crates whose label starts with the prefix. `//reth/crates/` covers the libraries
+  and their test binaries but not `//reth/bin/...` or `//reth/examples/...`: those leaf
   binaries monomorphise the whole node and each would add ~900 MiB of cache
   for code nobody iterates on. External crates never match, so switching the
-  config on or off rebuilds the `//crates/` targets once (a few minutes) but
+  config on or off rebuilds the `//reth/crates/` targets once (a few minutes) but
   keeps every external crate cached. Narrow the prefix further (e.g.
-  `//crates/net/`) to keep the cache small.
-* The cache is large: ~15–20 GiB for all of `//crates/` including test
+  `//reth/crates/net/`) to keep the cache small.
+* The cache is large: ~15–20 GiB for all of `//reth/crates/` including test
   binaries (the biggest e2e test binaries take ~1 GiB each), roughly what
   cargo's `target/debug/incremental` costs. Delete the directory to reset it.
 * Not for CI: the hermetic sandbox mounts `/usr`, `/bin`, `/lib`, `/lib64`,
@@ -186,7 +194,7 @@ action and runs one rustc per core; linking reth's larger test binaries takes
   `cargo build --workspace`, minus `jit` and `gmp` (see above). Per-crate feature
   combinations are not modelled; a crate is built once with its unified features.
 * `[lints] workspace = true` crates get the workspace lints through
-  `//bazel:lints`; crates without it (e.g. `reth-mdbx-sys`, the examples) get
+  `//reth/bazel:lints`; crates without it (e.g. `reth-mdbx-sys`, the examples) get
   rustc's defaults, as with cargo.
 * `ef-tests` is tagged `manual` (it needs the `ethereum-tests` submodule).
 * Tests default to `size = "large"` (15 min timeout) because many reth tests

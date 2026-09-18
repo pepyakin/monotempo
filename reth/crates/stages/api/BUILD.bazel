@@ -1,8 +1,8 @@
 # GENERATED FILE - DO NOT EDIT.
 #
-# Regenerate with `python3 scripts/bazel/generate.py` after changing Cargo.toml.
+# Regenerate with `python3 reth/scripts/bazel/generate.py` after changing Cargo.toml.
 
-load("//bazel:rust.bzl", "reth_cargo_toml_env_vars", "reth_library", "reth_unit_test")
+load("//reth/bazel:rust.bzl", "reth_cargo_toml_env_vars", "reth_library", "reth_unit_test")
 
 FEATURES = [
     "test-utils",
@@ -19,29 +19,29 @@ reth_library(
     crate_features = FEATURES,
     declared_features = DECLARED_FEATURES,
     deps = [
-        "//crates/consensus/consensus:reth_consensus",
-        "//crates/errors:reth_errors",
-        "//crates/metrics:reth_metrics",
-        "//crates/net/p2p:reth_network_p2p",
-        "//crates/prune/prune:reth_prune",
-        "//crates/stages/types:reth_stages_types",
-        "//crates/static-file/static-file:reth_static_file",
-        "//crates/static-file/types:reth_static_file_types",
-        "//crates/storage/provider:reth_provider",
-        "//crates/tokio-util:reth_tokio_util",
-        "@crates//:alloy-eips",
-        "@crates//:alloy-primitives",
-        "@crates//:futures-util",
-        "@crates//:metrics",
-        "@crates//:reth-codecs",
-        "@crates//:reth-primitives-traits",
-        "@crates//:thiserror",
-        "@crates//:tokio",
-        "@crates//:tracing",
+        "//reth/crates/consensus/consensus:reth_consensus",
+        "//reth/crates/errors:reth_errors",
+        "//reth/crates/metrics:reth_metrics",
+        "//reth/crates/net/p2p:reth_network_p2p",
+        "//reth/crates/prune/prune:reth_prune",
+        "//reth/crates/stages/types:reth_stages_types",
+        "//reth/crates/static-file/static-file:reth_static_file",
+        "//reth/crates/static-file/types:reth_static_file_types",
+        "//reth/crates/storage/provider:reth_provider",
+        "//reth/crates/tokio-util:reth_tokio_util",
+        "@reth_crates//:alloy-eips",
+        "@reth_crates//:alloy-primitives",
+        "@reth_crates//:futures-util",
+        "@reth_crates//:metrics",
+        "@reth_crates//:reth-codecs",
+        "@reth_crates//:reth-primitives-traits",
+        "@reth_crates//:thiserror",
+        "@reth_crates//:tokio",
+        "@reth_crates//:tracing",
     ],
     proc_macro_deps = [
-        "@crates//:aquamarine",
-        "@crates//:auto_impl",
+        "@reth_crates//:aquamarine",
+        "@reth_crates//:auto_impl",
     ],
 )
 
@@ -51,12 +51,12 @@ reth_unit_test(
     crate_features = FEATURES,
     declared_features = DECLARED_FEATURES,
     deps = [
-        "//crates/chainspec:reth_chainspec",
-        "//crates/storage/db-api:reth_db_api",
-        "//crates/storage/db:reth_db",
-        "//crates/tasks:reth_tasks",
-        "//testing/testing-utils:reth_testing_utils",
-        "@crates//:assert_matches",
-        "@crates//:tokio-stream",
+        "//reth/crates/chainspec:reth_chainspec",
+        "//reth/crates/storage/db-api:reth_db_api",
+        "//reth/crates/storage/db:reth_db",
+        "//reth/crates/tasks:reth_tasks",
+        "//reth/testing/testing-utils:reth_testing_utils",
+        "@reth_crates//:assert_matches",
+        "@reth_crates//:tokio-stream",
     ],
 )

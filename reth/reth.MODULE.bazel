@@ -1,65 +1,9 @@
-"""Bazel module definition for reth.
+"""reth's part of the monotempo Bazel module (included from //MODULE.bazel).
 
 Rust crates are still described by their `Cargo.toml` files; Bazel consumes
 those through crate_universe (external crates) and through the generated
-`BUILD.bazel` files (workspace crates). See `bazel/README.md`.
+`BUILD.bazel` files (workspace crates). See `reth/bazel/README.md`.
 """
-
-module(
-    name = "reth",
-    version = "2.5.2",
-)
-
-bazel_dep(name = "rules_rust", version = "0.74.0")
-bazel_dep(name = "rules_cc", version = "0.2.17")
-bazel_dep(name = "platforms", version = "1.1.0")
-bazel_dep(name = "bazel_skylib", version = "1.8.2")
-bazel_dep(name = "toolchains_llvm", version = "1.9.0")
-
-###############################################################################
-# Hermetic C/C++ toolchain.
-#
-# `cc` build scripts (libmdbx, keccak-asm, secp256k1, ...) and the final link
-# step run through this toolchain instead of whatever compiler the host has.
-# The same distribution provides `libclang` for the bindgen invocation in
-# `reth-mdbx-sys`'s build script.
-###############################################################################
-
-LLVM_VERSION = "20.1.7"
-
-llvm = use_extension("@toolchains_llvm//toolchain/extensions:llvm.bzl", "llvm")
-llvm.toolchain(
-    name = "llvm_toolchain",
-    llvm_version = LLVM_VERSION,
-)
-use_repo(llvm, "llvm_toolchain", "llvm_toolchain_llvm")
-
-# clang's resource directory (builtin headers such as `stddef.h`). The prebuilt
-# libclang cannot locate it on its own, so every bindgen invocation is told
-# where it is; see `BINDGEN_EXTRA_CLANG_ARGS` below and in scripts/bazel/generate.py.
-CLANG_BUILTIN_HEADERS = "@llvm_toolchain_llvm//:lib/clang/%s/include" % LLVM_VERSION.split(".")[0]
-
-register_toolchains("@llvm_toolchain//:all")
-
-###############################################################################
-# Rust toolchain.
-#
-# The version is pinned to the workspace `rust-version` (MSRV) so that a Bazel
-# build never depends on the host's rustup state.
-###############################################################################
-
-RUST_VERSION = "1.95.0"
-
-RUST_EDITION = "2024"
-
-rust = use_extension("@rules_rust//rust:extensions.bzl", "rust")
-rust.toolchain(
-    edition = RUST_EDITION,
-    versions = [RUST_VERSION],
-)
-use_repo(rust, "rust_toolchains")
-
-register_toolchains("@rust_toolchains//:all")
 
 ###############################################################################
 # External crates.
@@ -78,15 +22,20 @@ register_toolchains("@rust_toolchains//:all")
 # after running the generator whenever a `Cargo.toml` or `Cargo.lock` changes.
 ###############################################################################
 
+# clang's resource directory (builtin headers such as `stddef.h`). The prebuilt
+# libclang cannot locate it on its own, so every bindgen invocation is told
+# where it is. The major version follows `LLVM_VERSION` in //MODULE.bazel.
+CLANG_BUILTIN_HEADERS = "@llvm_toolchain_llvm//:lib/clang/20/include"
+
 crate = use_extension("@rules_rust//crate_universe:extensions.bzl", "crate")
 crate.from_cargo(
-    name = "crates",
-    cargo_config = "//:.cargo/config.toml",
-    cargo_lockfile = "//:Cargo.lock",
-    lockfile = "//:Cargo.Bazel.lock",
+    name = "reth_crates",
+    cargo_config = "//reth:.cargo/config.toml",
+    cargo_lockfile = "//reth:Cargo.lock",
+    lockfile = "//reth:Cargo.Bazel.lock",
     manifests = [
-        "//bazel/cargo:Cargo.toml",
-        "//bazel/cargo:bin/reth/Cargo.toml",
+        "//reth/bazel/cargo:Cargo.toml",
+        "//reth/bazel/cargo:bin/reth/Cargo.toml",
     ],
     supported_platform_triples = [
         "aarch64-apple-darwin",
@@ -101,6 +50,7 @@ crate.from_cargo(
 crate.annotation(
     build_script_use_default_shell_env = "on",
     crate = "tikv-jemalloc-sys",
+    repositories = ["reth_crates"],
 )
 
 # RocksDB's build script runs bindgen over the C API headers with libclang from
@@ -124,6 +74,7 @@ crate.annotation(
     crate = "librocksdb-sys",
     label_injections = {"@llvm_toolchain_llvm": "@llvm_toolchain_llvm"},
     patch_args = ["-p1"],
-    patches = ["//bazel/patches:librocksdb-sys-snappy-build-file.patch"],
+    patches = ["//reth/bazel/patches:librocksdb-sys-snappy-build-file.patch"],
+    repositories = ["reth_crates"],
 )
-use_repo(crate, "crates")
+use_repo(crate, "reth_crates")

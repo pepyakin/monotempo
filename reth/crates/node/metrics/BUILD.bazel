@@ -1,8 +1,8 @@
 # GENERATED FILE - DO NOT EDIT.
 #
-# Regenerate with `python3 scripts/bazel/generate.py` after changing Cargo.toml.
+# Regenerate with `python3 reth/scripts/bazel/generate.py` after changing Cargo.toml.
 
-load("//bazel:rust.bzl", "reth_cargo_toml_env_vars", "reth_library", "reth_unit_test")
+load("//reth/bazel:rust.bzl", "reth_cargo_toml_env_vars", "reth_library", "reth_unit_test")
 
 FEATURES = [
     "jemalloc",
@@ -21,28 +21,28 @@ reth_library(
     crate_features = FEATURES,
     declared_features = DECLARED_FEATURES,
     deps = [
-        "//crates/metrics:reth_metrics",
-        "//crates/tasks:reth_tasks",
-        "@crates//:bytes",
-        "@crates//:eyre",
-        "@crates//:http",
-        "@crates//:http-body-util",
-        "@crates//:jsonrpsee-server",
-        "@crates//:metrics",
-        "@crates//:metrics-exporter-prometheus",
-        "@crates//:metrics-process",
-        "@crates//:metrics-util",
-        "@crates//:parking_lot",
-        "@crates//:reqwest",
-        "@crates//:tokio",
-        "@crates//:tower",
-        "@crates//:tracing",
+        "//reth/crates/metrics:reth_metrics",
+        "//reth/crates/tasks:reth_tasks",
+        "@reth_crates//:bytes",
+        "@reth_crates//:eyre",
+        "@reth_crates//:http",
+        "@reth_crates//:http-body-util",
+        "@reth_crates//:jsonrpsee-server",
+        "@reth_crates//:metrics",
+        "@reth_crates//:metrics-exporter-prometheus",
+        "@reth_crates//:metrics-process",
+        "@reth_crates//:metrics-util",
+        "@reth_crates//:parking_lot",
+        "@reth_crates//:reqwest",
+        "@reth_crates//:tokio",
+        "@reth_crates//:tower",
+        "@reth_crates//:tracing",
     ] + select({
-        "@platforms//os:linux": ["@crates//:procfs"],
+        "@platforms//os:linux": ["@reth_crates//:procfs"],
         "//conditions:default": [],
     }) + select({
-        "@platforms//os:linux": ["@crates//:tikv-jemalloc-ctl"],
-        "@platforms//os:macos": ["@crates//:tikv-jemalloc-ctl"],
+        "@platforms//os:linux": ["@reth_crates//:tikv-jemalloc-ctl"],
+        "@platforms//os:macos": ["@reth_crates//:tikv-jemalloc-ctl"],
         "//conditions:default": [],
     }),
 )
@@ -53,6 +53,6 @@ reth_unit_test(
     crate_features = FEATURES,
     declared_features = DECLARED_FEATURES,
     deps = [
-        "@crates//:socket2",
+        "@reth_crates//:socket2",
     ],
 )

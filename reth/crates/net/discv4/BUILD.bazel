@@ -1,8 +1,8 @@
 # GENERATED FILE - DO NOT EDIT.
 #
-# Regenerate with `python3 scripts/bazel/generate.py` after changing Cargo.toml.
+# Regenerate with `python3 reth/scripts/bazel/generate.py` after changing Cargo.toml.
 
-load("//bazel:rust.bzl", "reth_cargo_toml_env_vars", "reth_library", "reth_unit_test")
+load("//reth/bazel:rust.bzl", "reth_cargo_toml_env_vars", "reth_library", "reth_unit_test")
 
 FEATURES = [
     "default",
@@ -23,27 +23,27 @@ reth_library(
     crate_features = FEATURES,
     declared_features = DECLARED_FEATURES,
     deps = [
-        "//crates/ethereum/hardforks:reth_ethereum_forks",
-        "//crates/net/banlist:reth_net_banlist",
-        "//crates/net/nat:reth_net_nat",
-        "//crates/net/peers:reth_network_peers",
-        "@crates//:alloy-primitives",
-        "@crates//:alloy-rlp",
-        "@crates//:discv5",
-        "@crates//:enr",
-        "@crates//:itertools",
-        "@crates//:parking_lot",
-        "@crates//:rand_08-0.8.6",
-        "@crates//:schnellru",
-        "@crates//:secp256k1",
-        "@crates//:serde",
-        "@crates//:thiserror",
-        "@crates//:tokio",
-        "@crates//:tokio-stream",
-        "@crates//:tracing",
+        "//reth/crates/ethereum/hardforks:reth_ethereum_forks",
+        "//reth/crates/net/banlist:reth_net_banlist",
+        "//reth/crates/net/nat:reth_net_nat",
+        "//reth/crates/net/peers:reth_network_peers",
+        "@reth_crates//:alloy-primitives",
+        "@reth_crates//:alloy-rlp",
+        "@reth_crates//:discv5",
+        "@reth_crates//:enr",
+        "@reth_crates//:itertools",
+        "@reth_crates//:parking_lot",
+        "@reth_crates//:rand_08-0.8.6",
+        "@reth_crates//:schnellru",
+        "@reth_crates//:secp256k1",
+        "@reth_crates//:serde",
+        "@reth_crates//:thiserror",
+        "@reth_crates//:tokio",
+        "@reth_crates//:tokio-stream",
+        "@reth_crates//:tracing",
     ],
     aliases = {
-        "@crates//:rand_08-0.8.6": "rand_08",
+        "@reth_crates//:rand_08-0.8.6": "rand_08",
     },
 )
 
@@ -53,11 +53,11 @@ reth_unit_test(
     crate_features = FEATURES,
     declared_features = DECLARED_FEATURES,
     deps = [
-        "//crates/tracing:reth_tracing",
-        "@crates//:assert_matches",
-        "@crates//:criterion",
+        "//reth/crates/tracing:reth_tracing",
+        "@reth_crates//:assert_matches",
+        "@reth_crates//:criterion",
     ],
     aliases = {
-        "@crates//:criterion": "criterion",
+        "@reth_crates//:criterion": "criterion",
     },
 )

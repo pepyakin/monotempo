@@ -1,8 +1,8 @@
 # GENERATED FILE - DO NOT EDIT.
 #
-# Regenerate with `python3 scripts/bazel/generate.py` after changing Cargo.toml.
+# Regenerate with `python3 reth/scripts/bazel/generate.py` after changing Cargo.toml.
 
-load("//bazel:rust.bzl", "reth_cargo_toml_env_vars", "reth_library", "reth_unit_test")
+load("//reth/bazel:rust.bzl", "reth_cargo_toml_env_vars", "reth_library", "reth_unit_test")
 
 FEATURES = [
     "jemalloc",
@@ -23,22 +23,22 @@ reth_library(
     crate_features = FEATURES,
     declared_features = DECLARED_FEATURES,
     deps = [
-        "//crates/fs-util:reth_fs_util",
-        "@crates//:alloy-eips",
-        "@crates//:alloy-primitives",
-        "@crates//:cfg-if",
-        "@crates//:eyre",
-        "@crates//:rand_08-0.8.6",
-        "@crates//:secp256k1",
-        "@crates//:serde",
-        "@crates//:thiserror",
+        "//reth/crates/fs-util:reth_fs_util",
+        "@reth_crates//:alloy-eips",
+        "@reth_crates//:alloy-primitives",
+        "@reth_crates//:cfg-if",
+        "@reth_crates//:eyre",
+        "@reth_crates//:rand_08-0.8.6",
+        "@reth_crates//:secp256k1",
+        "@reth_crates//:serde",
+        "@reth_crates//:thiserror",
     ] + select({
-        "@platforms//os:linux": ["@crates//:libc", "@crates//:tikv-jemalloc-sys", "@crates//:tikv-jemallocator"],
-        "@platforms//os:macos": ["@crates//:libc", "@crates//:tikv-jemalloc-sys", "@crates//:tikv-jemallocator"],
+        "@platforms//os:linux": ["@reth_crates//:libc", "@reth_crates//:tikv-jemalloc-sys", "@reth_crates//:tikv-jemallocator"],
+        "@platforms//os:macos": ["@reth_crates//:libc", "@reth_crates//:tikv-jemalloc-sys", "@reth_crates//:tikv-jemallocator"],
         "//conditions:default": [],
     }),
     aliases = {
-        "@crates//:rand_08-0.8.6": "rand_08",
+        "@reth_crates//:rand_08-0.8.6": "rand_08",
     },
 )
 
@@ -48,6 +48,6 @@ reth_unit_test(
     crate_features = FEATURES,
     declared_features = DECLARED_FEATURES,
     deps = [
-        "@crates//:rand-0.9.4",
+        "@reth_crates//:rand-0.9.4",
     ],
 )

@@ -1,8 +1,8 @@
 # GENERATED FILE - DO NOT EDIT.
 #
-# Regenerate with `python3 scripts/bazel/generate.py` after changing Cargo.toml.
+# Regenerate with `python3 reth/scripts/bazel/generate.py` after changing Cargo.toml.
 
-load("//bazel:rust.bzl", "reth_cargo_toml_env_vars", "reth_library", "reth_unit_test")
+load("//reth/bazel:rust.bzl", "reth_cargo_toml_env_vars", "reth_library", "reth_unit_test")
 
 FEATURES = []
 
@@ -15,23 +15,23 @@ reth_library(
     crate_features = FEATURES,
     declared_features = DECLARED_FEATURES,
     deps = [
-        "//crates/chainspec:reth_chainspec",
-        "//crates/ethereum/hardforks:reth_ethereum_forks",
-        "//crates/metrics:reth_metrics",
-        "//crates/net/peers:reth_network_peers",
-        "@crates//:alloy-primitives",
-        "@crates//:alloy-rlp",
-        "@crates//:derive_more",
-        "@crates//:discv5",
-        "@crates//:enr",
-        "@crates//:futures",
-        "@crates//:itertools",
-        "@crates//:metrics",
-        "@crates//:rand-0.9.4",
-        "@crates//:secp256k1",
-        "@crates//:thiserror",
-        "@crates//:tokio",
-        "@crates//:tracing",
+        "//reth/crates/chainspec:reth_chainspec",
+        "//reth/crates/ethereum/hardforks:reth_ethereum_forks",
+        "//reth/crates/metrics:reth_metrics",
+        "//reth/crates/net/peers:reth_network_peers",
+        "@reth_crates//:alloy-primitives",
+        "@reth_crates//:alloy-rlp",
+        "@reth_crates//:derive_more",
+        "@reth_crates//:discv5",
+        "@reth_crates//:enr",
+        "@reth_crates//:futures",
+        "@reth_crates//:itertools",
+        "@reth_crates//:metrics",
+        "@reth_crates//:rand-0.9.4",
+        "@reth_crates//:secp256k1",
+        "@reth_crates//:thiserror",
+        "@reth_crates//:tokio",
+        "@reth_crates//:tracing",
     ],
 )
 
@@ -41,10 +41,10 @@ reth_unit_test(
     crate_features = FEATURES,
     declared_features = DECLARED_FEATURES,
     deps = [
-        "//crates/tracing:reth_tracing",
-        "@crates//:rand_08-0.8.6",
+        "//reth/crates/tracing:reth_tracing",
+        "@reth_crates//:rand_08-0.8.6",
     ],
     aliases = {
-        "@crates//:rand_08-0.8.6": "rand_08",
+        "@reth_crates//:rand_08-0.8.6": "rand_08",
     },
 )

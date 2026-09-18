@@ -1,5 +1,5 @@
 load("@rules_rust//rust:defs.bzl", "rust_lint_config")
-load("//bazel:workspace.bzl", "CLIPPY_LINTS", "RUSTC_CHECK_CFG", "RUSTC_LINTS", "RUSTDOC_LINTS")
+load("//reth/bazel:workspace.bzl", "CLIPPY_LINTS", "RUSTC_CHECK_CFG", "RUSTC_LINTS", "RUSTDOC_LINTS")
 
 package(default_visibility = ["//visibility:public"])
 

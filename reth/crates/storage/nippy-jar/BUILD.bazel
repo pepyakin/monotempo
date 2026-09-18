@@ -1,8 +1,8 @@
 # GENERATED FILE - DO NOT EDIT.
 #
-# Regenerate with `python3 scripts/bazel/generate.py` after changing Cargo.toml.
+# Regenerate with `python3 reth/scripts/bazel/generate.py` after changing Cargo.toml.
 
-load("//bazel:rust.bzl", "reth_cargo_toml_env_vars", "reth_library", "reth_unit_test")
+load("//reth/bazel:rust.bzl", "reth_cargo_toml_env_vars", "reth_library", "reth_unit_test")
 
 FEATURES = [
     "default",
@@ -21,17 +21,17 @@ reth_library(
     crate_features = FEATURES,
     declared_features = DECLARED_FEATURES,
     deps = [
-        "//crates/fs-util:reth_fs_util",
-        "@crates//:anyhow",
-        "@crates//:bincode",
-        "@crates//:derive_more",
-        "@crates//:lz4_flex",
-        "@crates//:memmap2",
-        "@crates//:serde",
-        "@crates//:smallvec",
-        "@crates//:thiserror",
-        "@crates//:tracing",
-        "@crates//:zstd",
+        "//reth/crates/fs-util:reth_fs_util",
+        "@reth_crates//:anyhow",
+        "@reth_crates//:bincode",
+        "@reth_crates//:derive_more",
+        "@reth_crates//:lz4_flex",
+        "@reth_crates//:memmap2",
+        "@reth_crates//:serde",
+        "@reth_crates//:smallvec",
+        "@reth_crates//:thiserror",
+        "@reth_crates//:tracing",
+        "@reth_crates//:zstd",
     ],
 )
 
@@ -41,7 +41,7 @@ reth_unit_test(
     crate_features = FEATURES,
     declared_features = DECLARED_FEATURES,
     deps = [
-        "@crates//:rand-0.9.4",
-        "@crates//:tempfile",
+        "@reth_crates//:rand-0.9.4",
+        "@reth_crates//:tempfile",
     ],
 )

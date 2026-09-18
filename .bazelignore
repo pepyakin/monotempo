@@ -1,0 +1,22 @@
+# Directories Bazel must not treat as packages.
+
+# reth
+reth/target
+reth/docs
+reth/book
+reth/dist
+reth/db-tools
+reth/data
+reth/testing/ef-tests/ethereum-tests
+reth/crates/storage/libmdbx-rs/mdbx-sys/libmdbx/cmake-build-debug
+
+# Symlinks of reth's Bazel shadow Cargo workspace (reth/bazel/cargo) back into
+# the repository; without these Bazel would discover every package twice.
+# BEGIN GENERATED (reth/scripts/bazel/generate.py)
+reth/bazel/cargo/bin/reth-bb
+reth/bazel/cargo/bin/reth/src
+reth/bazel/cargo/bin/reth/tests
+reth/bazel/cargo/crates
+reth/bazel/cargo/examples
+reth/bazel/cargo/testing
+# END GENERATED

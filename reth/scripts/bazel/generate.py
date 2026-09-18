@@ -10,9 +10,12 @@ a `BUILD.bazel` that calls the macros in `bazel/rust.bzl`:
 * a `reth_integration_test` per `tests/*.rs` target,
 * a `reth_build_script` when the crate has a `build.rs`.
 
-External crates are referenced through the `@crates` repository rendered by
-crate_universe from the same manifests, so every dependency edge Bazel sees is
-one Cargo resolved.
+External crates are referenced through the `@reth_crates` repository rendered
+by crate_universe from the same manifests, so every dependency edge Bazel sees
+is one Cargo resolved.
+
+reth is one project of the monotempo monorepo, whose root is the Bazel
+workspace; every label this script emits is therefore prefixed with `//reth/`.
 
 Both this script and crate_universe read the Cargo workspace through the
 *Bazel shadow workspace* in `bazel/cargo/` (see `render_shadow_manifest`): a
@@ -22,9 +25,9 @@ directory of symlinks into the real workspace in which the manifests listed in
 features, and crate_universe offers no way to subtract a feature, so this is
 the only place where "what Bazel builds" can diverge from `cargo build`.
 
-Usage:
-    scripts/bazel/generate.py          # rewrite generated files
-    scripts/bazel/generate.py --check  # exit 1 if any generated file is stale
+Usage (from anywhere):
+    python3 reth/scripts/bazel/generate.py          # rewrite generated files
+    python3 reth/scripts/bazel/generate.py --check  # exit 1 if any generated file is stale
 """
 
 from __future__ import annotations
@@ -41,17 +44,33 @@ from collections import defaultdict
 from dataclasses import dataclass, field
 from pathlib import Path
 
+# The reth Cargo workspace (this project) ...
 REPO_ROOT = Path(__file__).resolve().parents[2]
+# ... is a subdirectory of the monorepo, which is the Bazel workspace. Labels
+# are workspace-relative, so every one the generator emits carries the prefix.
+WORKSPACE_ROOT = next(p for p in REPO_ROOT.parents if (p / "MODULE.bazel").exists())
+PREFIX = REPO_ROOT.relative_to(WORKSPACE_ROOT).as_posix()
+# crate_universe repository holding reth's external crates (see reth.MODULE.bazel).
+CRATES_REPO = "@reth_crates"
+
 WORKSPACE_BZL = REPO_ROOT / "bazel" / "workspace.bzl"
 SHADOW_ROOT = REPO_ROOT / "bazel" / "cargo"
-BAZELIGNORE = REPO_ROOT / ".bazelignore"
-BAZELIGNORE_BEGIN = "# BEGIN GENERATED (scripts/bazel/generate.py)\n"
+BAZELIGNORE = WORKSPACE_ROOT / ".bazelignore"
+GENERATOR = Path(__file__).resolve().relative_to(WORKSPACE_ROOT).as_posix()
+BAZELIGNORE_BEGIN = f"# BEGIN GENERATED ({GENERATOR})\n"
 BAZELIGNORE_END = "# END GENERATED\n"
 
-HEADER = """# GENERATED FILE - DO NOT EDIT.
+HEADER = f"""# GENERATED FILE - DO NOT EDIT.
 #
-# Regenerate with `python3 scripts/bazel/generate.py` after changing Cargo.toml.
+# Regenerate with `python3 {GENERATOR}` after changing Cargo.toml.
 """
+
+
+def label(package_path: str, target: str = "") -> str:
+    """Workspace-absolute label of `target` in the reth-relative `package_path`."""
+    pkg = f"{PREFIX}/{package_path}".strip("/")
+    return f"//{pkg}:{target}" if target else f"//{pkg}"
+
 
 # Cargo features that are enabled by default but are *not* built by Bazel.
 #
@@ -77,7 +96,7 @@ BUILD_SCRIPT_DATA: dict[str, str] = {
     # with libclang from the hermetic LLVM toolchain.
     "reth-mdbx-sys": (
         'glob(["libmdbx/**"]) + [\n'
-        '        "//bazel:clang_builtin_headers",\n'
+        f'        "{label("bazel", "clang_builtin_headers")}",\n'
         '        "@llvm_toolchain_llvm//:libclang",\n'
         "    ]"
     ),
@@ -85,8 +104,8 @@ BUILD_SCRIPT_DATA: dict[str, str] = {
 BUILD_SCRIPT_ENV: dict[str, dict[str, str]] = {
     "reth-mdbx-sys": {
         "LIBCLANG_PATH": "$(execpath @llvm_toolchain_llvm//:libclang)",
-        # The prebuilt libclang cannot find its own resource dir; see //bazel:clang_builtin_headers.
-        "BINDGEN_EXTRA_CLANG_ARGS": "-resource-dir=$(execpath //bazel:clang_builtin_headers)/..",
+        # The prebuilt libclang cannot find its own resource dir; see //reth/bazel:clang_builtin_headers.
+        "BINDGEN_EXTRA_CLANG_ARGS": f"-resource-dir=$(execpath {label('bazel', 'clang_builtin_headers')})/..",
     },
     # vergen cannot see `.git` inside the sandbox (and stamping every build with
     # the current commit would defeat caching). Emit stable placeholder values.
@@ -99,12 +118,12 @@ BUILD_SCRIPT_ENV: dict[str, dict[str, str]] = {
 # their own crate directory. Maps crate name -> {target -> labels}, where
 # target is an integration test's name, or "crate" for the lib, binaries and
 # unit tests (files inside the crate directory are globbed automatically).
-E2E_GENESIS = '"//crates/e2e-test-utils:src/testsuite/assets/genesis.json"'
+E2E_GENESIS = f'"{label("crates/e2e-test-utils", "src/testsuite/assets/genesis.json")}"'
 EXTRA_COMPILE_DATA: dict[str, dict[str, list[str]]] = {
     "example-exex-test": {"crate": [E2E_GENESIS]},
     "reth-engine-tree": {"e2e_testsuite": [E2E_GENESIS]},
-    "reth-node-ethereum": {"e2e": ['"//testing/prestate:tx-selfdestruct-prestate.json"']},
-    "reth-trie-db": {"proof": ['"//crates/trie/trie:testdata/proof-genesis.json"']},
+    "reth-node-ethereum": {"e2e": [f'"{label("testing/prestate", "tx-selfdestruct-prestate.json")}"']},
+    "reth-trie-db": {"proof": [f'"{label("crates/trie/trie", "testdata/proof-genesis.json")}"']},
 }
 
 # Files a crate must export for other packages (see EXTRA_COMPILE_DATA).
@@ -115,7 +134,7 @@ EXPORTED_FILES: dict[str, list[str]] = {
 
 # The crate every node-launching test is built on.
 E2E_TEST_UTILS = "reth-e2e-test-utils"
-E2E_TEST_UTILS_LABEL = "//crates/e2e-test-utils:reth_e2e_test_utils"
+E2E_TEST_UTILS_LABEL = label("crates/e2e-test-utils", "reth_e2e_test_utils")
 
 # Tags applied to a crate's test targets. `manual` keeps a test out of `bazel test //...`.
 TEST_TAGS: dict[str, list[str]] = {
@@ -187,7 +206,7 @@ class Crate:
 
     @property
     def label(self) -> str:
-        return f"//{self.package_path}:{self.lib_target}"
+        return label(self.package_path, self.lib_target)
 
     def target(self, kind: str) -> Target | None:
         return next((t for t in self.targets if t.kind == kind), None)
@@ -231,7 +250,7 @@ class ShadowWorkspace:
 
     def manifest_labels(self) -> list[str]:
         rel = [p.relative_to(SHADOW_ROOT) for p in self.manifests]
-        return ["//bazel/cargo:Cargo.toml"] + [f"//bazel/cargo:{p}" for p in sorted(rel)]
+        return [label("bazel/cargo", "Cargo.toml")] + [label("bazel/cargo", p.as_posix()) for p in sorted(rel)]
 
 
 def relative_link(link: Path, target: Path) -> str:
@@ -277,14 +296,14 @@ def render_shadow_manifest(real: Path, disabled: dict[str, str], digest: str) ->
     rel = real.relative_to(REPO_ROOT)
     reasons = "".join(f"#   - {f}: {why}\n" for f, why in disabled.items())
     header = (
-        "# GENERATED FILE - DO NOT EDIT. Regenerate with `python3 scripts/bazel/generate.py`.\n"
+        f"# GENERATED FILE - DO NOT EDIT. Regenerate with `python3 {GENERATOR}`.\n"
         "#\n"
         f"# Bazel-only shadow of `{rel}`. It is identical to the real manifest except\n"
         "# that these features are removed from `default`, because Bazel cannot\n"
         "# build them hermetically yet:\n"
         f"{reasons}"
         "#\n"
-        "# Cargo builds are unaffected; see scripts/bazel/generate.py (BAZEL_DISABLED_FEATURES).\n\n"
+        f"# Cargo builds are unaffected; see {GENERATOR} (BAZEL_DISABLED_FEATURES).\n\n"
     )
     footer = (
         "\n# Digest of every workspace member manifest. crate_universe re-resolves the\n"
@@ -368,7 +387,7 @@ def render_shadow_build_file(shadow: ShadowWorkspace) -> str:
     return (
         HEADER
         + "\n"
-        + "# The Cargo workspace as seen by Bazel; see scripts/bazel/generate.py.\n"
+        + f"# The Cargo workspace as seen by Bazel; see {GENERATOR}.\n"
         + f"exports_files({render_list([starlark_str(l) for l in labels], 0)})\n"
     )
 
@@ -379,7 +398,7 @@ def render_bazelignore(shadow: ShadowWorkspace) -> str:
     begin = text.index(BAZELIGNORE_BEGIN) + len(BAZELIGNORE_BEGIN)
     end = text.index(BAZELIGNORE_END)
     dirs = sorted(
-        str(link.relative_to(REPO_ROOT))
+        str(link.relative_to(WORKSPACE_ROOT))
         for link, target in shadow.links.items()
         if (link.parent / target).is_dir()
     )
@@ -413,7 +432,7 @@ def build_crates(meta: dict) -> dict[str, Crate]:
         return None
 
     # External crates that workspace members depend on at more than one version
-    # only get `@crates//:<name>-<version>` aliases, never a bare `@crates//:<name>`.
+    # only get `@reth_crates//:<name>-<version>` aliases, never a bare `@reth_crates//:<name>`.
     external_versions: dict[str, set[str]] = defaultdict(set)
     for member in members:
         for dep in nodes[member]["deps"]:
@@ -457,7 +476,7 @@ def build_crates(meta: dict) -> dict[str, Crate]:
                 continue  # binary-only dependency (artifact deps are not used)
             proc_macro = "proc-macro" in lib["kind"]
             if dep["pkg"] in members:
-                label = crates[dep["pkg"]].label
+                dep_label = crates[dep["pkg"]].label
                 lib_name = crates[dep["pkg"]].ident
             else:
                 # crate_universe names the alias after the `package = "..."`
@@ -471,16 +490,16 @@ def build_crates(meta: dict) -> dict[str, Crate]:
                 }
                 alias_name = renames.get(dep["name"], dep_pkg["name"])
                 if len(external_versions[dep_pkg["name"]]) > 1:
-                    label = f"@crates//:{alias_name}-{dep_pkg['version']}"
+                    dep_label = f"{CRATES_REPO}//:{alias_name}-{dep_pkg['version']}"
                 else:
-                    label = f"@crates//:{alias_name}"
+                    dep_label = f"{CRATES_REPO}//:{alias_name}"
                 lib_name = crate_name_to_ident(lib["name"])
             alias = dep["name"] if dep["name"] != lib_name else None
             for dk in dep["dep_kinds"]:
                 cfg = dk.get("target")
                 if cfg is not None and cfg not in CFG_TO_CONDITIONS:
                     sys.exit(f"{crate.name}: unsupported platform cfg {cfg!r} on {dep_pkg['name']}")
-                rendered = Dep(label=label, proc_macro=proc_macro, alias=alias, cfg=cfg)
+                rendered = Dep(label=dep_label, proc_macro=proc_macro, alias=alias, cfg=cfg)
                 {None: crate.normal, "dev": crate.dev, "build": crate.build}[dk["kind"]].append(rendered)
 
     for crate in crates.values():
@@ -546,7 +565,7 @@ def render_build_file(crate: Crate) -> str:
     build_script = crate.target("custom-build")
     tags = TEST_TAGS.get(crate.name)
     # `#[test_fuzz]`-instrumented tests need extra runtime plumbing (see rust.bzl).
-    test_fuzz = "True" if any(d.label == "@crates//:test-fuzz" for d in crate.dev) else None
+    test_fuzz = "True" if any(d.label == f"{CRATES_REPO}//:test-fuzz" for d in crate.dev) else None
     # Tests that launch nodes retain GiBs per node for the process lifetime
     # (see bazel/process_per_test.bzl); run them one process per test.
     launches_nodes = crate.name == E2E_TEST_UTILS or any(
@@ -567,7 +586,7 @@ def render_build_file(crate: Crate) -> str:
         loads.append("reth_build_script")
 
     out = [HEADER, "\n"]
-    out.append(f'load("//bazel:rust.bzl", {", ".join(starlark_str(l) for l in sorted(loads))})\n\n')
+    out.append(f'load("{label("bazel", "rust.bzl")}", {", ".join(starlark_str(l) for l in sorted(loads))})\n\n')
     out.append(f"FEATURES = {render_list([starlark_str(f) for f in crate.features], 0)}\n\n")
     out.append(
         f"DECLARED_FEATURES = {render_list([starlark_str(f) for f in crate.declared_features], 0)}\n\n"
@@ -808,9 +827,9 @@ def write_outputs(outputs: dict[Path, str], check: bool) -> list[Path]:
 
 
 def report_stale(stale: list[Path]) -> int:
-    print("Generated Bazel files are out of date; run scripts/bazel/generate.py:", file=sys.stderr)
+    print(f"Generated Bazel files are out of date; run {GENERATOR}:", file=sys.stderr)
     for path in stale:
-        print(f"  {path.relative_to(REPO_ROOT)}", file=sys.stderr)
+        print(f"  {path.relative_to(WORKSPACE_ROOT)}", file=sys.stderr)
     return 1
 
 

@@ -1,0 +1,13 @@
+package(default_visibility = ["//visibility:public"])
+
+exports_files([
+    "MODULE.bazel",
+    ".bazelrc",
+    ".bazelversion",
+])
+
+# Node binaries, one per project.
+alias(
+    name = "reth",
+    actual = "//reth",
+)

@@ -43,7 +43,7 @@ process_per_test = rule(
             mandatory = True,
         ),
         "_runner": attr.label(
-            default = "//bazel:process_per_test.sh",
+            default = "//reth/bazel:process_per_test.sh",
             allow_single_file = True,
         ),
     },

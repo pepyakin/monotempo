@@ -78,7 +78,3 @@ __pycache__/
 # direnv
 .envrc
 .direnv/
-
-# Bazel
-/bazel-*
-/user.bazelrc

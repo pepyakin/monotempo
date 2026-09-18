@@ -1,8 +1,8 @@
 # GENERATED FILE - DO NOT EDIT.
 #
-# Regenerate with `python3 scripts/bazel/generate.py` after changing Cargo.toml.
+# Regenerate with `python3 reth/scripts/bazel/generate.py` after changing Cargo.toml.
 
-load("//bazel:rust.bzl", "reth_cargo_toml_env_vars", "reth_integration_test", "reth_library", "reth_unit_test")
+load("//reth/bazel:rust.bzl", "reth_cargo_toml_env_vars", "reth_integration_test", "reth_library", "reth_unit_test")
 
 FEATURES = [
     "default",
@@ -25,19 +25,19 @@ reth_library(
     crate_features = FEATURES,
     declared_features = DECLARED_FEATURES,
     deps = [
-        "//crates/chainspec:reth_chainspec",
-        "//crates/ethereum/hardforks:reth_ethereum_forks",
-        "//crates/ethereum/primitives:reth_ethereum_primitives",
-        "//crates/evm/evm:reth_evm",
-        "//crates/evm/execution-types:reth_execution_types",
-        "//crates/storage/errors:reth_storage_errors",
-        "@crates//:alloy-consensus",
-        "@crates//:alloy-eips",
-        "@crates//:alloy-evm",
-        "@crates//:alloy-primitives",
-        "@crates//:alloy-rpc-types-engine",
-        "@crates//:reth-primitives-traits",
-        "@crates//:revm",
+        "//reth/crates/chainspec:reth_chainspec",
+        "//reth/crates/ethereum/hardforks:reth_ethereum_forks",
+        "//reth/crates/ethereum/primitives:reth_ethereum_primitives",
+        "//reth/crates/evm/evm:reth_evm",
+        "//reth/crates/evm/execution-types:reth_execution_types",
+        "//reth/crates/storage/errors:reth_storage_errors",
+        "@reth_crates//:alloy-consensus",
+        "@reth_crates//:alloy-eips",
+        "@reth_crates//:alloy-evm",
+        "@reth_crates//:alloy-primitives",
+        "@reth_crates//:alloy-rpc-types-engine",
+        "@reth_crates//:reth-primitives-traits",
+        "@reth_crates//:revm",
     ],
 )
 
@@ -47,9 +47,9 @@ reth_unit_test(
     crate_features = FEATURES,
     declared_features = DECLARED_FEATURES,
     deps = [
-        "//testing/testing-utils:reth_testing_utils",
-        "@crates//:alloy-genesis",
-        "@crates//:secp256k1",
+        "//reth/testing/testing-utils:reth_testing_utils",
+        "@reth_crates//:alloy-genesis",
+        "@reth_crates//:secp256k1",
     ],
 )
 
@@ -59,22 +59,22 @@ reth_integration_test(
     crate_features = FEATURES,
     declared_features = DECLARED_FEATURES,
     deps = [
-        "//crates/chainspec:reth_chainspec",
-        "//crates/ethereum/hardforks:reth_ethereum_forks",
-        "//crates/ethereum/primitives:reth_ethereum_primitives",
-        "//crates/evm/evm:reth_evm",
-        "//crates/evm/execution-types:reth_execution_types",
-        "//crates/storage/errors:reth_storage_errors",
-        "//testing/testing-utils:reth_testing_utils",
+        "//reth/crates/chainspec:reth_chainspec",
+        "//reth/crates/ethereum/hardforks:reth_ethereum_forks",
+        "//reth/crates/ethereum/primitives:reth_ethereum_primitives",
+        "//reth/crates/evm/evm:reth_evm",
+        "//reth/crates/evm/execution-types:reth_execution_types",
+        "//reth/crates/storage/errors:reth_storage_errors",
+        "//reth/testing/testing-utils:reth_testing_utils",
         ":reth_evm_ethereum",
-        "@crates//:alloy-consensus",
-        "@crates//:alloy-eips",
-        "@crates//:alloy-evm",
-        "@crates//:alloy-genesis",
-        "@crates//:alloy-primitives",
-        "@crates//:alloy-rpc-types-engine",
-        "@crates//:reth-primitives-traits",
-        "@crates//:revm",
-        "@crates//:secp256k1",
+        "@reth_crates//:alloy-consensus",
+        "@reth_crates//:alloy-eips",
+        "@reth_crates//:alloy-evm",
+        "@reth_crates//:alloy-genesis",
+        "@reth_crates//:alloy-primitives",
+        "@reth_crates//:alloy-rpc-types-engine",
+        "@reth_crates//:reth-primitives-traits",
+        "@reth_crates//:revm",
+        "@reth_crates//:secp256k1",
     ],
 )

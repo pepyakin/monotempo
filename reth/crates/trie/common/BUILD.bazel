@@ -1,8 +1,8 @@
 # GENERATED FILE - DO NOT EDIT.
 #
-# Regenerate with `python3 scripts/bazel/generate.py` after changing Cargo.toml.
+# Regenerate with `python3 reth/scripts/bazel/generate.py` after changing Cargo.toml.
 
-load("//bazel:rust.bzl", "reth_cargo_toml_env_vars", "reth_library", "reth_unit_test")
+load("//reth/bazel:rust.bzl", "reth_cargo_toml_env_vars", "reth_library", "reth_unit_test")
 
 FEATURES = [
     "alloy-rpc-types-eth",
@@ -37,27 +37,27 @@ reth_library(
     crate_features = FEATURES,
     declared_features = DECLARED_FEATURES,
     deps = [
-        "@crates//:alloy-consensus",
-        "@crates//:alloy-primitives",
-        "@crates//:alloy-rlp",
-        "@crates//:alloy-rpc-types-eth",
-        "@crates//:alloy-serde",
-        "@crates//:alloy-trie",
-        "@crates//:arbitrary",
-        "@crates//:arrayvec",
-        "@crates//:bytes",
-        "@crates//:derive_more",
-        "@crates//:hash-db",
-        "@crates//:itertools",
-        "@crates//:nybbles",
-        "@crates//:plain_hasher",
-        "@crates//:rayon",
-        "@crates//:reth-codecs",
-        "@crates//:reth-primitives-traits",
-        "@crates//:revm",
-        "@crates//:serde",
-        "@crates//:serde_with",
-        "@crates//:thiserror",
+        "@reth_crates//:alloy-consensus",
+        "@reth_crates//:alloy-primitives",
+        "@reth_crates//:alloy-rlp",
+        "@reth_crates//:alloy-rpc-types-eth",
+        "@reth_crates//:alloy-serde",
+        "@reth_crates//:alloy-trie",
+        "@reth_crates//:arbitrary",
+        "@reth_crates//:arrayvec",
+        "@reth_crates//:bytes",
+        "@reth_crates//:derive_more",
+        "@reth_crates//:hash-db",
+        "@reth_crates//:itertools",
+        "@reth_crates//:nybbles",
+        "@reth_crates//:plain_hasher",
+        "@reth_crates//:rayon",
+        "@reth_crates//:reth-codecs",
+        "@reth_crates//:reth-primitives-traits",
+        "@reth_crates//:revm",
+        "@reth_crates//:serde",
+        "@reth_crates//:serde_with",
+        "@reth_crates//:thiserror",
     ],
 )
 
@@ -67,11 +67,11 @@ reth_unit_test(
     crate_features = FEATURES,
     declared_features = DECLARED_FEATURES,
     deps = [
-        "@crates//:alloy-eips",
-        "@crates//:alloy-genesis",
-        "@crates//:bincode",
-        "@crates//:proptest",
-        "@crates//:proptest-arbitrary-interop",
-        "@crates//:serde_json",
+        "@reth_crates//:alloy-eips",
+        "@reth_crates//:alloy-genesis",
+        "@reth_crates//:bincode",
+        "@reth_crates//:proptest",
+        "@reth_crates//:proptest-arbitrary-interop",
+        "@reth_crates//:serde_json",
     ],
 )

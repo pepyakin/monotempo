@@ -1,0 +1,71 @@
+"""Bazel module definition for the monotempo monorepo.
+
+This file holds what every project shares: the rule sets and the pinned Rust
+and C/C++ toolchains. Each project contributes its own part of the module
+(its crate_universe and crate annotations) through `include()` at the bottom.
+See README.md.
+"""
+
+module(
+    name = "monotempo",
+    version = "0.1.0",
+)
+
+bazel_dep(name = "rules_rust", version = "0.74.0")
+bazel_dep(name = "rules_cc", version = "0.2.17")
+bazel_dep(name = "platforms", version = "1.1.0")
+bazel_dep(name = "bazel_skylib", version = "1.8.2")
+bazel_dep(name = "toolchains_llvm", version = "1.9.0")
+
+###############################################################################
+# Hermetic C/C++ toolchain.
+#
+# `cc` build scripts (libmdbx, keccak-asm, secp256k1, ...) and the final link
+# step run through this toolchain instead of whatever compiler the host has.
+# The same distribution provides `libclang` for bindgen invocations (e.g.
+# `reth-mdbx-sys`'s build script).
+#
+# Keep the major version in sync with the `lib/clang/<major>/include` labels in
+# the projects' `*.MODULE.bazel` and `bazel/BUILD.bazel` files.
+###############################################################################
+
+LLVM_VERSION = "20.1.7"
+
+llvm = use_extension("@toolchains_llvm//toolchain/extensions:llvm.bzl", "llvm")
+llvm.toolchain(
+    name = "llvm_toolchain",
+    llvm_version = LLVM_VERSION,
+)
+use_repo(llvm, "llvm_toolchain", "llvm_toolchain_llvm")
+
+register_toolchains("@llvm_toolchain//:all")
+
+###############################################################################
+# Rust toolchain.
+#
+# One Rust version for every project, pinned to the workspaces' `rust-version`
+# (MSRV) so that a Bazel build never depends on the host's rustup state.
+###############################################################################
+
+RUST_VERSION = "1.95.0"
+
+RUST_EDITION = "2024"
+
+rust = use_extension("@rules_rust//rust:extensions.bzl", "rust")
+rust.toolchain(
+    edition = RUST_EDITION,
+    versions = [RUST_VERSION],
+)
+use_repo(rust, "rust_toolchains")
+
+register_toolchains("@rust_toolchains//:all")
+
+###############################################################################
+# Projects.
+#
+# Each project is a Cargo workspace with its own `Cargo.lock`, rendered into
+# its own crate_universe repository (`@<project>_crates`) by the included
+# file. Cross-project dependencies are plain `//<project>/...` labels.
+###############################################################################
+
+include("//reth:reth.MODULE.bazel")

@@ -9,5 +9,5 @@ exports_files([
 
 alias(
     name = "reth",
-    actual = "//bin/reth",
+    actual = "//reth/bin/reth",
 )
