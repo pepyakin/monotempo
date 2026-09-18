@@ -543,6 +543,19 @@ mod test {
     use super::*;
 
     #[test]
+    fn hardfork_arguments() {
+        for (anvil, name) in [
+            (Anvil::new().paris(), "Paris"),
+            (Anvil::new().shanghai(), "Shanghai"),
+            (Anvil::new().cancun(), "Cancun"),
+            (Anvil::new().prague(), "Prague"),
+            (Anvil::new().hardfork(EthereumHardfork::Amsterdam), "Amsterdam"),
+        ] {
+            assert_eq!(anvil.args, [OsString::from("--hardfork"), OsString::from(name)]);
+        }
+    }
+
+    #[test]
     fn assert_block_time_is_natural_number() {
         //This test is to ensure that older versions of anvil are supported
         //even though the block time is a f64, it should be passed as a whole number
