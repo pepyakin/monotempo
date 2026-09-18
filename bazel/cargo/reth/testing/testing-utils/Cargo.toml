@@ -1,0 +1,35 @@
+# GENERATED FILE - DO NOT EDIT. Regenerate with `python3 bazel/generate.py`.
+#
+# Bazel-only derivation of `reth/testing/testing-utils/Cargo.toml`: the same
+# package as `cargo metadata` describes it in the reth workspace, with
+# workspace inheritance resolved. Cargo builds are unaffected.
+
+[package]
+name = "reth-testing-utils"
+version = "2.5.2"
+edition = "2024"
+rust-version = "1.95"
+build = false
+autolib = false
+autobins = false
+autoexamples = false
+autotests = false
+autobenches = false
+
+[lib]
+name = "reth_testing_utils"
+path = "src/lib.rs"
+
+[dependencies]
+alloy-consensus = { version = "^2.4.2", default-features = false }
+alloy-eips = { version = "^2.4.2", default-features = false }
+alloy-genesis = { version = "^2.4.2", default-features = false }
+alloy-primitives = { version = "^1.6.1", features = ["map-foldhash", "rand"], default-features = false }
+rand = { version = "^0.9" }
+rand_08 = { package = "rand", version = "^0.8" }
+reth-ethereum-primitives = { path = "../../crates/ethereum/primitives", features = ["arbitrary", "std"], default-features = false }
+reth-primitives-traits = { version = "^0.7.1", features = ["secp256k1", "arbitrary"], default-features = false }
+secp256k1 = { version = "^0.30", features = ["global-context", "recovery", "rand"], default-features = false }
+
+[dev-dependencies]
+alloy-rlp = { version = "^0.3.16", features = ["core-net"], default-features = false }

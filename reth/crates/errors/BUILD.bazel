@@ -20,7 +20,7 @@ crate_library(
         "//reth/crates/consensus/consensus:reth_consensus",
         "//reth/crates/evm/execution-errors:reth_execution_errors",
         "//reth/crates/storage/errors:reth_storage_errors",
-        "@reth_crates//:thiserror",
+        "@crates//:thiserror",
     ],
 )
 

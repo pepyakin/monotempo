@@ -1,0 +1,234 @@
+# GENERATED FILE - DO NOT EDIT. Regenerate with `python3 bazel/generate.py`.
+#
+# The Cargo workspace Bazel builds: every crate of every project, so that
+# crate_universe resolves one set of external crates for all of them and
+# projects can depend on each other's sources. Members are derived manifests
+# (see bazel/generate.py); this workspace is never used by `cargo build`.
+
+[workspace]
+resolver = "2"
+members = [
+    "alloy/crates/alloy",
+    "alloy/crates/consensus",
+    "alloy/crates/consensus-any",
+    "alloy/crates/contract",
+    "alloy/crates/eip5792",
+    "alloy/crates/eip7547",
+    "alloy/crates/eips",
+    "alloy/crates/ens",
+    "alloy/crates/genesis",
+    "alloy/crates/json-rpc",
+    "alloy/crates/network",
+    "alloy/crates/network-primitives",
+    "alloy/crates/node-bindings",
+    "alloy/crates/provider",
+    "alloy/crates/pubsub",
+    "alloy/crates/rpc-client",
+    "alloy/crates/rpc-types",
+    "alloy/crates/rpc-types-admin",
+    "alloy/crates/rpc-types-anvil",
+    "alloy/crates/rpc-types-any",
+    "alloy/crates/rpc-types-beacon",
+    "alloy/crates/rpc-types-debug",
+    "alloy/crates/rpc-types-engine",
+    "alloy/crates/rpc-types-eth",
+    "alloy/crates/rpc-types-mev",
+    "alloy/crates/rpc-types-tenderly",
+    "alloy/crates/rpc-types-trace",
+    "alloy/crates/rpc-types-txpool",
+    "alloy/crates/serde",
+    "alloy/crates/signer",
+    "alloy/crates/signer-aws",
+    "alloy/crates/signer-gcp",
+    "alloy/crates/signer-ledger",
+    "alloy/crates/signer-local",
+    "alloy/crates/signer-tempo",
+    "alloy/crates/signer-trezor",
+    "alloy/crates/signer-turnkey",
+    "alloy/crates/transport",
+    "alloy/crates/transport-http",
+    "alloy/crates/transport-ipc",
+    "alloy/crates/transport-ws",
+    "alloy/crates/tx-macros",
+    "reth/bin/reth",
+    "reth/bin/reth-bb",
+    "reth/crates/chain-state",
+    "reth/crates/chainspec",
+    "reth/crates/cli/cli",
+    "reth/crates/cli/commands",
+    "reth/crates/cli/runner",
+    "reth/crates/cli/util",
+    "reth/crates/config",
+    "reth/crates/consensus/common",
+    "reth/crates/consensus/consensus",
+    "reth/crates/consensus/debug-client",
+    "reth/crates/e2e-test-utils",
+    "reth/crates/engine/execution-cache",
+    "reth/crates/engine/invalid-block-hooks",
+    "reth/crates/engine/local",
+    "reth/crates/engine/primitives",
+    "reth/crates/engine/tree",
+    "reth/crates/engine/util",
+    "reth/crates/era",
+    "reth/crates/era-downloader",
+    "reth/crates/era-utils",
+    "reth/crates/errors",
+    "reth/crates/ethereum/cli",
+    "reth/crates/ethereum/consensus",
+    "reth/crates/ethereum/engine-primitives",
+    "reth/crates/ethereum/evm",
+    "reth/crates/ethereum/hardforks",
+    "reth/crates/ethereum/node",
+    "reth/crates/ethereum/payload",
+    "reth/crates/ethereum/primitives",
+    "reth/crates/ethereum/reth",
+    "reth/crates/etl",
+    "reth/crates/evm/evm",
+    "reth/crates/evm/execution-errors",
+    "reth/crates/evm/execution-types",
+    "reth/crates/exex/exex",
+    "reth/crates/exex/test-utils",
+    "reth/crates/exex/types",
+    "reth/crates/fs-util",
+    "reth/crates/metrics",
+    "reth/crates/net/banlist",
+    "reth/crates/net/discv4",
+    "reth/crates/net/discv5",
+    "reth/crates/net/dns",
+    "reth/crates/net/downloaders",
+    "reth/crates/net/ecies",
+    "reth/crates/net/eth-wire",
+    "reth/crates/net/eth-wire-types",
+    "reth/crates/net/nat",
+    "reth/crates/net/network",
+    "reth/crates/net/network-api",
+    "reth/crates/net/network-types",
+    "reth/crates/net/p2p",
+    "reth/crates/net/peers",
+    "reth/crates/node/api",
+    "reth/crates/node/builder",
+    "reth/crates/node/core",
+    "reth/crates/node/ethstats",
+    "reth/crates/node/events",
+    "reth/crates/node/metrics",
+    "reth/crates/node/types",
+    "reth/crates/payload/basic",
+    "reth/crates/payload/builder",
+    "reth/crates/payload/builder-primitives",
+    "reth/crates/payload/primitives",
+    "reth/crates/payload/util",
+    "reth/crates/payload/validator",
+    "reth/crates/prune/prune",
+    "reth/crates/prune/types",
+    "reth/crates/revm",
+    "reth/crates/rpc/ipc",
+    "reth/crates/rpc/rpc",
+    "reth/crates/rpc/rpc-api",
+    "reth/crates/rpc/rpc-builder",
+    "reth/crates/rpc/rpc-convert",
+    "reth/crates/rpc/rpc-e2e-tests",
+    "reth/crates/rpc/rpc-engine-api",
+    "reth/crates/rpc/rpc-eth-api",
+    "reth/crates/rpc/rpc-eth-types",
+    "reth/crates/rpc/rpc-layer",
+    "reth/crates/rpc/rpc-server-types",
+    "reth/crates/snap-sync",
+    "reth/crates/stages/api",
+    "reth/crates/stages/stages",
+    "reth/crates/stages/types",
+    "reth/crates/static-file/static-file",
+    "reth/crates/static-file/types",
+    "reth/crates/storage/db",
+    "reth/crates/storage/db-api",
+    "reth/crates/storage/db-common",
+    "reth/crates/storage/db-models",
+    "reth/crates/storage/errors",
+    "reth/crates/storage/libmdbx-rs",
+    "reth/crates/storage/libmdbx-rs/mdbx-sys",
+    "reth/crates/storage/nippy-jar",
+    "reth/crates/storage/provider",
+    "reth/crates/storage/rpc-provider",
+    "reth/crates/storage/storage-api",
+    "reth/crates/storage/storage-overlay",
+    "reth/crates/tasks",
+    "reth/crates/tokio-util",
+    "reth/crates/tracing",
+    "reth/crates/tracing-otlp",
+    "reth/crates/transaction-pool",
+    "reth/crates/trie/common",
+    "reth/crates/trie/db",
+    "reth/crates/trie/parallel",
+    "reth/crates/trie/sparse",
+    "reth/crates/trie/trie",
+    "reth/examples/beacon-api-sidecar-fetcher",
+    "reth/examples/beacon-api-sse",
+    "reth/examples/bsc-p2p",
+    "reth/examples/custom-auth-http-middleware",
+    "reth/examples/custom-beacon-withdrawals",
+    "reth/examples/custom-dev-node",
+    "reth/examples/custom-engine-types",
+    "reth/examples/custom-evm",
+    "reth/examples/custom-hardforks",
+    "reth/examples/custom-inspector",
+    "reth/examples/custom-node-components",
+    "reth/examples/custom-payload-builder",
+    "reth/examples/custom-rlpx-subprotocol",
+    "reth/examples/custom-rpc-middleware",
+    "reth/examples/custom-state-root",
+    "reth/examples/db-access",
+    "reth/examples/exex-subscription",
+    "reth/examples/exex-test",
+    "reth/examples/full-contract-state",
+    "reth/examples/manual-p2p",
+    "reth/examples/network",
+    "reth/examples/network-proxy",
+    "reth/examples/network-txpool",
+    "reth/examples/node-builder-api",
+    "reth/examples/node-custom-rpc",
+    "reth/examples/node-event-hooks",
+    "reth/examples/polygon-p2p",
+    "reth/examples/rpc-db",
+    "reth/examples/txpool-tracing",
+    "reth/testing/ef-tests",
+    "reth/testing/runner",
+    "reth/testing/testing-utils",
+]
+
+# Union of the projects' `[patch.crates-io]` sections.
+[patch.crates-io]
+alloy-consensus = { path = "alloy/crates/consensus" }
+alloy-consensus-any = { path = "alloy/crates/consensus-any" }
+alloy-contract = { path = "alloy/crates/contract" }
+alloy-eips = { path = "alloy/crates/eips" }
+alloy-genesis = { path = "alloy/crates/genesis" }
+alloy-json-rpc = { path = "alloy/crates/json-rpc" }
+alloy-network = { path = "alloy/crates/network" }
+alloy-network-primitives = { path = "alloy/crates/network-primitives" }
+alloy-node-bindings = { path = "alloy/crates/node-bindings" }
+alloy-provider = { path = "alloy/crates/provider" }
+alloy-pubsub = { path = "alloy/crates/pubsub" }
+alloy-rpc-client = { path = "alloy/crates/rpc-client" }
+alloy-rpc-types = { path = "alloy/crates/rpc-types" }
+alloy-rpc-types-admin = { path = "alloy/crates/rpc-types-admin" }
+alloy-rpc-types-anvil = { path = "alloy/crates/rpc-types-anvil" }
+alloy-rpc-types-any = { path = "alloy/crates/rpc-types-any" }
+alloy-rpc-types-beacon = { path = "alloy/crates/rpc-types-beacon" }
+alloy-rpc-types-debug = { path = "alloy/crates/rpc-types-debug" }
+alloy-rpc-types-engine = { path = "alloy/crates/rpc-types-engine" }
+alloy-rpc-types-eth = { path = "alloy/crates/rpc-types-eth" }
+alloy-rpc-types-mev = { path = "alloy/crates/rpc-types-mev" }
+alloy-rpc-types-trace = { path = "alloy/crates/rpc-types-trace" }
+alloy-rpc-types-txpool = { path = "alloy/crates/rpc-types-txpool" }
+alloy-serde = { path = "alloy/crates/serde" }
+alloy-signer = { path = "alloy/crates/signer" }
+alloy-signer-local = { path = "alloy/crates/signer-local" }
+alloy-transport = { path = "alloy/crates/transport" }
+alloy-transport-http = { path = "alloy/crates/transport-http" }
+alloy-transport-ipc = { path = "alloy/crates/transport-ipc" }
+alloy-transport-ws = { path = "alloy/crates/transport-ws" }
+alloy-tx-macros = { path = "alloy/crates/tx-macros" }
+
+# Digest of every member manifest. crate_universe only re-resolves when a
+# manifest it was given changes, and it is given this one alone.
+[workspace.metadata.bazel]
+members-digest = "cc683280a6b1f80b1161ce0401825fc67732217b1e56bb26901810a0b1430316"

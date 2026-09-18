@@ -1,0 +1,28 @@
+# GENERATED FILE - DO NOT EDIT. Regenerate with `python3 bazel/generate.py`.
+#
+# Bazel-only derivation of `reth/crates/payload/builder-primitives/Cargo.toml`: the same
+# package as `cargo metadata` describes it in the reth workspace, with
+# workspace inheritance resolved. Cargo builds are unaffected.
+
+[package]
+name = "reth-payload-builder-primitives"
+version = "2.5.2"
+edition = "2024"
+rust-version = "1.95"
+build = false
+autolib = false
+autobins = false
+autoexamples = false
+autotests = false
+autobenches = false
+
+[lib]
+name = "reth_payload_builder_primitives"
+path = "src/lib.rs"
+
+[dependencies]
+pin-project = { version = "^1.1.12" }
+reth-payload-primitives = { path = "../primitives" }
+tokio = { version = "^1.52.3", features = ["sync"], default-features = false }
+tokio-stream = { version = "^0.1.11", features = ["sync"] }
+tracing = { version = "^0.1.0", features = ["attributes"], default-features = false }

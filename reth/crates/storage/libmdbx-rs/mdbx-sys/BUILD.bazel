@@ -16,8 +16,8 @@ crate_build_script(
     workspace = WORKSPACE,
     crate_features = FEATURES,
     deps = [
-        "@reth_crates//:bindgen",
-        "@reth_crates//:cc",
+        "@crates//:bindgen",
+        "@crates//:cc",
     ],
     data = glob([
         "libmdbx/**",

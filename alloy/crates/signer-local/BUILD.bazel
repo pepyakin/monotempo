@@ -5,7 +5,10 @@
 load("//bazel:rust.bzl", "crate_cargo_toml_env_vars", "crate_library", "crate_unit_test")
 load("//alloy/bazel:workspace.bzl", "WORKSPACE")
 
-FEATURES = []
+FEATURES = [
+    "mnemonic",
+    "zeroize",
+]
 
 DECLARED_FEATURES = [
     "eip712",
@@ -29,13 +32,16 @@ crate_library(
         "//alloy/crates/consensus:alloy_consensus",
         "//alloy/crates/network:alloy_network",
         "//alloy/crates/signer:alloy_signer",
-        "@alloy_crates//:alloy-primitives",
-        "@alloy_crates//:k256",
-        "@alloy_crates//:rand",
-        "@alloy_crates//:thiserror",
+        "@crates//:alloy-primitives",
+        "@crates//:coins-bip32",
+        "@crates//:coins-bip39",
+        "@crates//:k256",
+        "@crates//:rand-0.8.6",
+        "@crates//:thiserror",
+        "@crates//:zeroize",
     ],
     proc_macro_deps = [
-        "@alloy_crates//:async-trait",
+        "@crates//:async-trait",
     ],
 )
 
@@ -46,12 +52,12 @@ crate_unit_test(
     crate_features = FEATURES,
     declared_features = DECLARED_FEATURES,
     deps = [
-        "@alloy_crates//:alloy-dyn-abi",
-        "@alloy_crates//:alloy-sol-types",
-        "@alloy_crates//:serde",
-        "@alloy_crates//:serde_json",
-        "@alloy_crates//:tempfile",
-        "@alloy_crates//:tokio",
-        "@alloy_crates//:yubihsm",
+        "@crates//:alloy-dyn-abi",
+        "@crates//:alloy-sol-types",
+        "@crates//:serde",
+        "@crates//:serde_json",
+        "@crates//:tempfile",
+        "@crates//:tokio",
+        "@crates//:yubihsm",
     ],
 )

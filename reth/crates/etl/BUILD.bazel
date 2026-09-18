@@ -18,8 +18,8 @@ crate_library(
     declared_features = DECLARED_FEATURES,
     deps = [
         "//reth/crates/storage/db-api:reth_db_api",
-        "@reth_crates//:rayon",
-        "@reth_crates//:tempfile",
+        "@crates//:rayon",
+        "@crates//:tempfile",
     ],
 )
 
@@ -30,6 +30,6 @@ crate_unit_test(
     crate_features = FEATURES,
     declared_features = DECLARED_FEATURES,
     deps = [
-        "@reth_crates//:alloy-primitives",
+        "@crates//:alloy-primitives",
     ],
 )

@@ -1,0 +1,32 @@
+# GENERATED FILE - DO NOT EDIT. Regenerate with `python3 bazel/generate.py`.
+#
+# Bazel-only derivation of `reth/crates/node/types/Cargo.toml`: the same
+# package as `cargo metadata` describes it in the reth workspace, with
+# workspace inheritance resolved. Cargo builds are unaffected.
+
+[package]
+name = "reth-node-types"
+version = "2.5.2"
+edition = "2024"
+rust-version = "1.95"
+build = false
+autolib = false
+autobins = false
+autoexamples = false
+autotests = false
+autobenches = false
+
+[lib]
+name = "reth_node_types"
+path = "src/lib.rs"
+
+[features]
+default = ["std"]
+std = ["reth-primitives-traits/std", "reth-chainspec/std", "reth-engine-primitives/std"]
+
+[dependencies]
+reth-chainspec = { path = "../../chainspec", default-features = false }
+reth-db-api = { path = "../../storage/db-api" }
+reth-engine-primitives = { path = "../../engine/primitives", default-features = false }
+reth-payload-primitives = { path = "../../payload/primitives" }
+reth-primitives-traits = { version = "^0.7.1", default-features = false }

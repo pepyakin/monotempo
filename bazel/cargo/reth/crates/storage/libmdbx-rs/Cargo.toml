@@ -1,0 +1,53 @@
+# GENERATED FILE - DO NOT EDIT. Regenerate with `python3 bazel/generate.py`.
+#
+# Bazel-only derivation of `reth/crates/storage/libmdbx-rs/Cargo.toml`: the same
+# package as `cargo metadata` describes it in the reth workspace, with
+# workspace inheritance resolved. Cargo builds are unaffected.
+
+[package]
+name = "reth-libmdbx"
+version = "2.5.2"
+edition = "2024"
+rust-version = "1.95"
+build = false
+autolib = false
+autobins = false
+autoexamples = false
+autotests = false
+autobenches = false
+
+[lib]
+name = "reth_libmdbx"
+path = "src/lib.rs"
+
+[[test]]
+name = "cursor"
+path = "tests/cursor.rs"
+
+[[test]]
+name = "environment"
+path = "tests/environment.rs"
+
+[[test]]
+name = "transaction"
+path = "tests/transaction.rs"
+
+[features]
+default = []
+return-borrowed = []
+read-tx-timeouts = ["dep:dashmap"]
+
+[dependencies]
+bitflags = { version = "^2.4" }
+byteorder = { version = "^1" }
+crossbeam-queue = { version = "^0.3" }
+dashmap = { version = "^6.2", features = ["inline"], optional = true }
+derive_more = { version = "^2", features = ["full"], default-features = false }
+parking_lot = { version = "^0.12" }
+reth-mdbx-sys = { path = "mdbx-sys" }
+smallvec = { version = "^1" }
+thiserror = { version = "^2.0.0", default-features = false }
+tracing = { version = "^0.1.0", features = ["attributes"], default-features = false }
+
+[dev-dependencies]
+tempfile = { version = "^3.20" }

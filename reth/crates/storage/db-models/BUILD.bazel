@@ -31,14 +31,14 @@ crate_library(
     crate_features = FEATURES,
     declared_features = DECLARED_FEATURES,
     deps = [
-        "@reth_crates//:alloy-eips",
-        "@reth_crates//:alloy-primitives",
-        "@reth_crates//:arbitrary",
-        "@reth_crates//:bytes",
-        "@reth_crates//:modular-bitfield",
-        "@reth_crates//:reth-codecs",
-        "@reth_crates//:reth-primitives-traits",
-        "@reth_crates//:serde",
+        "//alloy/crates/eips:alloy_eips",
+        "@crates//:alloy-primitives",
+        "@crates//:arbitrary",
+        "@crates//:bytes",
+        "@crates//:modular-bitfield",
+        "@crates//:reth-codecs",
+        "@crates//:reth-primitives-traits",
+        "@crates//:serde",
     ],
 )
 
@@ -49,7 +49,7 @@ crate_unit_test(
     crate_features = FEATURES,
     declared_features = DECLARED_FEATURES,
     deps = [
-        "@reth_crates//:proptest",
-        "@reth_crates//:proptest-arbitrary-interop",
+        "@crates//:proptest",
+        "@crates//:proptest-arbitrary-interop",
     ],
 )

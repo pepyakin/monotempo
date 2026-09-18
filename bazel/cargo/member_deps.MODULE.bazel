@@ -1,0 +1,69 @@
+# GENERATED FILE - DO NOT EDIT.
+#
+# Regenerate with `python3 bazel/generate.py` after changing Cargo.toml.
+
+"""Dependencies of external crates on workspace members (included from //MODULE.bazel).
+
+A `[patch.crates-io]` entry redirects every use of a crate to the tree, including
+uses by external crates. crate_universe leaves dependencies on workspace members
+out of the crates it renders, so they are added back here, one annotation per
+external crate, with the members' Bazel labels.
+"""
+
+crate = use_extension("@rules_rust//crate_universe:extensions.bzl", "crate")
+
+crate.annotation(
+    deps = [
+        "@@//alloy/crates/consensus:alloy_consensus",
+        "@@//alloy/crates/eips:alloy_eips",
+        "@@//alloy/crates/rpc-types-eth:alloy_rpc_types_eth",
+    ],
+    crate = "alloy-evm",
+    repositories = ["crates"],
+    version = "=0.39.0",
+)
+
+crate.annotation(
+    deps = [
+        "@@//alloy/crates/consensus:alloy_consensus",
+        "@@//alloy/crates/eips:alloy_eips",
+        "@@//alloy/crates/genesis:alloy_genesis",
+    ],
+    crate = "reth-codecs",
+    repositories = ["crates"],
+    version = "=0.7.1",
+)
+
+crate.annotation(
+    deps = [
+        "@@//alloy/crates/consensus:alloy_consensus",
+        "@@//alloy/crates/eips:alloy_eips",
+        "@@//alloy/crates/genesis:alloy_genesis",
+        "@@//alloy/crates/rpc-types-eth:alloy_rpc_types_eth",
+    ],
+    crate = "reth-primitives-traits",
+    repositories = ["crates"],
+    version = "=0.7.1",
+)
+
+crate.annotation(
+    deps = [
+        "@@//alloy/crates/consensus:alloy_consensus",
+        "@@//alloy/crates/network:alloy_network",
+        "@@//alloy/crates/rpc-types-eth:alloy_rpc_types_eth",
+        "@@//alloy/crates/signer:alloy_signer",
+    ],
+    crate = "reth-rpc-traits",
+    repositories = ["crates"],
+    version = "=0.7.0",
+)
+
+crate.annotation(
+    deps = [
+        "@@//alloy/crates/rpc-types-eth:alloy_rpc_types_eth",
+        "@@//alloy/crates/rpc-types-trace:alloy_rpc_types_trace",
+    ],
+    crate = "revm-inspectors",
+    repositories = ["crates"],
+    version = "=0.43.0",
+)

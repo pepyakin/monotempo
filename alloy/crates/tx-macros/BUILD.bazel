@@ -23,10 +23,10 @@ crate_proc_macro(
     crate_features = FEATURES,
     declared_features = DECLARED_FEATURES,
     deps = [
-        "@alloy_crates//:darling",
-        "@alloy_crates//:proc-macro2",
-        "@alloy_crates//:quote",
-        "@alloy_crates//:syn",
+        "@crates//:darling",
+        "@crates//:proc-macro2",
+        "@crates//:quote",
+        "@crates//:syn",
     ],
 )
 

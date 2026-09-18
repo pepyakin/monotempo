@@ -1,0 +1,42 @@
+# GENERATED FILE - DO NOT EDIT. Regenerate with `python3 bazel/generate.py`.
+#
+# Bazel-only derivation of `reth/crates/rpc/ipc/Cargo.toml`: the same
+# package as `cargo metadata` describes it in the reth workspace, with
+# workspace inheritance resolved. Cargo builds are unaffected.
+
+[package]
+name = "reth-ipc"
+version = "2.5.2"
+edition = "2024"
+rust-version = "1.95"
+build = false
+autolib = false
+autobins = false
+autoexamples = false
+autotests = false
+autobenches = false
+
+[lib]
+name = "reth_ipc"
+path = "src/lib.rs"
+
+[dependencies]
+bytes = { version = "^1.11.1", default-features = false }
+futures = { version = "^0.3" }
+futures-util = { version = "^0.3", default-features = false }
+interprocess = { version = "^2.4.2", features = ["tokio"] }
+jsonrpsee = { version = "^0.26.0", features = ["server", "client"] }
+pin-project = { version = "^1.1.12" }
+serde_json = { version = "^1.0", features = ["alloc"], default-features = false }
+thiserror = { version = "^2.0.0", default-features = false }
+tokio = { version = "^1.52.3", features = ["net", "time", "rt-multi-thread"], default-features = false }
+tokio-stream = { version = "^0.1.11" }
+tokio-util = { version = "^0.7.4", features = ["codec", "codec"] }
+tower = { version = "^0.5" }
+tracing = { version = "^0.1.0", features = ["attributes"], default-features = false }
+
+[dev-dependencies]
+rand = { version = "^0.9" }
+reth-tracing = { path = "../../tracing" }
+serde = { version = "^1.0", default-features = false }
+tokio-stream = { version = "^0.1.11", features = ["sync"] }

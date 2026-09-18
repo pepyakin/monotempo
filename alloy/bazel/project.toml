@@ -3,8 +3,12 @@
 # Everything Bazel needs to know about alloy that cannot be derived from its
 # Cargo manifests. Labels are written out in full.
 
-# crate_universe repository holding alloy's external crates (see alloy.MODULE.bazel).
-crates_repo = "@alloy_crates"
+# Tests of these crates run one process per test (see //bazel:process_per_test.bzl).
+#
+# `signer-tempo`'s `tests/env.rs` sets and clears the `TEMPO_*` variables of
+# the test process itself; its tests race when the harness runs them on
+# several threads.
+process_per_test = ["alloy-signer-tempo"]
 
 # Extra compile-time inputs for targets that `include_*!` files from outside
 # the `src/`, `res/`, `assets/` and test-data directories that are globbed
@@ -20,9 +24,11 @@ alloy-genesis.crate = ["dumpgenesis/holesky.json", "dumpgenesis/mainnet.json", "
 # sandbox's network block when the test is run explicitly.
 #
 # These tests spawn `anvil` (Foundry), which is not part of the hermetic
-# toolchain, and/or query public mainnet RPC endpoints.
+# toolchain, and/or query public mainnet RPC endpoints. `alloy-rpc-client`'s
+# unit tests do so too because feature unification with reth turns its `ipc`
+# feature (and with it `test_parsing_ipc`) on.
 [test_tags]
 alloy-contract = ["manual", "requires-network"]
 alloy-ens = ["manual", "requires-network"]
 alloy-provider = ["manual", "requires-network"]
-alloy-rpc-client.it = ["manual", "requires-network"]
+alloy-rpc-client = ["manual", "requires-network"]

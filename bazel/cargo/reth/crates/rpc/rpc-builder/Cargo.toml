@@ -1,0 +1,84 @@
+# GENERATED FILE - DO NOT EDIT. Regenerate with `python3 bazel/generate.py`.
+#
+# Bazel-only derivation of `reth/crates/rpc/rpc-builder/Cargo.toml`: the same
+# package as `cargo metadata` describes it in the reth workspace, with
+# workspace inheritance resolved. Cargo builds are unaffected.
+
+[package]
+name = "reth-rpc-builder"
+version = "2.5.2"
+edition = "2024"
+rust-version = "1.95"
+build = false
+autolib = false
+autobins = false
+autoexamples = false
+autotests = false
+autobenches = false
+
+[lib]
+name = "reth_rpc_builder"
+path = "src/lib.rs"
+
+[[test]]
+name = "it"
+path = "tests/it/main.rs"
+
+[dependencies]
+alloy-network = { version = "^2.4.2", default-features = false }
+alloy-provider = { version = "^2.4.2", features = ["reqwest", "debug-api", "ws", "ipc"], default-features = false }
+dyn-clone = { version = "^1.0.17" }
+http = { version = "^1.0" }
+jsonrpsee = { version = "^0.26.0", features = ["server"] }
+metrics = { version = "^0.24.0" }
+pin-project = { version = "^1.1.12" }
+reth-chain-state = { path = "../../chain-state" }
+reth-chainspec = { path = "../../chainspec", default-features = false }
+reth-consensus = { path = "../../consensus/consensus", default-features = false }
+reth-engine-primitives = { path = "../../engine/primitives", default-features = false }
+reth-evm = { path = "../../evm/evm", default-features = false }
+reth-ipc = { path = "../ipc" }
+reth-metrics = { path = "../../metrics", features = ["common"] }
+reth-network-api = { path = "../../net/network-api" }
+reth-node-core = { path = "../../node/core" }
+reth-payload-primitives = { path = "../../payload/primitives" }
+reth-primitives-traits = { version = "^0.7.1", default-features = false }
+reth-rpc = { path = "../rpc" }
+reth-rpc-api = { path = "../rpc-api" }
+reth-rpc-engine-api = { path = "../rpc-engine-api" }
+reth-rpc-eth-api = { path = "../rpc-eth-api" }
+reth-rpc-eth-types = { path = "../rpc-eth-types", default-features = false }
+reth-rpc-layer = { path = "../rpc-layer" }
+reth-rpc-server-types = { path = "../rpc-server-types" }
+reth-storage-api = { path = "../../storage/storage-api", default-features = false }
+reth-tasks = { path = "../../tasks", features = ["rayon"] }
+reth-tokio-util = { path = "../../tokio-util" }
+reth-transaction-pool = { path = "../../transaction-pool" }
+serde = { version = "^1.0", features = ["derive"], default-features = false }
+thiserror = { version = "^2.0.0", default-features = false }
+tokio = { version = "^1.52.3", features = ["rt", "rt-multi-thread"], default-features = false }
+tokio-util = { version = "^0.7.4", features = ["codec"] }
+tower = { version = "^0.5", features = ["full"] }
+tower-http = { version = "^0.6", features = ["full"] }
+tracing = { version = "^0.1.0", features = ["attributes"], default-features = false }
+
+[dev-dependencies]
+alloy-eips = { version = "^2.4.2", default-features = false }
+alloy-primitives = { version = "^1.6.1", features = ["map-foldhash"], default-features = false }
+alloy-rpc-types-engine = { version = "^2.4.2", default-features = false }
+alloy-rpc-types-eth = { version = "^2.4.2", default-features = false }
+alloy-rpc-types-trace = { version = "^2.4.2", default-features = false }
+clap = { version = "^4", features = ["derive"] }
+reqwest = { version = "^0.13", features = ["rustls", "stream"], default-features = false }
+reth-ethereum-engine-primitives = { path = "../../ethereum/engine-primitives", default-features = false }
+reth-ethereum-primitives = { path = "../../ethereum/primitives", default-features = false }
+reth-evm-ethereum = { path = "../../ethereum/evm", default-features = false }
+reth-network-peers = { path = "../../net/peers", default-features = false }
+reth-node-ethereum = { path = "../../ethereum/node" }
+reth-payload-builder = { path = "../../payload/builder", features = ["test-utils"] }
+reth-provider = { path = "../../storage/provider", features = ["test-utils"] }
+reth-rpc-api = { path = "../rpc-api", features = ["client"] }
+reth-tasks = { path = "../../tasks", features = ["test-utils"] }
+reth-tracing = { path = "../../tracing" }
+reth-transaction-pool = { path = "../../transaction-pool", features = ["test-utils"] }
+serde_json = { version = "^1.0", features = ["alloc"], default-features = false }

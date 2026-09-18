@@ -1,0 +1,128 @@
+# GENERATED FILE - DO NOT EDIT. Regenerate with `python3 bazel/generate.py`.
+#
+# Bazel-only derivation of `reth/crates/stages/stages/Cargo.toml`: the same
+# package as `cargo metadata` describes it in the reth workspace, with
+# workspace inheritance resolved. Cargo builds are unaffected.
+
+[package]
+name = "reth-stages"
+version = "2.5.2"
+edition = "2024"
+rust-version = "1.95"
+build = false
+autolib = false
+autobins = false
+autoexamples = false
+autotests = false
+autobenches = false
+
+[lib]
+name = "reth_stages"
+path = "src/lib.rs"
+
+[[test]]
+name = "pipeline"
+path = "tests/pipeline.rs"
+
+[[test]]
+name = "preimage"
+path = "tests/preimage.rs"
+
+[features]
+test-utils = [
+    "reth-network-p2p/test-utils",
+    "reth-db/test-utils",
+    "reth-provider/test-utils",
+    "reth-stages-api/test-utils",
+    "dep:reth-testing-utils",
+    "dep:tempfile",
+    "reth-chainspec/test-utils",
+    "reth-consensus/test-utils",
+    "reth-evm/test-utils",
+    "reth-downloaders/test-utils",
+    "reth-primitives-traits/test-utils",
+    "reth-revm/test-utils",
+    "reth-codecs/test-utils",
+    "reth-db-api/test-utils",
+    "reth-trie-db/test-utils",
+    "reth-trie/test-utils",
+    "reth-prune-types/test-utils",
+    "dep:reth-ethereum-primitives",
+    "reth-ethereum-primitives?/test-utils",
+    "reth-evm-ethereum/test-utils",
+    "reth-tasks/test-utils",
+]
+
+[dependencies]
+alloy-consensus = { version = "^2.4.2", default-features = false }
+alloy-eip7928 = { version = "^0.4.10", features = ["rlp"], default-features = false }
+alloy-primitives = { version = "^1.6.1", features = ["map-foldhash"], default-features = false }
+alloy-rlp = { version = "^0.3.16", features = ["core-net"], default-features = false }
+eyre = { version = "^0.6" }
+futures-util = { version = "^0.3", default-features = false }
+itertools = { version = "^0.14", default-features = false }
+num-traits = { version = "^0.2.15" }
+page_size = { version = "^0.6.0" }
+rayon = { version = "^1.7" }
+reqwest = { version = "^0.13", features = ["rustls", "stream"], default-features = false }
+reth-chainspec = { path = "../../chainspec", default-features = false }
+reth-codecs = { version = "^0.7.0", default-features = false }
+reth-config = { path = "../../config", default-features = false }
+reth-consensus = { path = "../../consensus/consensus", default-features = false }
+reth-db = { path = "../../storage/db", default-features = false }
+reth-db-api = { path = "../../storage/db-api" }
+reth-era = { path = "../../era" }
+reth-era-downloader = { path = "../../era-downloader" }
+reth-era-utils = { path = "../../era-utils" }
+reth-ethereum-primitives = { path = "../../ethereum/primitives", optional = true, default-features = false }
+reth-etl = { path = "../../etl" }
+reth-evm = { path = "../../evm/evm", features = ["metrics"], default-features = false }
+reth-execution-types = { path = "../../evm/execution-types", default-features = false }
+reth-exex = { path = "../../exex/exex" }
+reth-fs-util = { path = "../../fs-util" }
+reth-libmdbx = { path = "../../storage/libmdbx-rs" }
+reth-network-p2p = { path = "../../net/p2p" }
+reth-primitives-traits = { version = "^0.7.1", default-features = false }
+reth-provider = { path = "../../storage/provider" }
+reth-prune = { path = "../../prune/prune" }
+reth-prune-types = { path = "../../prune/types", default-features = false }
+reth-revm = { path = "../../revm", default-features = false }
+reth-stages-api = { path = "../api" }
+reth-static-file-types = { path = "../../static-file/types", default-features = false }
+reth-storage-api = { path = "../../storage/storage-api", default-features = false }
+reth-storage-errors = { path = "../../storage/errors", default-features = false }
+reth-tasks = { path = "../../tasks" }
+reth-testing-utils = { path = "../../../testing/testing-utils", optional = true }
+reth-trie = { path = "../../trie/trie", features = ["metrics"] }
+reth-trie-db = { path = "../../trie/db", features = ["metrics"] }
+tempfile = { version = "^3.20", optional = true }
+thiserror = { version = "^2.0.0", default-features = false }
+tokio = { version = "^1.52.3", features = ["sync"], default-features = false }
+tracing = { version = "^0.1.0", features = ["attributes"], default-features = false }
+
+[dev-dependencies]
+alloy-eips = { version = "^2.4.2", default-features = false }
+alloy-genesis = { version = "^2.4.2", default-features = false }
+alloy-primitives = { version = "^1.6.1", features = ["map-foldhash", "getrandom", "rand"], default-features = false }
+assert_matches = { version = "^1.5.0" }
+paste = { version = "^1.0" }
+rand = { version = "^0.9" }
+reth-chainspec = { path = "../../chainspec", default-features = false }
+reth-consensus = { path = "../../consensus/consensus", features = ["test-utils"], default-features = false }
+reth-db = { path = "../../storage/db", features = ["test-utils", "mdbx"], default-features = false }
+reth-db-common = { path = "../../storage/db-common" }
+reth-downloaders = { path = "../../net/downloaders", features = ["file-client"] }
+reth-ethereum-consensus = { path = "../../ethereum/consensus", default-features = false }
+reth-ethereum-primitives = { path = "../../ethereum/primitives", features = ["test-utils"], default-features = false }
+reth-evm-ethereum = { path = "../../ethereum/evm", default-features = false }
+reth-network-p2p = { path = "../../net/p2p", features = ["test-utils"] }
+reth-network-peers = { path = "../../net/peers", default-features = false }
+reth-provider = { path = "../../storage/provider", features = ["test-utils"] }
+reth-stages-api = { path = "../api", features = ["test-utils"] }
+reth-static-file = { path = "../../static-file/static-file" }
+reth-storage-api = { path = "../../storage/storage-api", default-features = false }
+reth-testing-utils = { path = "../../../testing/testing-utils" }
+reth-tracing = { path = "../../tracing" }
+reth-trie = { path = "../../trie/trie", features = ["test-utils"] }
+tempfile = { version = "^3.20" }
+tokio = { version = "^1.52.3", features = ["rt", "sync", "macros"], default-features = false }

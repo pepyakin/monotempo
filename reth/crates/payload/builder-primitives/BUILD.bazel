@@ -18,10 +18,10 @@ crate_library(
     declared_features = DECLARED_FEATURES,
     deps = [
         "//reth/crates/payload/primitives:reth_payload_primitives",
-        "@reth_crates//:pin-project",
-        "@reth_crates//:tokio",
-        "@reth_crates//:tokio-stream",
-        "@reth_crates//:tracing",
+        "@crates//:pin-project",
+        "@crates//:tokio",
+        "@crates//:tokio-stream",
+        "@crates//:tracing",
     ],
 )
 

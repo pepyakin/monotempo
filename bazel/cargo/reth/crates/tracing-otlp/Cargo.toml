@@ -1,0 +1,52 @@
+# GENERATED FILE - DO NOT EDIT. Regenerate with `python3 bazel/generate.py`.
+#
+# Bazel-only derivation of `reth/crates/tracing-otlp/Cargo.toml`: the same
+# package as `cargo metadata` describes it in the reth workspace, with
+# workspace inheritance resolved. Cargo builds are unaffected.
+
+[package]
+name = "reth-tracing-otlp"
+version = "2.5.2"
+edition = "2024"
+rust-version = "1.95"
+build = false
+autolib = false
+autobins = false
+autoexamples = false
+autotests = false
+autobenches = false
+
+[lib]
+name = "reth_tracing_otlp"
+path = "src/lib.rs"
+
+[features]
+default = ["otlp"]
+otlp = [
+    "opentelemetry",
+    "opentelemetry_sdk",
+    "opentelemetry-otlp",
+    "opentelemetry-semantic-conventions",
+    "tracing-opentelemetry",
+]
+otlp-logs = [
+    "otlp",
+    "opentelemetry-appender-tracing",
+    "opentelemetry-appender-tracing/experimental_span_attributes",
+    "opentelemetry-otlp/logs",
+    "opentelemetry_sdk/logs",
+]
+
+[dependencies]
+base64 = { version = "^0.22" }
+clap = { version = "^4", features = ["derive"] }
+eyre = { version = "^0.6" }
+opentelemetry = { version = "^0.32", optional = true }
+opentelemetry-appender-tracing = { version = "^0.32", optional = true }
+opentelemetry-otlp = { version = "^0.32", features = ["grpc-tonic", "reqwest-rustls"], optional = true }
+opentelemetry-semantic-conventions = { version = "^0.32", optional = true }
+opentelemetry_sdk = { version = "^0.32", optional = true }
+tracing = { version = "^0.1.0", features = ["attributes"], default-features = false }
+tracing-opentelemetry = { version = "^0.33", optional = true }
+tracing-subscriber = { version = "^0.3", default-features = false }
+url = { version = "^2.3", default-features = false }

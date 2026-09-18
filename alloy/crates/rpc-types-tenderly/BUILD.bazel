@@ -20,10 +20,10 @@ crate_library(
         "//alloy/crates/consensus:alloy_consensus",
         "//alloy/crates/eips:alloy_eips",
         "//alloy/crates/serde:alloy_serde",
-        "@alloy_crates//:alloy-dyn-abi",
-        "@alloy_crates//:alloy-primitives",
-        "@alloy_crates//:serde",
-        "@alloy_crates//:serde_json",
+        "@crates//:alloy-dyn-abi",
+        "@crates//:alloy-primitives",
+        "@crates//:serde",
+        "@crates//:serde_json",
     ],
 )
 

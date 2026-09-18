@@ -21,21 +21,21 @@ crate_library(
     declared_features = DECLARED_FEATURES,
     deps = [
         "//alloy/crates/json-rpc:alloy_json_rpc",
-        "@alloy_crates//:base64",
-        "@alloy_crates//:derive_more",
-        "@alloy_crates//:futures",
-        "@alloy_crates//:futures-utils-wasm",
-        "@alloy_crates//:parking_lot",
-        "@alloy_crates//:serde",
-        "@alloy_crates//:serde_json",
-        "@alloy_crates//:thiserror",
-        "@alloy_crates//:tokio",
-        "@alloy_crates//:tower",
-        "@alloy_crates//:tracing",
-        "@alloy_crates//:url",
+        "@crates//:base64",
+        "@crates//:derive_more",
+        "@crates//:futures",
+        "@crates//:futures-utils-wasm",
+        "@crates//:parking_lot",
+        "@crates//:serde",
+        "@crates//:serde_json",
+        "@crates//:thiserror",
+        "@crates//:tokio",
+        "@crates//:tower",
+        "@crates//:tracing",
+        "@crates//:url",
     ],
     proc_macro_deps = [
-        "@alloy_crates//:auto_impl",
+        "@crates//:auto_impl",
     ],
 )
 
@@ -46,6 +46,6 @@ crate_unit_test(
     crate_features = FEATURES,
     declared_features = DECLARED_FEATURES,
     deps = [
-        "@alloy_crates//:alloy-primitives",
+        "@crates//:alloy-primitives",
     ],
 )

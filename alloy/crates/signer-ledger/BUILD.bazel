@@ -26,15 +26,15 @@ crate_library(
         "//alloy/crates/consensus:alloy_consensus",
         "//alloy/crates/network:alloy_network",
         "//alloy/crates/signer:alloy_signer",
-        "@alloy_crates//:alloy-primitives",
-        "@alloy_crates//:coins-ledger",
-        "@alloy_crates//:futures-util",
-        "@alloy_crates//:semver",
-        "@alloy_crates//:thiserror",
-        "@alloy_crates//:tracing",
+        "@crates//:alloy-primitives",
+        "@crates//:coins-ledger",
+        "@crates//:futures-util",
+        "@crates//:semver",
+        "@crates//:thiserror",
+        "@crates//:tracing",
     ],
     proc_macro_deps = [
-        "@alloy_crates//:async-trait",
+        "@crates//:async-trait",
     ],
 )
 
@@ -45,8 +45,8 @@ crate_unit_test(
     crate_features = FEATURES,
     declared_features = DECLARED_FEATURES,
     deps = [
-        "@alloy_crates//:alloy-rlp",
-        "@alloy_crates//:tokio",
-        "@alloy_crates//:tracing-subscriber",
+        "@crates//:alloy-rlp",
+        "@crates//:tokio",
+        "@crates//:tracing-subscriber",
     ],
 )

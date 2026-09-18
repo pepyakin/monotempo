@@ -1,0 +1,23 @@
+# GENERATED FILE - DO NOT EDIT. Regenerate with `python3 bazel/generate.py`.
+#
+# Bazel-only derivation of `reth/examples/node-event-hooks/Cargo.toml`: the same
+# package as `cargo metadata` describes it in the reth workspace, with
+# workspace inheritance resolved. Cargo builds are unaffected.
+
+[package]
+name = "example-node-event-hooks"
+version = "0.0.0"
+edition = "2024"
+build = false
+autolib = false
+autobins = false
+autoexamples = false
+autotests = false
+autobenches = false
+
+[[bin]]
+name = "example-node-event-hooks"
+path = "src/main.rs"
+
+[dependencies]
+reth-ethereum = { path = "../../crates/ethereum/reth", features = ["node", "cli"] }

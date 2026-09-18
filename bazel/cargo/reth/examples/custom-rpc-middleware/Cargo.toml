@@ -1,0 +1,27 @@
+# GENERATED FILE - DO NOT EDIT. Regenerate with `python3 bazel/generate.py`.
+#
+# Bazel-only derivation of `reth/examples/custom-rpc-middleware/Cargo.toml`: the same
+# package as `cargo metadata` describes it in the reth workspace, with
+# workspace inheritance resolved. Cargo builds are unaffected.
+
+[package]
+name = "example-custom-rpc-middleware"
+version = "0.0.0"
+edition = "2024"
+build = false
+autolib = false
+autobins = false
+autoexamples = false
+autotests = false
+autobenches = false
+
+[[bin]]
+name = "example-custom-rpc-middleware"
+path = "src/main.rs"
+
+[dependencies]
+clap = { version = "^4", features = ["derive"] }
+jsonrpsee = { version = "^0.26.0", features = ["server", "macros"] }
+reth-ethereum = { path = "../../crates/ethereum/reth", features = ["node", "rpc", "cli"] }
+tower = { version = "^0.5" }
+tracing = { version = "^0.1.0", features = ["attributes"], default-features = false }

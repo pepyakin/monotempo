@@ -1,0 +1,74 @@
+# GENERATED FILE - DO NOT EDIT. Regenerate with `python3 bazel/generate.py`.
+#
+# Bazel-only derivation of `reth/crates/rpc/rpc-eth-types/Cargo.toml`: the same
+# package as `cargo metadata` describes it in the reth workspace, with
+# workspace inheritance resolved. Cargo builds are unaffected.
+
+[package]
+name = "reth-rpc-eth-types"
+version = "2.5.2"
+edition = "2024"
+rust-version = "1.95"
+build = false
+autolib = false
+autobins = false
+autoexamples = false
+autotests = false
+autobenches = false
+
+[lib]
+name = "reth_rpc_eth_types"
+path = "src/lib.rs"
+
+[features]
+js-tracer = ["revm-inspectors/js-tracer"]
+
+[dependencies]
+alloy-chains = { version = "^0.2.33", default-features = false }
+alloy-consensus = { version = "^2.4.2", default-features = false }
+alloy-eip7928 = { version = "^0.4.10", features = ["rlp"], default-features = false }
+alloy-eips = { version = "^2.4.2", default-features = false }
+alloy-evm = { version = "^0.39.0", features = ["overrides", "call-util"], default-features = false }
+alloy-network = { version = "^2.4.2", default-features = false }
+alloy-primitives = { version = "^1.6.1", features = ["map-foldhash"], default-features = false }
+alloy-rpc-client = { version = "^2.4.2", features = ["reqwest"], default-features = false }
+alloy-rpc-types-eth = { version = "^2.4.2", default-features = false }
+alloy-serde = { version = "^2.4.2", default-features = false }
+alloy-sol-types = { version = "^1.6.1", default-features = false }
+alloy-transport = { version = "^2.4.2" }
+derive_more = { version = "^2", features = ["full"], default-features = false }
+futures = { version = "^0.3" }
+itertools = { version = "^0.14", default-features = false }
+jsonrpsee-core = { version = "^0.26.0" }
+jsonrpsee-types = { version = "^0.26.0" }
+metrics = { version = "^0.24.0" }
+rand = { version = "^0.9" }
+reqwest = { version = "^0.13", features = ["rustls", "stream"], default-features = false }
+reth-chain-state = { path = "../../chain-state" }
+reth-chainspec = { path = "../../chainspec", default-features = false }
+reth-errors = { path = "../../errors" }
+reth-ethereum-primitives = { path = "../../ethereum/primitives", features = ["rpc"], default-features = false }
+reth-evm = { path = "../../evm/evm", default-features = false }
+reth-execution-types = { path = "../../evm/execution-types", default-features = false }
+reth-metrics = { path = "../../metrics" }
+reth-primitives-traits = { version = "^0.7.1", features = ["rpc-compat"], default-features = false }
+reth-revm = { path = "../../revm", default-features = false }
+reth-rpc-convert = { path = "../rpc-convert" }
+reth-rpc-server-types = { path = "../rpc-server-types" }
+reth-storage-api = { path = "../../storage/storage-api", default-features = false }
+reth-tasks = { path = "../../tasks" }
+reth-transaction-pool = { path = "../../transaction-pool" }
+revm = { version = "^43.0.2", default-features = false }
+revm-inspectors = { version = "^0.43.0" }
+schnellru = { version = "^0.2" }
+serde = { version = "^1.0", features = ["derive"], default-features = false }
+thiserror = { version = "^2.0.0", default-features = false }
+tokio = { version = "^1.52.3", default-features = false }
+tokio-stream = { version = "^0.1.11" }
+tracing = { version = "^0.1.0", features = ["attributes"], default-features = false }
+url = { version = "^2.3", features = ["serde"], default-features = false }
+
+[dev-dependencies]
+reth-db-models = { path = "../../storage/db-models", default-features = false }
+reth-storage-api = { path = "../../storage/storage-api", features = ["std"], default-features = false }
+serde_json = { version = "^1.0", features = ["alloc"], default-features = false }

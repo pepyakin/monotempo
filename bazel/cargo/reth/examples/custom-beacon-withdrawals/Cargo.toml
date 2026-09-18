@@ -1,0 +1,27 @@
+# GENERATED FILE - DO NOT EDIT. Regenerate with `python3 bazel/generate.py`.
+#
+# Bazel-only derivation of `reth/examples/custom-beacon-withdrawals/Cargo.toml`: the same
+# package as `cargo metadata` describes it in the reth workspace, with
+# workspace inheritance resolved. Cargo builds are unaffected.
+
+[package]
+name = "example-custom-beacon-withdrawals"
+version = "0.0.0"
+edition = "2024"
+build = false
+autolib = false
+autobins = false
+autoexamples = false
+autotests = false
+autobenches = false
+
+[[bin]]
+name = "example-custom-beacon-withdrawals"
+path = "src/main.rs"
+
+[dependencies]
+alloy-eips = { version = "^2.4.2", default-features = false }
+alloy-evm = { version = "^0.39.0", default-features = false }
+alloy-sol-types = { version = "^1.6.1", default-features = false }
+eyre = { version = "^0.6" }
+reth-ethereum = { path = "../../crates/ethereum/reth", features = ["node", "node-api", "evm", "cli"] }

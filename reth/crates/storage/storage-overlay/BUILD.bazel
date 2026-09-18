@@ -21,6 +21,7 @@ crate_library(
     crate_features = FEATURES,
     declared_features = DECLARED_FEATURES,
     deps = [
+        "//alloy/crates/eips:alloy_eips",
         "//reth/crates/chain-state:reth_chain_state",
         "//reth/crates/errors:reth_errors",
         "//reth/crates/ethereum/primitives:reth_ethereum_primitives",
@@ -34,14 +35,13 @@ crate_library(
         "//reth/crates/trie/common:reth_trie_common",
         "//reth/crates/trie/db:reth_trie_db",
         "//reth/crates/trie/trie:reth_trie",
-        "@reth_crates//:alloy-eips",
-        "@reth_crates//:alloy-primitives",
-        "@reth_crates//:metrics",
-        "@reth_crates//:parking_lot",
-        "@reth_crates//:rayon",
-        "@reth_crates//:reth-primitives-traits",
-        "@reth_crates//:revm",
-        "@reth_crates//:tracing",
+        "@crates//:alloy-primitives",
+        "@crates//:metrics",
+        "@crates//:parking_lot",
+        "@crates//:rayon",
+        "@crates//:reth-primitives-traits",
+        "@crates//:revm",
+        "@crates//:tracing",
     ],
 )
 
@@ -52,8 +52,8 @@ crate_unit_test(
     crate_features = FEATURES,
     declared_features = DECLARED_FEATURES,
     deps = [
+        "//alloy/crates/consensus:alloy_consensus",
         "//reth/crates/storage/db:reth_db",
         "//reth/crates/storage/provider:reth_provider",
-        "@reth_crates//:alloy-consensus",
     ],
 )

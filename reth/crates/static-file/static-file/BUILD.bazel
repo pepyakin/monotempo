@@ -24,12 +24,12 @@ crate_library(
         "//reth/crates/storage/errors:reth_storage_errors",
         "//reth/crates/storage/provider:reth_provider",
         "//reth/crates/tokio-util:reth_tokio_util",
-        "@reth_crates//:alloy-primitives",
-        "@reth_crates//:parking_lot",
-        "@reth_crates//:rayon",
-        "@reth_crates//:reth-codecs",
-        "@reth_crates//:reth-primitives-traits",
-        "@reth_crates//:tracing",
+        "@crates//:alloy-primitives",
+        "@crates//:parking_lot",
+        "@crates//:rayon",
+        "@crates//:reth-codecs",
+        "@crates//:reth-primitives-traits",
+        "@crates//:tracing",
     ],
 )
 
@@ -42,7 +42,7 @@ crate_unit_test(
     deps = [
         "//reth/crates/stages/stages:reth_stages",
         "//reth/testing/testing-utils:reth_testing_utils",
-        "@reth_crates//:assert_matches",
-        "@reth_crates//:tempfile",
+        "@crates//:assert_matches",
+        "@crates//:tempfile",
     ],
 )

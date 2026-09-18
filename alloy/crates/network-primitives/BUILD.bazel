@@ -28,8 +28,8 @@ crate_library(
         "//alloy/crates/consensus:alloy_consensus",
         "//alloy/crates/eips:alloy_eips",
         "//alloy/crates/serde:alloy_serde",
-        "@alloy_crates//:alloy-primitives",
-        "@alloy_crates//:serde",
+        "@crates//:alloy-primitives",
+        "@crates//:serde",
     ],
 )
 

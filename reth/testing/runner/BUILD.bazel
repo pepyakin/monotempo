@@ -18,7 +18,7 @@ crate_binary(
     declared_features = DECLARED_FEATURES,
     deps = [
         "//reth/testing/ef-tests:ef_tests",
-        "@reth_crates//:clap",
+        "@crates//:clap",
     ],
 )
 

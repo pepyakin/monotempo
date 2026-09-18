@@ -1,0 +1,64 @@
+# GENERATED FILE - DO NOT EDIT. Regenerate with `python3 bazel/generate.py`.
+#
+# Bazel-only derivation of `reth/crates/net/dns/Cargo.toml`: the same
+# package as `cargo metadata` describes it in the reth workspace, with
+# workspace inheritance resolved. Cargo builds are unaffected.
+
+[package]
+name = "reth-dns-discovery"
+version = "2.5.2"
+edition = "2024"
+rust-version = "1.95"
+build = false
+autolib = false
+autobins = false
+autoexamples = false
+autotests = false
+autobenches = false
+
+[lib]
+name = "reth_dns_discovery"
+path = "src/lib.rs"
+
+[features]
+serde = [
+    "dep:serde",
+    "dep:serde_with",
+    "alloy-chains/serde",
+    "alloy-primitives/serde",
+    "enr/serde",
+    "linked_hash_set/serde",
+    "rand/serde",
+    "secp256k1/serde",
+    "hickory-resolver/serde",
+    "reth-ethereum-forks/serde",
+    "dashmap/serde",
+]
+
+[dependencies]
+alloy-primitives = { version = "^1.6.1", features = ["map-foldhash"], default-features = false }
+dashmap = { version = "^6.2", features = ["inline"] }
+data-encoding = { version = "^2" }
+enr = { version = "^0.13", default-features = false }
+hickory-resolver = { version = "^0.26.1", features = ["tokio"] }
+linked_hash_set = { version = "^0.1" }
+reth-ethereum-forks = { path = "../../ethereum/hardforks", default-features = false }
+reth-network-peers = { path = "../peers", features = ["secp256k1"], default-features = false }
+reth-tokio-util = { path = "../../tokio-util", features = ["time"] }
+schnellru = { version = "^0.2" }
+secp256k1 = { version = "^0.30", features = ["global-context", "recovery", "global-context", "std", "recovery", "serde"], default-features = false }
+serde = { version = "^1.0", optional = true, default-features = false }
+serde_with = { version = "^3", features = ["macros"], optional = true, default-features = false }
+thiserror = { version = "^2.0.0", default-features = false }
+tokio = { version = "^1.52.3", features = ["io-util", "net", "time"], default-features = false }
+tokio-stream = { version = "^0.1.11" }
+tracing = { version = "^0.1.0", features = ["attributes"], default-features = false }
+
+[dev-dependencies]
+alloy-chains = { version = "^0.2.33", default-features = false }
+alloy-rlp = { version = "^0.3.16", features = ["core-net"], default-features = false }
+rand = { version = "^0.9" }
+reth-chainspec = { path = "../../chainspec", default-features = false }
+reth-tracing = { path = "../../tracing" }
+secp256k1 = { version = "^0.30", features = ["global-context", "recovery", "rand"], default-features = false }
+tokio = { version = "^1.52.3", features = ["sync", "rt", "rt-multi-thread"], default-features = false }

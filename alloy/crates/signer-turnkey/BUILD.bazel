@@ -22,13 +22,13 @@ crate_library(
         "//alloy/crates/consensus:alloy_consensus",
         "//alloy/crates/network:alloy_network",
         "//alloy/crates/signer:alloy_signer",
-        "@alloy_crates//:alloy-primitives",
-        "@alloy_crates//:thiserror",
-        "@alloy_crates//:tracing",
-        "@alloy_crates//:turnkey_client",
+        "@crates//:alloy-primitives",
+        "@crates//:thiserror",
+        "@crates//:tracing",
+        "@crates//:turnkey_client",
     ],
     proc_macro_deps = [
-        "@alloy_crates//:async-trait",
+        "@crates//:async-trait",
     ],
 )
 
@@ -39,7 +39,7 @@ crate_unit_test(
     crate_features = FEATURES,
     declared_features = DECLARED_FEATURES,
     deps = [
-        "@alloy_crates//:k256",
-        "@alloy_crates//:tokio",
+        "@crates//:k256",
+        "@crates//:tokio",
     ],
 )

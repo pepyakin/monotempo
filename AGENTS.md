@@ -27,7 +27,7 @@ manifest in any project:
 
 ```bash
 python3 bazel/generate.py                   # regenerate BUILD.bazel files (all projects)
-CARGO_BAZEL_REPIN=1 bazel mod deps           # regenerate <project>/Cargo.Bazel.lock if deps changed
+CARGO_BAZEL_REPIN=1 bazel mod deps           # regenerate Cargo.Bazel.lock if deps or features changed
 ```
 
 `python3 bazel/generate.py --check` must pass before committing. Per-project
@@ -36,11 +36,17 @@ script inputs, test tags) live in `<project>/bazel/project.toml`.
 
 ## Cross-project dependencies
 
-Each project is its own Cargo workspace with its own crate_universe
-(`@reth_crates`, `@alloy_crates`); the lockfiles are kept aligned so shared
-third-party crates resolve to the same versions. reth still consumes alloy from
-crates.io (the version its `Cargo.lock` pins, currently equal to `alloy/`);
-wiring reth to the in-tree alloy is the next step.
+Each project is its own Cargo workspace for `cargo`, but Bazel resolves all of
+them as one workspace (`bazel/cargo/`, generated, with its own committed
+`Cargo.lock`) and one crate_universe repository, `@crates`. reth depends on the
+in-tree alloy through `[patch.crates-io]` in `reth/Cargo.toml`; the generator
+turns that into `//alloy/...` dependencies in reth's `BUILD.bazel` files, and
+into `crate.annotation(deps = ...)` entries in the generated
+`bazel/cargo/member_deps.MODULE.bazel` for external crates that depend on
+in-tree crates (crate_universe drops those edges itself). Keep
+the projects' lockfiles aligned on shared external crates: the generator fails
+when `bazel/cargo/Cargo.lock` would pin a version no project pins, and prints
+the `cargo update --precise` command that fixes it.
 
 ## Project-specific guidance
 

@@ -1,0 +1,58 @@
+# GENERATED FILE - DO NOT EDIT. Regenerate with `python3 bazel/generate.py`.
+#
+# Bazel-only derivation of `alloy/crates/signer-local/Cargo.toml`: the same
+# package as `cargo metadata` describes it in the alloy workspace, with
+# workspace inheritance resolved. Cargo builds are unaffected.
+
+[package]
+name = "alloy-signer-local"
+version = "2.4.2"
+edition = "2021"
+rust-version = "1.94.1"
+build = false
+autolib = false
+autobins = false
+autoexamples = false
+autotests = false
+autobenches = false
+
+[lib]
+name = "alloy_signer_local"
+path = "src/lib.rs"
+
+[features]
+zeroize = ["dep:zeroize"]
+keystore = ["dep:eth-keystore"]
+keystore-geth-compat = ["keystore", "eth-keystore?/geth-compat"]
+mnemonic = ["dep:coins-bip32", "dep:coins-bip39", "zeroize"]
+mnemonic-all-languages = ["mnemonic", "coins-bip39?/all-langs"]
+yubihsm = ["dep:yubihsm"]
+secp256k1 = ["dep:secp256k1", "alloy-consensus/secp256k1", "yubihsm?/secp256k1", "alloy-primitives/secp256k1"]
+eip712 = ["alloy-signer/eip712"]
+
+[dependencies]
+alloy-consensus = { path = "../consensus", features = ["std"], default-features = false }
+alloy-network = { path = "../network", default-features = false }
+alloy-primitives = { version = "^1.6.0", default-features = false }
+alloy-signer = { path = "../signer", default-features = false }
+async-trait = { version = "^0.1" }
+coins-bip32 = { version = "^0.12", optional = true, default-features = false }
+coins-bip39 = { version = "^0.12", features = ["english"], optional = true, default-features = false }
+eth-keystore = { version = "^0.5.0", optional = true, default-features = false }
+k256 = { version = "^0.13", features = ["ecdsa"], default-features = false }
+rand = { version = "^0.8" }
+secp256k1 = { version = "^0.30", features = ["recovery", "rand", "global-context"], optional = true, default-features = false }
+thiserror = { version = "^2.0", default-features = false }
+yubihsm = { version = "^0.42", features = ["secp256k1", "http", "usb"], optional = true }
+zeroize = { version = "^1.8.1", features = ["zeroize_derive", "alloc"], optional = true, default-features = false }
+
+[dev-dependencies]
+alloy-consensus = { path = "../consensus", features = ["std"], default-features = false }
+alloy-dyn-abi = { version = "^1.6.0", default-features = false }
+alloy-network = { path = "../network", default-features = false }
+alloy-sol-types = { version = "^1.6.0", default-features = false }
+serde = { version = "^1.0.226", features = ["derive", "alloc"], default-features = false }
+serde_json = { version = "^1.0", features = ["alloc"], default-features = false }
+tempfile = { version = "^3.20" }
+tokio = { version = "^1", features = ["macros", "rt-multi-thread"] }
+yubihsm = { version = "^0.42", features = ["mockhsm"] }

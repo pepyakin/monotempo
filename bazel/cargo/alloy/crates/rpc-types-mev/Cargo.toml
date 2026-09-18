@@ -1,0 +1,44 @@
+# GENERATED FILE - DO NOT EDIT. Regenerate with `python3 bazel/generate.py`.
+#
+# Bazel-only derivation of `alloy/crates/rpc-types-mev/Cargo.toml`: the same
+# package as `cargo metadata` describes it in the alloy workspace, with
+# workspace inheritance resolved. Cargo builds are unaffected.
+
+[package]
+name = "alloy-rpc-types-mev"
+version = "2.4.2"
+edition = "2021"
+rust-version = "1.94.1"
+build = false
+autolib = false
+autobins = false
+autoexamples = false
+autotests = false
+autobenches = false
+
+[lib]
+name = "alloy_rpc_types_mev"
+path = "src/lib.rs"
+
+[features]
+serde-bincode-compat = [
+    "serde_with",
+    "alloy-eips/serde-bincode-compat",
+    "alloy-consensus/serde-bincode-compat",
+    "alloy-rpc-types-eth/serde-bincode-compat",
+]
+serde_with = ["dep:serde_with", "alloy-consensus/serde_with"]
+
+[dependencies]
+alloy-consensus = { path = "../consensus", features = ["serde"], default-features = false }
+alloy-eips = { path = "../eips", features = ["serde"], default-features = false }
+alloy-primitives = { version = "^1.6.0", default-features = false }
+alloy-rpc-types-eth = { path = "../rpc-types-eth", features = ["serde"], default-features = false }
+alloy-serde = { path = "../serde", default-features = false }
+serde = { version = "^1.0.226", features = ["derive", "alloc"], default-features = false }
+serde_json = { version = "^1.0", features = ["alloc"], default-features = false }
+serde_with = { version = "^3", features = ["macros"], optional = true, default-features = false }
+
+[dev-dependencies]
+bincode = { version = "^2.0", features = ["serde"] }
+similar-asserts = { version = "^1.5" }

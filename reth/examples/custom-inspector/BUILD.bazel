@@ -18,13 +18,13 @@ crate_binary(
     declared_features = DECLARED_FEATURES,
     workspace_lints = False,
     deps = [
+        "//alloy/crates/eips:alloy_eips",
+        "//alloy/crates/rpc-types-eth:alloy_rpc_types_eth",
         "//reth/crates/ethereum/reth:reth_ethereum",
-        "@reth_crates//:alloy-eips",
-        "@reth_crates//:alloy-evm",
-        "@reth_crates//:alloy-primitives",
-        "@reth_crates//:alloy-rpc-types-eth",
-        "@reth_crates//:clap",
-        "@reth_crates//:futures-util",
+        "@crates//:alloy-evm",
+        "@crates//:alloy-primitives",
+        "@crates//:clap",
+        "@crates//:futures-util",
     ],
 )
 

@@ -1,0 +1,83 @@
+# GENERATED FILE - DO NOT EDIT. Regenerate with `python3 bazel/generate.py`.
+#
+# Bazel-only derivation of `reth/crates/e2e-test-utils/Cargo.toml`: the same
+# package as `cargo metadata` describes it in the reth workspace, with
+# workspace inheritance resolved. Cargo builds are unaffected.
+
+[package]
+name = "reth-e2e-test-utils"
+version = "2.5.2"
+edition = "2024"
+rust-version = "1.95"
+build = false
+autolib = false
+autobins = false
+autoexamples = false
+autotests = false
+autobenches = false
+
+[lib]
+name = "reth_e2e_test_utils"
+path = "src/lib.rs"
+
+[[test]]
+name = "e2e_testsuite"
+path = "tests/e2e-testsuite/main.rs"
+
+[[test]]
+name = "rocksdb"
+path = "tests/rocksdb/main.rs"
+
+[dependencies]
+alloy-consensus = { version = "^2.4.2", features = ["kzg"], default-features = false }
+alloy-eips = { version = "^2.4.2", default-features = false }
+alloy-network = { version = "^2.4.2", default-features = false }
+alloy-primitives = { version = "^1.6.1", features = ["map-foldhash"], default-features = false }
+alloy-provider = { version = "^2.4.2", features = ["reqwest", "debug-api", "reqwest"], default-features = false }
+alloy-rlp = { version = "^0.3.16", features = ["core-net"], default-features = false }
+alloy-rpc-types-engine = { version = "^2.4.2", default-features = false }
+alloy-rpc-types-eth = { version = "^2.4.2", default-features = false }
+alloy-signer = { version = "^2.4.2", default-features = false }
+alloy-signer-local = { version = "^2.4.2", features = ["mnemonic"], default-features = false }
+derive_more = { version = "^2", features = ["full"], default-features = false }
+eyre = { version = "^0.6" }
+futures-util = { version = "^0.3", default-features = false }
+jsonrpsee = { version = "^0.26.0" }
+reth-chainspec = { path = "../chainspec", default-features = false }
+reth-cli-commands = { path = "../cli/commands" }
+reth-config = { path = "../config", default-features = false }
+reth-consensus = { path = "../consensus/consensus", default-features = false }
+reth-db = { path = "../storage/db", features = ["test-utils"], default-features = false }
+reth-db-common = { path = "../storage/db-common" }
+reth-engine-local = { path = "../engine/local" }
+reth-engine-primitives = { path = "../engine/primitives", default-features = false }
+reth-ethereum-primitives = { path = "../ethereum/primitives", default-features = false }
+reth-network-api = { path = "../net/network-api" }
+reth-network-p2p = { path = "../net/p2p" }
+reth-network-peers = { path = "../net/peers", default-features = false }
+reth-node-api = { path = "../node/api" }
+reth-node-builder = { path = "../node/builder", features = ["test-utils"] }
+reth-node-core = { path = "../node/core" }
+reth-node-ethereum = { path = "../ethereum/node" }
+reth-payload-builder = { path = "../payload/builder", features = ["test-utils"] }
+reth-payload-builder-primitives = { path = "../payload/builder-primitives" }
+reth-payload-primitives = { path = "../payload/primitives" }
+reth-primitives-traits = { version = "^0.7.1", default-features = false }
+reth-provider = { path = "../storage/provider" }
+reth-rpc-api = { path = "../rpc/rpc-api", features = ["client"] }
+reth-rpc-builder = { path = "../rpc/rpc-builder" }
+reth-rpc-eth-api = { path = "../rpc/rpc-eth-api" }
+reth-rpc-server-types = { path = "../rpc/rpc-server-types" }
+reth-stages-types = { path = "../stages/types", default-features = false }
+reth-tasks = { path = "../tasks" }
+reth-tokio-util = { path = "../tokio-util" }
+reth-tracing = { path = "../tracing" }
+reth-trie = { path = "../trie/trie" }
+reth-trie-db = { path = "../trie/db" }
+revm = { version = "^43.0.2", default-features = false }
+serde_json = { version = "^1.0", features = ["alloc"], default-features = false }
+tempfile = { version = "^3.20" }
+tokio = { version = "^1.52.3", default-features = false }
+tokio-stream = { version = "^0.1.11" }
+tracing = { version = "^0.1.0", features = ["attributes"], default-features = false }
+url = { version = "^2.3", default-features = false }

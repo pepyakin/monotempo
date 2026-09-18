@@ -21,9 +21,9 @@ crate_library(
         "//alloy/crates/network-primitives:alloy_network_primitives",
         "//alloy/crates/rpc-types-eth:alloy_rpc_types_eth",
         "//alloy/crates/serde:alloy_serde",
-        "@alloy_crates//:alloy-primitives",
-        "@alloy_crates//:serde",
-        "@alloy_crates//:serde_json",
+        "@crates//:alloy-primitives",
+        "@crates//:serde",
+        "@crates//:serde_json",
     ],
 )
 

@@ -1,0 +1,48 @@
+# GENERATED FILE - DO NOT EDIT. Regenerate with `python3 bazel/generate.py`.
+#
+# Bazel-only derivation of `reth/crates/engine/execution-cache/Cargo.toml`: the same
+# package as `cargo metadata` describes it in the reth workspace, with
+# workspace inheritance resolved. Cargo builds are unaffected.
+
+[package]
+name = "reth-execution-cache"
+version = "2.5.2"
+edition = "2024"
+rust-version = "1.95"
+build = false
+autolib = false
+autobins = false
+autoexamples = false
+autotests = false
+autobenches = false
+
+[lib]
+name = "reth_execution_cache"
+path = "src/lib.rs"
+
+[features]
+test-utils = [
+    "reth-primitives-traits/test-utils",
+    "reth-revm/test-utils",
+    "reth-provider/test-utils",
+    "reth-trie/test-utils",
+]
+
+[dependencies]
+alloy-primitives = { version = "^1.6.1", features = ["map-foldhash"], default-features = false }
+fixed-cache = { version = "^0.1.10", features = ["alloc", "stats"], default-features = false }
+metrics = { version = "^0.24.0" }
+parking_lot = { version = "^0.12" }
+reth-errors = { path = "../../errors" }
+reth-metrics = { path = "../../metrics", features = ["common"] }
+reth-primitives-traits = { version = "^0.7.1", features = ["std"], default-features = false }
+reth-provider = { path = "../../storage/provider" }
+reth-revm = { path = "../../revm", default-features = false }
+reth-trie = { path = "../../trie/trie" }
+tracing = { version = "^0.1.0", features = ["attributes"], default-features = false }
+
+[dev-dependencies]
+alloy-primitives = { version = "^1.6.1", features = ["map-foldhash", "rand"], default-features = false }
+reth-provider = { path = "../../storage/provider", features = ["test-utils"] }
+reth-revm = { path = "../../revm", features = ["test-utils"], default-features = false }
+revm = { version = "^43.0.2", default-features = false }

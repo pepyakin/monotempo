@@ -1,0 +1,62 @@
+# GENERATED FILE - DO NOT EDIT. Regenerate with `python3 bazel/generate.py`.
+#
+# Bazel-only derivation of `alloy/crates/rpc-types/Cargo.toml`: the same
+# package as `cargo metadata` describes it in the alloy workspace, with
+# workspace inheritance resolved. Cargo builds are unaffected.
+
+[package]
+name = "alloy-rpc-types"
+version = "2.4.2"
+edition = "2021"
+rust-version = "1.94.1"
+build = false
+autolib = false
+autobins = false
+autoexamples = false
+autotests = false
+autobenches = false
+
+[lib]
+name = "alloy_rpc_types"
+path = "src/lib.rs"
+
+[features]
+default = ["eth", "alloy-rpc-types-engine?/default", "alloy-rpc-types-eth?/default"]
+admin = ["dep:alloy-rpc-types-admin"]
+anvil = ["dep:alloy-rpc-types-anvil"]
+any = ["dep:alloy-rpc-types-any"]
+beacon = ["dep:alloy-rpc-types-beacon"]
+debug = ["dep:alloy-rpc-types-debug"]
+engine = ["dep:alloy-rpc-types-engine"]
+eth = ["dep:alloy-rpc-types-eth"]
+mev = ["dep:alloy-rpc-types-mev"]
+trace = ["dep:alloy-rpc-types-trace"]
+txpool = ["dep:alloy-rpc-types-txpool"]
+arbitrary = [
+    "alloy-rpc-types-eth?/arbitrary",
+    "alloy-serde/arbitrary",
+    "alloy-primitives/arbitrary",
+    "alloy-rpc-types-engine?/arbitrary",
+]
+ssz = ["alloy-rpc-types-beacon?/ssz", "alloy-rpc-types-engine?/ssz"]
+k256 = ["alloy-rpc-types-eth?/k256", "alloy-primitives/k256"]
+kzg = ["alloy-rpc-types-engine?/kzg"]
+
+[dependencies]
+alloy-primitives = { version = "^1.6.0", features = ["map"], default-features = false }
+alloy-rpc-types-admin = { path = "../rpc-types-admin", optional = true, default-features = false }
+alloy-rpc-types-anvil = { path = "../rpc-types-anvil", optional = true, default-features = false }
+alloy-rpc-types-any = { path = "../rpc-types-any", optional = true, default-features = false }
+alloy-rpc-types-beacon = { path = "../rpc-types-beacon", optional = true, default-features = false }
+alloy-rpc-types-debug = { path = "../rpc-types-debug", optional = true, default-features = false }
+alloy-rpc-types-engine = { path = "../rpc-types-engine", features = ["serde"], optional = true, default-features = false }
+alloy-rpc-types-eth = { path = "../rpc-types-eth", features = ["serde"], optional = true, default-features = false }
+alloy-rpc-types-mev = { path = "../rpc-types-mev", optional = true, default-features = false }
+alloy-rpc-types-trace = { path = "../rpc-types-trace", optional = true, default-features = false }
+alloy-rpc-types-txpool = { path = "../rpc-types-txpool", optional = true, default-features = false }
+alloy-serde = { path = "../serde", default-features = false }
+serde = { version = "^1.0.226", features = ["derive", "alloc", "derive", "std"], default-features = false }
+
+[dev-dependencies]
+serde_json = { version = "^1.0", features = ["alloc"], default-features = false }
+similar-asserts = { version = "^1.5" }

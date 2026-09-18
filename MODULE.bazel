@@ -61,13 +61,48 @@ use_repo(rust, "rust_toolchains")
 register_toolchains("@rust_toolchains//:all")
 
 ###############################################################################
-# Projects.
+# External crates.
 #
-# Each project is a Cargo workspace with its own `Cargo.lock`, rendered into
-# its own crate_universe repository (`@<project>_crates`) by the included
-# file. Cross-project dependencies are plain `//<project>/...` labels.
+# One crate_universe repository, `@crates`, for every project. It is rendered
+# from the Bazel Cargo workspace in `bazel/cargo/`, which `bazel/generate.py`
+# derives from the projects' manifests: one Cargo resolution for the whole
+# monorepo, so that a project can depend on another's crates in-tree (reth on
+# alloy) while both see the same external crates. `bazel/cargo/Cargo.lock` is
+# that workspace's lockfile; the generator keeps it aligned with the projects'
+# own lockfiles.
+#
+# The rendered result is pinned in `Cargo.Bazel.lock`; regenerate it with
+#
+#     CARGO_BAZEL_REPIN=1 bazel mod deps
+#
+# after running the generator whenever a `Cargo.toml` or `Cargo.lock` changes.
 ###############################################################################
 
-include("//alloy:alloy.MODULE.bazel")
+crate = use_extension("@rules_rust//crate_universe:extensions.bzl", "crate")
+crate.from_cargo(
+    name = "crates",
+    cargo_lockfile = "//bazel/cargo:Cargo.lock",
+    lockfile = "//:Cargo.Bazel.lock",
+    manifests = ["//bazel/cargo:Cargo.toml"],
+    supported_platform_triples = [
+        "aarch64-apple-darwin",
+        "aarch64-unknown-linux-gnu",
+        "x86_64-apple-darwin",
+        "x86_64-unknown-linux-gnu",
+    ],
+)
+use_repo(crate, "crates")
+
+# External crates that a `[patch.crates-io]` entry points back into the tree
+# (crates.io `alloy-evm` -> in-tree `alloy-consensus`). Generated.
+include("//bazel/cargo:member_deps.MODULE.bazel")
+
+###############################################################################
+# Projects.
+#
+# Each project is a Cargo workspace; its crates are built from the generated
+# `BUILD.bazel` files next to them. A project that needs to annotate external
+# crates (patches, build-script inputs) contributes a `<project>.MODULE.bazel`.
+###############################################################################
 
 include("//reth:reth.MODULE.bazel")

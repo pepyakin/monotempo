@@ -29,14 +29,14 @@ crate_library(
     deps = [
         "//alloy/crates/pubsub:alloy_pubsub",
         "//alloy/crates/transport:alloy_transport",
-        "@alloy_crates//:futures",
-        "@alloy_crates//:http",
-        "@alloy_crates//:rustls",
-        "@alloy_crates//:serde_json",
-        "@alloy_crates//:tokio",
-        "@alloy_crates//:tokio-tungstenite",
-        "@alloy_crates//:tracing",
-        "@alloy_crates//:url",
+        "@crates//:futures",
+        "@crates//:http",
+        "@crates//:rustls",
+        "@crates//:serde_json",
+        "@crates//:tokio",
+        "@crates//:tokio-tungstenite",
+        "@crates//:tracing",
+        "@crates//:url",
     ],
 )
 

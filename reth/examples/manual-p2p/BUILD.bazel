@@ -18,15 +18,15 @@ crate_binary(
     declared_features = DECLARED_FEATURES,
     workspace_lints = False,
     deps = [
+        "//alloy/crates/consensus:alloy_consensus",
         "//reth/crates/ethereum/reth:reth_ethereum",
         "//reth/crates/net/discv4:reth_discv4",
         "//reth/crates/net/ecies:reth_ecies",
         "//reth/crates/net/peers:reth_network_peers",
-        "@reth_crates//:alloy-consensus",
-        "@reth_crates//:eyre",
-        "@reth_crates//:futures",
-        "@reth_crates//:secp256k1",
-        "@reth_crates//:tokio",
+        "@crates//:eyre",
+        "@crates//:futures",
+        "@crates//:secp256k1",
+        "@crates//:tokio",
     ],
 )
 

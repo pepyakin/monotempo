@@ -17,14 +17,14 @@ crate_library(
     crate_features = FEATURES,
     declared_features = DECLARED_FEATURES,
     deps = [
+        "//alloy/crates/rpc-types-engine:alloy_rpc_types_engine",
         "//reth/crates/errors:reth_errors",
         "//reth/crates/net/network-api:reth_network_api",
-        "@reth_crates//:alloy-primitives",
-        "@reth_crates//:alloy-rpc-types-engine",
-        "@reth_crates//:jsonrpsee-core",
-        "@reth_crates//:jsonrpsee-types",
-        "@reth_crates//:serde",
-        "@reth_crates//:strum",
+        "@crates//:alloy-primitives",
+        "@crates//:jsonrpsee-core",
+        "@crates//:jsonrpsee-types",
+        "@crates//:serde",
+        "@crates//:strum",
     ],
 )
 

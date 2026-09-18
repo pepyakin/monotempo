@@ -1,0 +1,29 @@
+# GENERATED FILE - DO NOT EDIT. Regenerate with `python3 bazel/generate.py`.
+#
+# Bazel-only derivation of `reth/crates/etl/Cargo.toml`: the same
+# package as `cargo metadata` describes it in the reth workspace, with
+# workspace inheritance resolved. Cargo builds are unaffected.
+
+[package]
+name = "reth-etl"
+version = "2.5.2"
+edition = "2024"
+rust-version = "1.95"
+build = false
+autolib = false
+autobins = false
+autoexamples = false
+autotests = false
+autobenches = false
+
+[lib]
+name = "reth_etl"
+path = "src/lib.rs"
+
+[dependencies]
+rayon = { version = "^1.7" }
+reth-db-api = { path = "../storage/db-api" }
+tempfile = { version = "^3.20" }
+
+[dev-dependencies]
+alloy-primitives = { version = "^1.6.1", features = ["map-foldhash", "getrandom"], default-features = false }

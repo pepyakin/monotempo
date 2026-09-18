@@ -41,14 +41,14 @@ crate_library(
     crate_features = FEATURES,
     declared_features = DECLARED_FEATURES,
     deps = [
+        "//alloy/crates/rpc-types-debug:alloy_rpc_types_debug",
         "//reth/crates/storage/errors:reth_storage_errors",
         "//reth/crates/storage/storage-api:reth_storage_api",
         "//reth/crates/trie/trie:reth_trie",
-        "@reth_crates//:alloy-primitives",
-        "@reth_crates//:alloy-rlp",
-        "@reth_crates//:alloy-rpc-types-debug",
-        "@reth_crates//:reth-primitives-traits",
-        "@reth_crates//:revm",
+        "@crates//:alloy-primitives",
+        "@crates//:alloy-rlp",
+        "@crates//:reth-primitives-traits",
+        "@crates//:revm",
     ],
 )
 
@@ -59,7 +59,7 @@ crate_unit_test(
     crate_features = FEATURES,
     declared_features = DECLARED_FEATURES,
     deps = [
+        "//alloy/crates/consensus:alloy_consensus",
         "//reth/crates/ethereum/hardforks:reth_ethereum_forks",
-        "@reth_crates//:alloy-consensus",
     ],
 )

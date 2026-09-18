@@ -7,6 +7,7 @@ load("//alloy/bazel:workspace.bzl", "WORKSPACE")
 
 FEATURES = [
     "default",
+    "engine",
     "eth",
 ]
 
@@ -36,10 +37,11 @@ crate_library(
     crate_features = FEATURES,
     declared_features = DECLARED_FEATURES,
     deps = [
+        "//alloy/crates/rpc-types-engine:alloy_rpc_types_engine",
         "//alloy/crates/rpc-types-eth:alloy_rpc_types_eth",
         "//alloy/crates/serde:alloy_serde",
-        "@alloy_crates//:alloy-primitives",
-        "@alloy_crates//:serde",
+        "@crates//:alloy-primitives",
+        "@crates//:serde",
     ],
 )
 
@@ -50,7 +52,7 @@ crate_unit_test(
     crate_features = FEATURES,
     declared_features = DECLARED_FEATURES,
     deps = [
-        "@alloy_crates//:serde_json",
-        "@alloy_crates//:similar-asserts",
+        "@crates//:serde_json",
+        "@crates//:similar-asserts",
     ],
 )

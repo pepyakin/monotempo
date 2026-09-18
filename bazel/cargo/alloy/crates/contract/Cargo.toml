@@ -1,0 +1,56 @@
+# GENERATED FILE - DO NOT EDIT. Regenerate with `python3 bazel/generate.py`.
+#
+# Bazel-only derivation of `alloy/crates/contract/Cargo.toml`: the same
+# package as `cargo metadata` describes it in the alloy workspace, with
+# workspace inheritance resolved. Cargo builds are unaffected.
+
+[package]
+name = "alloy-contract"
+version = "2.4.2"
+edition = "2021"
+rust-version = "1.94.1"
+build = false
+autolib = false
+autobins = false
+autoexamples = false
+autotests = false
+autobenches = false
+
+[lib]
+name = "alloy_contract"
+path = "src/lib.rs"
+
+[features]
+pubsub = ["alloy-provider/pubsub", "dep:alloy-pubsub"]
+
+[dependencies]
+alloy-consensus = { path = "../consensus", default-features = false }
+alloy-dyn-abi = { version = "^1.6.0", features = ["std"], default-features = false }
+alloy-json-abi = { version = "^1.6.0", default-features = false }
+alloy-network = { path = "../network", default-features = false }
+alloy-network-primitives = { path = "../network-primitives", default-features = false }
+alloy-primitives = { version = "^1.6.0", features = ["map"], default-features = false }
+alloy-provider = { path = "../provider", default-features = false }
+alloy-pubsub = { path = "../pubsub", optional = true, default-features = false }
+alloy-rpc-types-eth = { path = "../rpc-types-eth", features = ["serde"], default-features = false }
+alloy-sol-types = { version = "^1.6.0", default-features = false }
+alloy-transport = { path = "../transport", default-features = false }
+futures = { version = "^0.3" }
+futures-util = { version = "^0.3" }
+serde_json = { version = "^1.0", features = ["alloc", "raw_value"], default-features = false }
+thiserror = { version = "^2.0", default-features = false }
+tracing = { version = "^0.1" }
+
+[dev-dependencies]
+alloy-node-bindings = { path = "../node-bindings", default-features = false }
+alloy-provider = { path = "../provider", features = ["anvil-node"], default-features = false }
+alloy-signer-local = { path = "../signer-local", default-features = false }
+serde_json = { version = "^1.0", features = ["alloc"], default-features = false }
+tokio = { version = "^1", features = ["macros", "rt-multi-thread"] }
+tracing-subscriber = { version = "^0.3" }
+
+[target.'cfg(all(target_family = "wasm", target_os = "unknown"))'.dependencies]
+wasmtimer = { version = "^0.4.0" }
+
+[target.'cfg(not(all(target_family = "wasm", target_os = "unknown")))'.dependencies]
+tokio = { version = "^1", features = ["time"] }

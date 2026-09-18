@@ -1,0 +1,29 @@
+# GENERATED FILE - DO NOT EDIT. Regenerate with `python3 bazel/generate.py`.
+#
+# Bazel-only derivation of `reth/crates/cli/cli/Cargo.toml`: the same
+# package as `cargo metadata` describes it in the reth workspace, with
+# workspace inheritance resolved. Cargo builds are unaffected.
+
+[package]
+name = "reth-cli"
+version = "2.5.2"
+edition = "2024"
+rust-version = "1.95"
+build = false
+autolib = false
+autobins = false
+autoexamples = false
+autotests = false
+autobenches = false
+
+[lib]
+name = "reth_cli"
+path = "src/lib.rs"
+
+[dependencies]
+alloy-genesis = { version = "^2.4.2", default-features = false }
+clap = { version = "^4" }
+eyre = { version = "^0.6" }
+reth-cli-runner = { path = "../runner" }
+reth-db = { path = "../../storage/db", default-features = false }
+serde_json = { version = "^1.0", features = ["alloc"], default-features = false }

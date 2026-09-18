@@ -1,0 +1,62 @@
+# GENERATED FILE - DO NOT EDIT. Regenerate with `python3 bazel/generate.py`.
+#
+# Bazel-only derivation of `reth/crates/payload/primitives/Cargo.toml`: the same
+# package as `cargo metadata` describes it in the reth workspace, with
+# workspace inheritance resolved. Cargo builds are unaffected.
+
+[package]
+name = "reth-payload-primitives"
+version = "2.5.2"
+edition = "2024"
+rust-version = "1.95"
+build = false
+autolib = false
+autobins = false
+autoexamples = false
+autotests = false
+autobenches = false
+
+[lib]
+name = "reth_payload_primitives"
+path = "src/lib.rs"
+
+[features]
+default = ["std"]
+std = [
+    "reth-chainspec/std",
+    "reth-execution-types/std",
+    "reth-trie-common/std",
+    "alloy-eips/std",
+    "alloy-primitives/std",
+    "alloy-rpc-types-engine/std",
+    "serde/std",
+    "thiserror/std",
+    "reth-primitives-traits/std",
+    "either/std",
+    "alloy-consensus/std",
+    "alloy-rlp/std",
+    "serde_json/std",
+    "sha2/std",
+]
+
+[dependencies]
+alloy-consensus = { version = "^2.4.2", default-features = false }
+alloy-eips = { version = "^2.4.2", default-features = false }
+alloy-primitives = { version = "^1.6.1", features = ["map-foldhash"], default-features = false }
+alloy-rlp = { version = "^0.3.16", features = ["core-net"], default-features = false }
+alloy-rpc-types-engine = { version = "^2.4.2", features = ["serde"], default-features = false }
+auto_impl = { version = "^1" }
+either = { version = "^1.16.0", default-features = false }
+reth-chainspec = { path = "../../chainspec", default-features = false }
+reth-errors = { path = "../../errors" }
+reth-execution-types = { path = "../../evm/execution-types", default-features = false }
+reth-primitives-traits = { version = "^0.7.1", default-features = false }
+reth-trie-common = { path = "../../trie/common", default-features = false }
+serde = { version = "^1.0", default-features = false }
+sha2 = { version = "^0.10", default-features = false }
+thiserror = { version = "^2.0.0", default-features = false }
+tokio = { version = "^1.52.3", features = ["sync"], default-features = false }
+
+[dev-dependencies]
+assert_matches = { version = "^1.5.0" }
+serde_json = { version = "^1.0", features = ["alloc"], default-features = false }

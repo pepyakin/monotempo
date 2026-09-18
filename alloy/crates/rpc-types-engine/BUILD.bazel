@@ -9,7 +9,9 @@ FEATURES = [
     "default",
     "jwt",
     "jwt-aws-lc-rs",
+    "kzg",
     "serde",
+    "ssz",
     "std",
 ]
 
@@ -35,13 +37,17 @@ crate_library(
         "//alloy/crates/consensus:alloy_consensus",
         "//alloy/crates/eips:alloy_eips",
         "//alloy/crates/serde:alloy_serde",
-        "@alloy_crates//:alloy-primitives",
-        "@alloy_crates//:alloy-rlp",
-        "@alloy_crates//:derive_more",
-        "@alloy_crates//:jsonwebtoken",
-        "@alloy_crates//:rand",
-        "@alloy_crates//:serde",
-        "@alloy_crates//:strum",
+        "@crates//:alloy-primitives",
+        "@crates//:alloy-rlp",
+        "@crates//:derive_more",
+        "@crates//:ethereum_ssz",
+        "@crates//:jsonwebtoken",
+        "@crates//:rand-0.8.6",
+        "@crates//:serde",
+        "@crates//:strum",
+    ],
+    proc_macro_deps = [
+        "@crates//:ethereum_ssz_derive",
     ],
 )
 
@@ -52,11 +58,11 @@ crate_unit_test(
     crate_features = FEATURES,
     declared_features = DECLARED_FEATURES,
     deps = [
-        "@alloy_crates//:arbitrary",
-        "@alloy_crates//:assert_matches",
-        "@alloy_crates//:base64",
-        "@alloy_crates//:serde_json",
-        "@alloy_crates//:similar-asserts",
-        "@alloy_crates//:tempfile",
+        "@crates//:arbitrary",
+        "@crates//:assert_matches",
+        "@crates//:base64",
+        "@crates//:serde_json",
+        "@crates//:similar-asserts",
+        "@crates//:tempfile",
     ],
 )

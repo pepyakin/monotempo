@@ -1,0 +1,67 @@
+# GENERATED FILE - DO NOT EDIT. Regenerate with `python3 bazel/generate.py`.
+#
+# Bazel-only derivation of `reth/crates/net/discv4/Cargo.toml`: the same
+# package as `cargo metadata` describes it in the reth workspace, with
+# workspace inheritance resolved. Cargo builds are unaffected.
+
+[package]
+name = "reth-discv4"
+version = "2.5.2"
+edition = "2024"
+rust-version = "1.95"
+build = false
+autolib = false
+autobins = false
+autoexamples = false
+autotests = false
+autobenches = false
+
+[lib]
+name = "reth_discv4"
+path = "src/lib.rs"
+
+[[bench]]
+name = "codec"
+path = "benches/codec.rs"
+
+[features]
+default = ["serde"]
+serde = [
+    "dep:serde",
+    "alloy-primitives/serde",
+    "discv5/serde",
+    "enr/serde",
+    "parking_lot/serde",
+    "rand_08?/serde",
+    "secp256k1/serde",
+    "reth-ethereum-forks/serde",
+]
+test-utils = ["dep:rand_08"]
+
+[dependencies]
+alloy-primitives = { version = "^1.6.1", features = ["map-foldhash", "rand"], default-features = false }
+alloy-rlp = { version = "^0.3.16", features = ["core-net", "derive"], default-features = false }
+discv5 = { git = "https://github.com/sigp/discv5", rev = "7663c00" }
+enr = { version = "^0.13", default-features = false }
+itertools = { version = "^0.14", default-features = false }
+parking_lot = { version = "^0.12" }
+rand_08 = { package = "rand", version = "^0.8", optional = true }
+reth-ethereum-forks = { path = "../../ethereum/hardforks", default-features = false }
+reth-net-banlist = { path = "../banlist" }
+reth-net-nat = { path = "../nat" }
+reth-network-peers = { path = "../peers", features = ["secp256k1"], default-features = false }
+schnellru = { version = "^0.2" }
+secp256k1 = { version = "^0.30", features = ["global-context", "recovery", "global-context", "std", "recovery", "serde"], default-features = false }
+serde = { version = "^1.0", optional = true, default-features = false }
+thiserror = { version = "^2.0.0", default-features = false }
+tokio = { version = "^1.52.3", features = ["io-util", "net", "time"], default-features = false }
+tokio-stream = { version = "^0.1.11" }
+tracing = { version = "^0.1.0", features = ["attributes"], default-features = false }
+
+[dev-dependencies]
+assert_matches = { version = "^1.5.0" }
+criterion = { package = "codspeed-criterion-compat", version = "^4.3" }
+rand_08 = { package = "rand", version = "^0.8" }
+reth-tracing = { path = "../../tracing" }
+secp256k1 = { version = "^0.30", features = ["global-context", "recovery", "rand"], default-features = false }
+tokio = { version = "^1.52.3", features = ["macros", "rt-multi-thread"], default-features = false }

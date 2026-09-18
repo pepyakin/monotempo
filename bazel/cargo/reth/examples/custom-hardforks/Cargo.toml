@@ -1,0 +1,29 @@
+# GENERATED FILE - DO NOT EDIT. Regenerate with `python3 bazel/generate.py`.
+#
+# Bazel-only derivation of `reth/examples/custom-hardforks/Cargo.toml`: the same
+# package as `cargo metadata` describes it in the reth workspace, with
+# workspace inheritance resolved. Cargo builds are unaffected.
+
+[package]
+name = "custom-hardforks"
+version = "0.1.0"
+edition = "2021"
+build = false
+autolib = false
+autobins = false
+autoexamples = false
+autotests = false
+autobenches = false
+
+[[bin]]
+name = "custom-hardforks"
+path = "src/main.rs"
+
+[dependencies]
+alloy-consensus = { version = "^2.4.2", default-features = false }
+alloy-eips = { version = "^2.4.2", default-features = false }
+alloy-genesis = { version = "^2.4.2", default-features = false }
+alloy-primitives = { version = "^1.6.1", features = ["map-foldhash"], default-features = false }
+reth-chainspec = { path = "../../crates/chainspec", default-features = false }
+reth-network-peers = { path = "../../crates/net/peers", default-features = false }
+serde = { version = "^1.0", features = ["derive"] }

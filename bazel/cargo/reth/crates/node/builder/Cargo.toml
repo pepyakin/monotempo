@@ -1,0 +1,117 @@
+# GENERATED FILE - DO NOT EDIT. Regenerate with `python3 bazel/generate.py`.
+#
+# Bazel-only derivation of `reth/crates/node/builder/Cargo.toml`: the same
+# package as `cargo metadata` describes it in the reth workspace, with
+# workspace inheritance resolved. Cargo builds are unaffected.
+
+[package]
+name = "reth-node-builder"
+version = "2.5.2"
+edition = "2024"
+rust-version = "1.95"
+build = false
+autolib = false
+autobins = false
+autoexamples = false
+autotests = false
+autobenches = false
+
+[lib]
+name = "reth_node_builder"
+path = "src/lib.rs"
+
+[features]
+default = []
+js-tracer = ["reth-rpc/js-tracer", "reth-node-ethereum/js-tracer", "reth-rpc-eth-types/js-tracer"]
+test-utils = [
+    "reth-db/test-utils",
+    "reth-chain-state/test-utils",
+    "reth-chainspec/test-utils",
+    "reth-consensus/test-utils",
+    "reth-engine-tree/test-utils",
+    "reth-evm/test-utils",
+    "reth-downloaders/test-utils",
+    "reth-network/test-utils",
+    "reth-network-p2p/test-utils",
+    "reth-payload-builder/test-utils",
+    "reth-stages/test-utils",
+    "reth-db-api/test-utils",
+    "reth-provider/test-utils",
+    "reth-transaction-pool/test-utils",
+    "reth-evm-ethereum/test-utils",
+    "reth-node-ethereum/test-utils",
+    "reth-primitives-traits/test-utils",
+    "reth-tasks/test-utils",
+]
+trie-debug = ["reth-engine-tree/trie-debug", "reth-engine-primitives/trie-debug", "reth-node-core/trie-debug"]
+
+[dependencies]
+alloy-consensus = { version = "^2.4.2", default-features = false }
+alloy-eips = { version = "^2.4.2", features = ["kzg"], default-features = false }
+alloy-primitives = { version = "^1.6.1", features = ["map-foldhash"], default-features = false }
+alloy-provider = { version = "^2.4.2", features = ["reqwest", "debug-api"], default-features = false }
+alloy-rpc-types = { version = "^2.4.2", features = ["eth", "engine"], default-features = false }
+alloy-rpc-types-engine = { version = "^2.4.2", default-features = false }
+aquamarine = { version = "^0.6" }
+eyre = { version = "^0.6" }
+fdlimit = { version = "^0.3.0" }
+futures = { version = "^0.3" }
+jsonrpsee = { version = "^0.26.0" }
+parking_lot = { version = "^0.12" }
+rayon = { version = "^1.7" }
+reth-basic-payload-builder = { path = "../../payload/basic" }
+reth-chain-state = { path = "../../chain-state" }
+reth-chainspec = { path = "../../chainspec", default-features = false }
+reth-config = { path = "../../config", default-features = false }
+reth-consensus = { path = "../../consensus/consensus", default-features = false }
+reth-consensus-debug-client = { path = "../../consensus/debug-client" }
+reth-db = { path = "../../storage/db", features = ["mdbx"], default-features = false }
+reth-db-api = { path = "../../storage/db-api" }
+reth-db-common = { path = "../../storage/db-common" }
+reth-downloaders = { path = "../../net/downloaders" }
+reth-engine-local = { path = "../../engine/local" }
+reth-engine-primitives = { path = "../../engine/primitives", default-features = false }
+reth-engine-tree = { path = "../../engine/tree" }
+reth-engine-util = { path = "../../engine/util" }
+reth-evm = { path = "../../evm/evm", default-features = false }
+reth-exex = { path = "../../exex/exex" }
+reth-fs-util = { path = "../../fs-util" }
+reth-invalid-block-hooks = { path = "../../engine/invalid-block-hooks" }
+reth-network = { path = "../../net/network" }
+reth-network-api = { path = "../../net/network-api" }
+reth-network-p2p = { path = "../../net/p2p" }
+reth-node-api = { path = "../api" }
+reth-node-core = { path = "../core" }
+reth-node-ethstats = { path = "../ethstats" }
+reth-node-events = { path = "../events" }
+reth-node-metrics = { path = "../metrics" }
+reth-payload-builder = { path = "../../payload/builder" }
+reth-primitives-traits = { version = "^0.7.1", default-features = false }
+reth-provider = { path = "../../storage/provider" }
+reth-prune = { path = "../../prune/prune" }
+reth-rpc = { path = "../../rpc/rpc" }
+reth-rpc-api = { path = "../../rpc/rpc-api" }
+reth-rpc-builder = { path = "../../rpc/rpc-builder" }
+reth-rpc-engine-api = { path = "../../rpc/rpc-engine-api" }
+reth-rpc-eth-types = { path = "../../rpc/rpc-eth-types", default-features = false }
+reth-rpc-layer = { path = "../../rpc/rpc-layer" }
+reth-stages = { path = "../../stages/stages" }
+reth-static-file = { path = "../../static-file/static-file" }
+reth-storage-overlay = { path = "../../storage/storage-overlay", features = ["rayon"] }
+reth-tasks = { path = "../../tasks", features = ["rayon"] }
+reth-tokio-util = { path = "../../tokio-util" }
+reth-tracing = { path = "../../tracing", features = ["std"] }
+reth-transaction-pool = { path = "../../transaction-pool" }
+secp256k1 = { version = "^0.30", features = ["global-context", "recovery", "global-context", "std", "recovery"], default-features = false }
+serde_json = { version = "^1.0", features = ["alloc"], default-features = false }
+tokio = { version = "^1.52.3", features = ["sync", "macros", "time", "rt-multi-thread"], default-features = false }
+tokio-stream = { version = "^0.1.11" }
+tracing = { version = "^0.1.0", features = ["attributes"], default-features = false }
+
+[dev-dependencies]
+reth-ethereum-engine-primitives = { path = "../../ethereum/engine-primitives", default-features = false }
+reth-evm-ethereum = { path = "../../ethereum/evm", features = ["test-utils"], default-features = false }
+reth-node-ethereum = { path = "../../ethereum/node" }
+reth-payload-builder = { path = "../../payload/builder", features = ["test-utils"] }
+reth-provider = { path = "../../storage/provider", features = ["test-utils"] }
+tempfile = { version = "^3.20" }

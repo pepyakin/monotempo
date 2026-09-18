@@ -1,0 +1,40 @@
+# GENERATED FILE - DO NOT EDIT. Regenerate with `python3 bazel/generate.py`.
+#
+# Bazel-only derivation of `reth/crates/ethereum/hardforks/Cargo.toml`: the same
+# package as `cargo metadata` describes it in the reth workspace, with
+# workspace inheritance resolved. Cargo builds are unaffected.
+
+[package]
+name = "reth-ethereum-forks"
+version = "2.5.2"
+edition = "2024"
+rust-version = "1.95"
+build = false
+autolib = false
+autobins = false
+autoexamples = false
+autotests = false
+autobenches = false
+
+[lib]
+name = "reth_ethereum_forks"
+path = "src/lib.rs"
+
+[features]
+default = ["std", "serde", "rustc-hash"]
+arbitrary = ["dep:arbitrary", "alloy-primitives/arbitrary", "alloy-eip2124/arbitrary"]
+serde = ["alloy-primitives/serde", "alloy-eip2124/serde", "alloy-hardforks/serde"]
+std = ["alloy-primitives/std", "rustc-hash/std", "alloy-eip2124/std", "once_cell/std"]
+rustc-hash = ["dep:rustc-hash"]
+
+[dependencies]
+alloy-eip2124 = { version = "^0.2.0", default-features = false }
+alloy-hardforks = { version = "^0.4.8" }
+alloy-primitives = { version = "^1.6.1", features = ["map-foldhash", "serde", "rlp"], default-features = false }
+arbitrary = { version = "^1.3", features = ["derive"], optional = true }
+auto_impl = { version = "^1" }
+once_cell = { version = "^1.19", features = ["critical-section"], default-features = false }
+rustc-hash = { version = "^2.0", optional = true, default-features = false }
+
+[dev-dependencies]
+arbitrary = { version = "^1.3", features = ["derive"] }

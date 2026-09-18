@@ -20,14 +20,14 @@ crate_library(
         "//alloy/crates/consensus:alloy_consensus",
         "//alloy/crates/network:alloy_network",
         "//alloy/crates/signer:alloy_signer",
-        "@alloy_crates//:alloy-primitives",
-        "@alloy_crates//:semver",
-        "@alloy_crates//:thiserror",
-        "@alloy_crates//:tracing",
-        "@alloy_crates//:trezor-client",
+        "@crates//:alloy-primitives",
+        "@crates//:semver",
+        "@crates//:thiserror",
+        "@crates//:tracing",
+        "@crates//:trezor-client",
     ],
     proc_macro_deps = [
-        "@alloy_crates//:async-trait",
+        "@crates//:async-trait",
     ],
 )
 
@@ -39,6 +39,6 @@ crate_unit_test(
     declared_features = DECLARED_FEATURES,
     deps = [
         "//alloy/crates/rpc-types-eth:alloy_rpc_types_eth",
-        "@alloy_crates//:tokio",
+        "@crates//:tokio",
     ],
 )

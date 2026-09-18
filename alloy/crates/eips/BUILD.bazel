@@ -12,7 +12,9 @@ FEATURES = [
     "kzg",
     "kzg-sidecar",
     "serde",
+    "serde-bincode-compat",
     "sha2",
+    "ssz",
     "std",
 ]
 
@@ -39,22 +41,24 @@ crate_library(
     declared_features = DECLARED_FEATURES,
     deps = [
         "//alloy/crates/serde:alloy_serde",
-        "@alloy_crates//:alloy-eip2124",
-        "@alloy_crates//:alloy-eip2930",
-        "@alloy_crates//:alloy-eip7702",
-        "@alloy_crates//:alloy-eip7928",
-        "@alloy_crates//:alloy-primitives",
-        "@alloy_crates//:alloy-rlp",
-        "@alloy_crates//:arbitrary",
-        "@alloy_crates//:c-kzg",
-        "@alloy_crates//:derive_more",
-        "@alloy_crates//:either",
-        "@alloy_crates//:serde",
-        "@alloy_crates//:serde_with",
-        "@alloy_crates//:sha2",
+        "@crates//:alloy-eip2124",
+        "@crates//:alloy-eip2930",
+        "@crates//:alloy-eip7702",
+        "@crates//:alloy-eip7928",
+        "@crates//:alloy-primitives",
+        "@crates//:alloy-rlp",
+        "@crates//:arbitrary",
+        "@crates//:c-kzg",
+        "@crates//:derive_more",
+        "@crates//:either",
+        "@crates//:ethereum_ssz",
+        "@crates//:serde",
+        "@crates//:serde_with",
+        "@crates//:sha2",
     ],
     proc_macro_deps = [
-        "@alloy_crates//:auto_impl",
+        "@crates//:auto_impl",
+        "@crates//:ethereum_ssz_derive",
     ],
 )
 
@@ -65,7 +69,7 @@ crate_unit_test(
     crate_features = FEATURES,
     declared_features = DECLARED_FEATURES,
     deps = [
-        "@alloy_crates//:rand",
-        "@alloy_crates//:serde_json",
+        "@crates//:rand-0.8.6",
+        "@crates//:serde_json",
     ],
 )

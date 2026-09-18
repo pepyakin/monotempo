@@ -1,0 +1,40 @@
+# GENERATED FILE - DO NOT EDIT. Regenerate with `python3 bazel/generate.py`.
+#
+# Bazel-only derivation of `reth/crates/evm/execution-errors/Cargo.toml`: the same
+# package as `cargo metadata` describes it in the reth workspace, with
+# workspace inheritance resolved. Cargo builds are unaffected.
+
+[package]
+name = "reth-execution-errors"
+version = "2.5.2"
+edition = "2024"
+rust-version = "1.95"
+build = false
+autolib = false
+autobins = false
+autoexamples = false
+autotests = false
+autobenches = false
+
+[lib]
+name = "reth_execution_errors"
+path = "src/lib.rs"
+
+[features]
+default = ["std"]
+std = [
+    "alloy-primitives/std",
+    "alloy-rlp/std",
+    "thiserror/std",
+    "nybbles/std",
+    "reth-storage-errors/std",
+    "alloy-evm/std",
+]
+
+[dependencies]
+alloy-evm = { version = "^0.39.0", default-features = false }
+alloy-primitives = { version = "^1.6.1", features = ["map-foldhash"], default-features = false }
+alloy-rlp = { version = "^0.3.16", features = ["core-net"], default-features = false }
+nybbles = { version = "^0.4.8", default-features = false }
+reth-storage-errors = { path = "../../storage/errors", default-features = false }
+thiserror = { version = "^2.0.0", default-features = false }

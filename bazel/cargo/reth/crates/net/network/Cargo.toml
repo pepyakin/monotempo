@@ -1,0 +1,152 @@
+# GENERATED FILE - DO NOT EDIT. Regenerate with `python3 bazel/generate.py`.
+#
+# Bazel-only derivation of `reth/crates/net/network/Cargo.toml`: the same
+# package as `cargo metadata` describes it in the reth workspace, with
+# workspace inheritance resolved. Cargo builds are unaffected.
+
+[package]
+name = "reth-network"
+version = "2.5.2"
+edition = "2024"
+rust-version = "1.95"
+build = false
+autolib = false
+autobins = false
+autoexamples = false
+autotests = false
+autobenches = false
+
+[lib]
+name = "reth_network"
+path = "src/lib.rs"
+
+[[test]]
+name = "it"
+path = "tests/it/main.rs"
+
+[[bench]]
+name = "tx_fetcher"
+path = "benches/tx_fetcher.rs"
+required-features = ["test-utils"]
+
+[features]
+serde = [
+    "dep:serde",
+    "secp256k1/serde",
+    "enr/serde",
+    "reth-dns-discovery/serde",
+    "reth-eth-wire/serde",
+    "reth-eth-wire-types/serde",
+    "alloy-consensus/serde",
+    "alloy-eips/serde",
+    "alloy-primitives/serde",
+    "alloy-trie/serde",
+    "discv5/serde",
+    "parking_lot/serde",
+    "rand/serde",
+    "smallvec/serde",
+    "url/serde",
+    "reth-primitives-traits/serde",
+    "reth-ethereum-forks/serde",
+    "reth-network/serde",
+    "reth-transaction-pool/serde",
+    "reth-ethereum-primitives/serde",
+    "reth-network-api/serde",
+    "rand_08/serde",
+    "reth-storage-api/serde",
+    "reth-network-types/serde",
+    "reth-stages-types/serde",
+    "reth-trie/serde",
+    "alloy-eip7928/serde",
+]
+test-utils = [
+    "reth-transaction-pool/test-utils",
+    "reth-network-types/test-utils",
+    "reth-chainspec/test-utils",
+    "reth-consensus/test-utils",
+    "reth-discv4/test-utils",
+    "reth-network/test-utils",
+    "reth-network-p2p/test-utils",
+    "reth-primitives-traits/test-utils",
+    "reth-provider/test-utils",
+    "reth-ethereum-primitives/test-utils",
+    "dep:reth-evm-ethereum",
+    "reth-evm-ethereum?/test-utils",
+    "reth-tasks/test-utils",
+    "reth-stages-types/test-utils",
+    "reth-trie/test-utils",
+    "reth-evm/test-utils",
+]
+
+[dependencies]
+alloy-consensus = { version = "^2.4.2", default-features = false }
+alloy-eips = { version = "^2.4.2", default-features = false }
+alloy-primitives = { version = "^1.6.1", features = ["map-foldhash"], default-features = false }
+alloy-rlp = { version = "^0.3.16", features = ["core-net", "derive"], default-features = false }
+aquamarine = { version = "^0.6" }
+auto_impl = { version = "^1" }
+derive_more = { version = "^2", features = ["full"], default-features = false }
+discv5 = { git = "https://github.com/sigp/discv5", rev = "7663c00" }
+enr = { version = "^0.13", features = ["serde", "rust-secp256k1"], default-features = false }
+futures = { version = "^0.3" }
+itertools = { version = "^0.14", default-features = false }
+metrics = { version = "^0.24.0" }
+parking_lot = { version = "^0.12" }
+pin-project = { version = "^1.1.12" }
+rand = { version = "^0.9" }
+rand_08 = { package = "rand", version = "^0.8" }
+rayon = { version = "^1.7" }
+reth-chainspec = { path = "../../chainspec", default-features = false }
+reth-consensus = { path = "../../consensus/consensus", default-features = false }
+reth-discv4 = { path = "../discv4" }
+reth-discv5 = { path = "../discv5" }
+reth-dns-discovery = { path = "../dns" }
+reth-ecies = { path = "../ecies" }
+reth-eth-wire = { path = "../eth-wire" }
+reth-eth-wire-types = { path = "../eth-wire-types" }
+reth-ethereum-forks = { path = "../../ethereum/hardforks", default-features = false }
+reth-ethereum-primitives = { path = "../../ethereum/primitives", default-features = false }
+reth-evm = { path = "../../evm/evm", default-features = false }
+reth-evm-ethereum = { path = "../../ethereum/evm", optional = true, default-features = false }
+reth-fs-util = { path = "../../fs-util" }
+reth-metrics = { path = "../../metrics", features = ["common"] }
+reth-net-banlist = { path = "../banlist" }
+reth-network-api = { path = "../network-api" }
+reth-network-p2p = { path = "../p2p" }
+reth-network-peers = { path = "../peers", features = ["net"], default-features = false }
+reth-network-types = { path = "../network-types", features = ["serde"] }
+reth-primitives-traits = { version = "^0.7.1", default-features = false }
+reth-storage-api = { path = "../../storage/storage-api", default-features = false }
+reth-tasks = { path = "../../tasks" }
+reth-tokio-util = { path = "../../tokio-util" }
+reth-transaction-pool = { path = "../../transaction-pool" }
+rustc-hash = { version = "^2.0", default-features = false }
+schnellru = { version = "^0.2" }
+secp256k1 = { version = "^0.30", features = ["global-context", "recovery", "global-context", "std", "recovery"], default-features = false }
+serde = { version = "^1.0", optional = true, default-features = false }
+smallvec = { version = "^1" }
+socket2 = { version = "^0.6", features = ["all"], default-features = false }
+thiserror = { version = "^2.0.0", default-features = false }
+tokio = { version = "^1.52.3", features = ["io-util", "net", "macros", "rt-multi-thread", "time"], default-features = false }
+tokio-stream = { version = "^0.1.11" }
+tokio-util = { version = "^0.7.4", features = ["codec", "codec"] }
+tracing = { version = "^0.1.0", features = ["attributes"], default-features = false }
+
+[dev-dependencies]
+alloy-eip7928 = { version = "^0.4.10", features = ["rlp"], default-features = false }
+alloy-genesis = { version = "^2.4.2", default-features = false }
+alloy-trie = { version = "^0.9.4", default-features = false }
+criterion = { package = "codspeed-criterion-compat", version = "^4.3" }
+reth-discv4 = { path = "../discv4", features = ["test-utils"] }
+reth-network = { path = ".", features = ["test-utils"] }
+reth-network-p2p = { path = "../p2p", features = ["test-utils"] }
+reth-network-types = { path = "../network-types", features = ["test-utils"] }
+reth-provider = { path = "../../storage/provider", features = ["test-utils"] }
+reth-stages-types = { path = "../../stages/types", default-features = false }
+reth-testing-utils = { path = "../../../testing/testing-utils" }
+reth-tracing = { path = "../../tracing" }
+reth-transaction-pool = { path = "../../transaction-pool", features = ["test-utils"] }
+reth-trie = { path = "../../trie/trie" }
+secp256k1 = { version = "^0.30", features = ["global-context", "recovery", "rand"], default-features = false }
+test-case = { version = "^3" }
+url = { version = "^2.3", default-features = false }

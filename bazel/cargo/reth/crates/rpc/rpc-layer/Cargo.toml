@@ -1,0 +1,40 @@
+# GENERATED FILE - DO NOT EDIT. Regenerate with `python3 bazel/generate.py`.
+#
+# Bazel-only derivation of `reth/crates/rpc/rpc-layer/Cargo.toml`: the same
+# package as `cargo metadata` describes it in the reth workspace, with
+# workspace inheritance resolved. Cargo builds are unaffected.
+
+[package]
+name = "reth-rpc-layer"
+version = "2.5.2"
+edition = "2024"
+rust-version = "1.95"
+build = false
+autolib = false
+autobins = false
+autoexamples = false
+autotests = false
+autobenches = false
+
+[lib]
+name = "reth_rpc_layer"
+path = "src/lib.rs"
+
+[dependencies]
+alloy-rpc-types-engine = { version = "^2.4.2", features = ["jwt-aws-lc-rs", "serde"], default-features = false }
+http = { version = "^1.0" }
+http-body-util = { version = "^0.1.2" }
+jsonrpsee-http-client = { version = "^0.26.0" }
+pin-project = { version = "^1.1.12" }
+tokio = { version = "^1.52.3", features = ["sync"], default-features = false }
+tower = { version = "^0.5" }
+tower-http = { version = "^0.6", features = ["full"] }
+tracing = { version = "^0.1.0", features = ["attributes"], default-features = false }
+
+[dev-dependencies]
+brotli = { version = "^8" }
+flate2 = { version = "^1.0" }
+jsonrpsee = { version = "^0.26.0", features = ["server"] }
+reqwest = { version = "^0.13", features = ["rustls", "stream"], default-features = false }
+tokio = { version = "^1.52.3", features = ["macros"], default-features = false }
+zstd = { version = "^0.13" }

@@ -25,10 +25,10 @@ crate_library(
     crate_features = FEATURES,
     declared_features = DECLARED_FEATURES,
     deps = [
-        "@alloy_crates//:alloy-primitives",
-        "@alloy_crates//:arbitrary",
-        "@alloy_crates//:serde",
-        "@alloy_crates//:serde_json",
+        "@crates//:alloy-primitives",
+        "@crates//:arbitrary",
+        "@crates//:serde",
+        "@crates//:serde_json",
     ],
 )
 
@@ -39,7 +39,7 @@ crate_unit_test(
     crate_features = FEATURES,
     declared_features = DECLARED_FEATURES,
     deps = [
-        "@alloy_crates//:rand",
-        "@alloy_crates//:similar-asserts",
+        "@crates//:rand-0.8.6",
+        "@crates//:similar-asserts",
     ],
 )

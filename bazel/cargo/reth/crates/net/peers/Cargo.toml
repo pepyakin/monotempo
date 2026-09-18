@@ -1,0 +1,54 @@
+# GENERATED FILE - DO NOT EDIT. Regenerate with `python3 bazel/generate.py`.
+#
+# Bazel-only derivation of `reth/crates/net/peers/Cargo.toml`: the same
+# package as `cargo metadata` describes it in the reth workspace, with
+# workspace inheritance resolved. Cargo builds are unaffected.
+
+[package]
+name = "reth-network-peers"
+version = "2.5.2"
+edition = "2024"
+rust-version = "1.95"
+build = false
+autolib = false
+autobins = false
+autoexamples = false
+autotests = false
+autobenches = false
+
+[lib]
+name = "reth_network_peers"
+path = "src/lib.rs"
+
+[features]
+default = ["std"]
+std = [
+    "alloy-primitives/std",
+    "alloy-rlp/std",
+    "secp256k1?/std",
+    "serde_with/std",
+    "thiserror/std",
+    "url/std",
+    "serde_json/std",
+]
+secp256k1 = ["dep:secp256k1", "enr/secp256k1", "alloy-primitives/secp256k1"]
+net = ["std", "dep:tokio", "tokio?/net"]
+
+[dependencies]
+alloy-primitives = { version = "^1.6.1", features = ["map-foldhash", "rlp"], default-features = false }
+alloy-rlp = { version = "^0.3.16", features = ["core-net", "derive", "core-net", "core-error"], default-features = false }
+enr = { version = "^0.13", optional = true, default-features = false }
+secp256k1 = { version = "^0.30", features = ["global-context", "recovery"], optional = true, default-features = false }
+serde_with = { version = "^3", features = ["macros"], default-features = false }
+thiserror = { version = "^2.0.0", default-features = false }
+tokio = { version = "^1.52.3", optional = true, default-features = false }
+url = { version = "^2.3", default-features = false }
+
+[dev-dependencies]
+alloy-primitives = { version = "^1.6.1", features = ["map-foldhash", "rand"], default-features = false }
+enr = { version = "^0.13", default-features = false }
+rand = { version = "^0.9" }
+rand_08 = { package = "rand", version = "^0.8" }
+secp256k1 = { version = "^0.30", features = ["global-context", "recovery", "rand"], default-features = false }
+serde_json = { version = "^1.0", features = ["alloc"], default-features = false }
+tokio = { version = "^1.52.3", features = ["net", "macros", "rt"], default-features = false }

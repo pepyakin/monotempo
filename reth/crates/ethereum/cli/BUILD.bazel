@@ -55,9 +55,9 @@ crate_library(
         "//reth/crates/storage/db:reth_db",
         "//reth/crates/tasks:reth_tasks",
         "//reth/crates/tracing:reth_tracing",
-        "@reth_crates//:clap",
-        "@reth_crates//:eyre",
-        "@reth_crates//:tracing",
+        "@crates//:clap",
+        "@crates//:eyre",
+        "@crates//:tracing",
     ],
 )
 
@@ -68,6 +68,6 @@ crate_unit_test(
     crate_features = FEATURES,
     declared_features = DECLARED_FEATURES,
     deps = [
-        "@reth_crates//:tempfile",
+        "@crates//:tempfile",
     ],
 )

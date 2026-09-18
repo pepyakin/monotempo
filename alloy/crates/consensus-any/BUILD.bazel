@@ -6,6 +6,7 @@ load("//bazel:rust.bzl", "crate_cargo_toml_env_vars", "crate_library", "crate_un
 load("//alloy/bazel:workspace.bzl", "WORKSPACE")
 
 FEATURES = [
+    "arbitrary",
     "default",
     "serde",
     "std",
@@ -29,9 +30,10 @@ crate_library(
         "//alloy/crates/consensus:alloy_consensus",
         "//alloy/crates/eips:alloy_eips",
         "//alloy/crates/serde:alloy_serde",
-        "@alloy_crates//:alloy-primitives",
-        "@alloy_crates//:alloy-rlp",
-        "@alloy_crates//:serde",
+        "@crates//:alloy-primitives",
+        "@crates//:alloy-rlp",
+        "@crates//:arbitrary",
+        "@crates//:serde",
     ],
 )
 
@@ -42,8 +44,7 @@ crate_unit_test(
     crate_features = FEATURES,
     declared_features = DECLARED_FEATURES,
     deps = [
-        "@alloy_crates//:arbitrary",
-        "@alloy_crates//:bincode",
-        "@alloy_crates//:serde_json",
+        "@crates//:bincode-2.0.1",
+        "@crates//:serde_json",
     ],
 )

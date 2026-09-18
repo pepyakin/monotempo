@@ -19,12 +19,12 @@ crate_binary(
     workspace_lints = False,
     deps = [
         "//reth/crates/ethereum/reth:reth_ethereum",
-        "@reth_crates//:clap",
-        "@reth_crates//:http",
-        "@reth_crates//:jsonrpsee",
-        "@reth_crates//:serde_json",
-        "@reth_crates//:tower",
-        "@reth_crates//:tracing",
+        "@crates//:clap",
+        "@crates//:http",
+        "@crates//:jsonrpsee",
+        "@crates//:serde_json",
+        "@crates//:tower",
+        "@crates//:tracing",
     ],
 )
 

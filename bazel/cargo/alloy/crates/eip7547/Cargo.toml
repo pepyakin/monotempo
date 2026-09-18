@@ -1,0 +1,30 @@
+# GENERATED FILE - DO NOT EDIT. Regenerate with `python3 bazel/generate.py`.
+#
+# Bazel-only derivation of `alloy/crates/eip7547/Cargo.toml`: the same
+# package as `cargo metadata` describes it in the alloy workspace, with
+# workspace inheritance resolved. Cargo builds are unaffected.
+
+[package]
+name = "alloy-eip7547"
+version = "2.4.2"
+edition = "2021"
+rust-version = "1.94.1"
+build = false
+autolib = false
+autobins = false
+autoexamples = false
+autotests = false
+autobenches = false
+
+[lib]
+name = "alloy_eip7547"
+path = "src/lib.rs"
+
+[dependencies]
+alloy-primitives = { version = "^1.6.0", features = ["rlp", "serde"], default-features = false }
+alloy-rpc-types-engine = { path = "../rpc-types-engine", features = ["serde"], default-features = false }
+alloy-serde = { path = "../serde", default-features = false }
+serde = { version = "^1.0.226", features = ["derive", "alloc"], default-features = false }
+
+[dev-dependencies]
+serde_json = { version = "^1.0", features = ["alloc"], default-features = false }

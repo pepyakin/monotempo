@@ -21,9 +21,9 @@ crate_library(
     crate_features = FEATURES,
     declared_features = DECLARED_FEATURES,
     deps = [
-        "@reth_crates//:tokio",
-        "@reth_crates//:tokio-stream",
-        "@reth_crates//:tracing",
+        "@crates//:tokio",
+        "@crates//:tokio-stream",
+        "@crates//:tracing",
     ],
 )
 

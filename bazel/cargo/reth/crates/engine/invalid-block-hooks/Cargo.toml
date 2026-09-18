@@ -1,0 +1,52 @@
+# GENERATED FILE - DO NOT EDIT. Regenerate with `python3 bazel/generate.py`.
+#
+# Bazel-only derivation of `reth/crates/engine/invalid-block-hooks/Cargo.toml`: the same
+# package as `cargo metadata` describes it in the reth workspace, with
+# workspace inheritance resolved. Cargo builds are unaffected.
+
+[package]
+name = "reth-invalid-block-hooks"
+version = "2.5.2"
+edition = "2024"
+rust-version = "1.95"
+build = false
+autolib = false
+autobins = false
+autoexamples = false
+autotests = false
+autobenches = false
+
+[lib]
+name = "reth_invalid_block_hooks"
+path = "src/lib.rs"
+
+[dependencies]
+alloy-consensus = { version = "^2.4.2", default-features = false }
+alloy-primitives = { version = "^1.6.1", features = ["map-foldhash"], default-features = false }
+alloy-rlp = { version = "^0.3.16", features = ["core-net"], default-features = false }
+alloy-rpc-types-debug = { version = "^2.4.2", default-features = false }
+eyre = { version = "^0.6" }
+futures = { version = "^0.3" }
+jsonrpsee = { version = "^0.26.0" }
+pretty_assertions = { version = "^1.4" }
+reth-engine-primitives = { path = "../primitives", default-features = false }
+reth-evm = { path = "../../evm/evm", default-features = false }
+reth-primitives-traits = { version = "^0.7.1", default-features = false }
+reth-provider = { path = "../../storage/provider" }
+reth-revm = { path = "../../revm", features = ["serde"], default-features = false }
+reth-rpc-api = { path = "../../rpc/rpc-api", features = ["client"] }
+reth-tracing = { path = "../../tracing" }
+reth-trie = { path = "../../trie/trie" }
+revm = { version = "^43.0.2", default-features = false }
+serde = { version = "^1.0", default-features = false }
+serde_json = { version = "^1.0", features = ["alloc"], default-features = false }
+
+[dev-dependencies]
+alloy-eips = { version = "^2.4.2", default-features = false }
+reth-chainspec = { path = "../../chainspec", default-features = false }
+reth-ethereum-primitives = { path = "../../ethereum/primitives", default-features = false }
+reth-evm-ethereum = { path = "../../ethereum/evm", default-features = false }
+reth-provider = { path = "../../storage/provider", features = ["test-utils"] }
+reth-revm = { path = "../../revm", features = ["test-utils"], default-features = false }
+reth-testing-utils = { path = "../../../testing/testing-utils" }
+tempfile = { version = "^3.20" }

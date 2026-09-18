@@ -1,0 +1,57 @@
+# GENERATED FILE - DO NOT EDIT. Regenerate with `python3 bazel/generate.py`.
+#
+# Bazel-only derivation of `reth/testing/ef-tests/Cargo.toml`: the same
+# package as `cargo metadata` describes it in the reth workspace, with
+# workspace inheritance resolved. Cargo builds are unaffected.
+
+[package]
+name = "ef-tests"
+version = "2.5.2"
+edition = "2024"
+rust-version = "1.95"
+build = false
+autolib = false
+autobins = false
+autoexamples = false
+autotests = false
+autobenches = false
+
+[lib]
+name = "ef_tests"
+path = "src/lib.rs"
+
+[[test]]
+name = "tests"
+path = "tests/tests.rs"
+
+[features]
+ef-tests = []
+asm-keccak = ["alloy-primitives/asm-keccak", "revm/asm-keccak"]
+
+[dependencies]
+alloy-consensus = { version = "^2.4.2", default-features = false }
+alloy-eips = { version = "^2.4.2", default-features = false }
+alloy-genesis = { version = "^2.4.2", default-features = false }
+alloy-primitives = { version = "^1.6.1", features = ["map-foldhash"], default-features = false }
+alloy-rlp = { version = "^0.3.16", features = ["core-net"], default-features = false }
+rayon = { version = "^1.7" }
+reth-chainspec = { path = "../../crates/chainspec", default-features = false }
+reth-consensus = { path = "../../crates/consensus/consensus", default-features = false }
+reth-db = { path = "../../crates/storage/db", features = ["mdbx", "test-utils", "disable-lock"], default-features = false }
+reth-db-api = { path = "../../crates/storage/db-api" }
+reth-db-common = { path = "../../crates/storage/db-common" }
+reth-ethereum-consensus = { path = "../../crates/ethereum/consensus", default-features = false }
+reth-ethereum-primitives = { path = "../../crates/ethereum/primitives", default-features = false }
+reth-evm = { path = "../../crates/evm/evm", default-features = false }
+reth-evm-ethereum = { path = "../../crates/ethereum/evm", default-features = false }
+reth-primitives-traits = { version = "^0.7.1", features = ["rayon"], default-features = false }
+reth-provider = { path = "../../crates/storage/provider", features = ["test-utils"] }
+reth-revm = { path = "../../crates/revm", default-features = false }
+reth-tracing = { path = "../../crates/tracing" }
+reth-trie = { path = "../../crates/trie/trie" }
+reth-trie-db = { path = "../../crates/trie/db" }
+revm = { version = "^43.0.2", features = ["secp256k1", "blst", "c-kzg", "memory_limit", "p256-aws-lc-rs"], default-features = false }
+serde = { version = "^1.0", default-features = false }
+serde_json = { version = "^1.0", features = ["alloc"], default-features = false }
+thiserror = { version = "^2.0.0", default-features = false }
+walkdir = { version = "^2.3.3" }

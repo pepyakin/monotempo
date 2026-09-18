@@ -157,7 +157,7 @@ crate_library(
         "//alloy/crates/signer:alloy_signer",
         "//alloy/crates/transport-http:alloy_transport_http",
         "//alloy/crates/transport:alloy_transport",
-        "@alloy_crates//:alloy-core",
+        "@crates//:alloy-core",
     ],
 )
 

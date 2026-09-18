@@ -1,0 +1,30 @@
+# GENERATED FILE - DO NOT EDIT. Regenerate with `python3 bazel/generate.py`.
+#
+# Bazel-only derivation of `reth/crates/payload/validator/Cargo.toml`: the same
+# package as `cargo metadata` describes it in the reth workspace, with
+# workspace inheritance resolved. Cargo builds are unaffected.
+
+[package]
+name = "reth-payload-validator"
+version = "2.5.2"
+edition = "2024"
+rust-version = "1.95"
+build = false
+autolib = false
+autobins = false
+autoexamples = false
+autotests = false
+autobenches = false
+
+[lib]
+name = "reth_payload_validator"
+path = "src/lib.rs"
+
+[features]
+default = ["std"]
+std = ["alloy-consensus/std", "alloy-rpc-types-engine/std", "reth-primitives-traits/std"]
+
+[dependencies]
+alloy-consensus = { version = "^2.4.2", default-features = false }
+alloy-rpc-types-engine = { version = "^2.4.2", default-features = false }
+reth-primitives-traits = { version = "^0.7.1", default-features = false }

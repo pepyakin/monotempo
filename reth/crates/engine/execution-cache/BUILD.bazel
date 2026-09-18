@@ -26,12 +26,12 @@ crate_library(
         "//reth/crates/revm:reth_revm",
         "//reth/crates/storage/provider:reth_provider",
         "//reth/crates/trie/trie:reth_trie",
-        "@reth_crates//:alloy-primitives",
-        "@reth_crates//:fixed-cache",
-        "@reth_crates//:metrics",
-        "@reth_crates//:parking_lot",
-        "@reth_crates//:reth-primitives-traits",
-        "@reth_crates//:tracing",
+        "@crates//:alloy-primitives",
+        "@crates//:fixed-cache",
+        "@crates//:metrics",
+        "@crates//:parking_lot",
+        "@crates//:reth-primitives-traits",
+        "@crates//:tracing",
     ],
 )
 
@@ -42,6 +42,6 @@ crate_unit_test(
     crate_features = FEATURES,
     declared_features = DECLARED_FEATURES,
     deps = [
-        "@reth_crates//:revm",
+        "@crates//:revm",
     ],
 )

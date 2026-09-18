@@ -1,0 +1,81 @@
+# GENERATED FILE - DO NOT EDIT. Regenerate with `python3 bazel/generate.py`.
+#
+# Bazel-only derivation of `reth/crates/chain-state/Cargo.toml`: the same
+# package as `cargo metadata` describes it in the reth workspace, with
+# workspace inheritance resolved. Cargo builds are unaffected.
+
+[package]
+name = "reth-chain-state"
+version = "2.5.2"
+edition = "2024"
+rust-version = "1.95"
+build = false
+autolib = false
+autobins = false
+autoexamples = false
+autotests = false
+autobenches = false
+
+[lib]
+name = "reth_chain_state"
+path = "src/lib.rs"
+
+[features]
+serde = [
+    "dep:serde",
+    "alloy-consensus/serde",
+    "alloy-eips/serde",
+    "alloy-primitives/serde",
+    "parking_lot/serde",
+    "rand?/serde",
+    "reth-ethereum-primitives/serde",
+    "reth-execution-types/serde",
+    "reth-primitives-traits/serde",
+    "reth-trie/serde",
+    "revm/serde",
+    "reth-storage-api/serde",
+]
+test-utils = [
+    "alloy-primitives/getrandom",
+    "alloy-signer",
+    "alloy-signer-local",
+    "rand",
+    "reth-chainspec/test-utils",
+    "reth-primitives-traits/test-utils",
+    "reth-trie/test-utils",
+    "reth-ethereum-primitives/test-utils",
+    "reth-trie-sparse/test-utils",
+]
+
+[dependencies]
+alloy-consensus = { version = "^2.4.2", default-features = false }
+alloy-eips = { version = "^2.4.2", default-features = false }
+alloy-primitives = { version = "^1.6.1", features = ["map-foldhash", "std"], default-features = false }
+alloy-signer = { version = "^2.4.2", optional = true, default-features = false }
+alloy-signer-local = { version = "^2.4.2", optional = true, default-features = false }
+derive_more = { version = "^2", features = ["full"], default-features = false }
+metrics = { version = "^0.24.0" }
+parking_lot = { version = "^0.12" }
+pin-project = { version = "^1.1.12" }
+rand = { version = "^0.9", optional = true }
+reth-chainspec = { path = "../chainspec", default-features = false }
+reth-errors = { path = "../errors" }
+reth-ethereum-primitives = { path = "../ethereum/primitives", default-features = false }
+reth-execution-types = { path = "../evm/execution-types", default-features = false }
+reth-metrics = { path = "../metrics" }
+reth-primitives-traits = { version = "^0.7.1", default-features = false }
+reth-storage-api = { path = "../storage/storage-api", default-features = false }
+reth-trie = { path = "../trie/trie" }
+reth-trie-sparse = { path = "../trie/sparse", features = ["std"], default-features = false }
+revm = { version = "^43.0.2", default-features = false }
+serde = { version = "^1.0", optional = true, default-features = false }
+tokio = { version = "^1.52.3", features = ["sync", "macros"], default-features = false }
+tokio-stream = { version = "^0.1.11", features = ["sync"] }
+tracing = { version = "^0.1.0", features = ["attributes"], default-features = false }
+
+[dev-dependencies]
+alloy-signer = { version = "^2.4.2", default-features = false }
+alloy-signer-local = { version = "^2.4.2", default-features = false }
+rand = { version = "^0.9" }
+reth-primitives-traits = { version = "^0.7.1", features = ["test-utils"], default-features = false }
+reth-testing-utils = { path = "../../testing/testing-utils" }

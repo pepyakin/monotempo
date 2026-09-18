@@ -1,0 +1,25 @@
+# GENERATED FILE - DO NOT EDIT. Regenerate with `python3 bazel/generate.py`.
+#
+# Bazel-only derivation of `reth/examples/network-txpool/Cargo.toml`: the same
+# package as `cargo metadata` describes it in the reth workspace, with
+# workspace inheritance resolved. Cargo builds are unaffected.
+
+[package]
+name = "example-network-txpool"
+version = "0.0.0"
+edition = "2024"
+build = false
+autolib = false
+autobins = false
+autoexamples = false
+autotests = false
+autobenches = false
+
+[[bin]]
+name = "example-network-txpool"
+path = "src/main.rs"
+
+[dependencies]
+eyre = { version = "^0.6" }
+reth-ethereum = { path = "../../crates/ethereum/reth", features = ["test-utils", "network", "pool", "provider"] }
+tokio = { version = "^1.52.3", default-features = false }

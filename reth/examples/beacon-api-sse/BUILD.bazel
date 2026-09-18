@@ -18,15 +18,15 @@ crate_binary(
     declared_features = DECLARED_FEATURES,
     workspace_lints = False,
     deps = [
+        "//alloy/crates/rpc-types-beacon:alloy_rpc_types_beacon",
         "//reth/crates/ethereum/reth:reth_ethereum",
-        "@reth_crates//:alloy-rpc-types-beacon",
-        "@reth_crates//:bytes",
-        "@reth_crates//:clap",
-        "@reth_crates//:futures-util",
-        "@reth_crates//:reqwest",
-        "@reth_crates//:serde_json",
-        "@reth_crates//:tokio",
-        "@reth_crates//:tracing",
+        "@crates//:bytes",
+        "@crates//:clap",
+        "@crates//:futures-util",
+        "@crates//:reqwest",
+        "@crates//:serde_json",
+        "@crates//:tokio",
+        "@crates//:tracing",
     ],
 )
 

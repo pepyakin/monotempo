@@ -29,14 +29,14 @@ crate_library(
     crate_features = FEATURES,
     declared_features = DECLARED_FEATURES,
     deps = [
-        "@reth_crates//:alloy-primitives",
-        "@reth_crates//:alloy-rlp",
-        "@reth_crates//:enr",
-        "@reth_crates//:secp256k1",
-        "@reth_crates//:serde_with",
-        "@reth_crates//:thiserror",
-        "@reth_crates//:tokio",
-        "@reth_crates//:url",
+        "@crates//:alloy-primitives",
+        "@crates//:alloy-rlp",
+        "@crates//:enr",
+        "@crates//:secp256k1",
+        "@crates//:serde_with",
+        "@crates//:thiserror",
+        "@crates//:tokio",
+        "@crates//:url",
     ],
 )
 
@@ -47,11 +47,11 @@ crate_unit_test(
     crate_features = FEATURES,
     declared_features = DECLARED_FEATURES,
     deps = [
-        "@reth_crates//:rand-0.9.4",
-        "@reth_crates//:rand_08-0.8.6",
-        "@reth_crates//:serde_json",
+        "@crates//:rand-0.9.4",
+        "@crates//:rand_08-0.8.6",
+        "@crates//:serde_json",
     ],
     aliases = {
-        "@reth_crates//:rand_08-0.8.6": "rand_08",
+        "@crates//:rand_08-0.8.6": "rand_08",
     },
 )

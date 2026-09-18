@@ -19,15 +19,15 @@ crate_library(
     crate_features = FEATURES,
     declared_features = DECLARED_FEATURES,
     deps = [
-        "@alloy_crates//:alloy-primitives",
-        "@alloy_crates//:either",
-        "@alloy_crates//:elliptic-curve",
-        "@alloy_crates//:k256",
-        "@alloy_crates//:thiserror",
+        "@crates//:alloy-primitives",
+        "@crates//:either",
+        "@crates//:elliptic-curve",
+        "@crates//:k256",
+        "@crates//:thiserror",
     ],
     proc_macro_deps = [
-        "@alloy_crates//:async-trait",
-        "@alloy_crates//:auto_impl",
+        "@crates//:async-trait",
+        "@crates//:auto_impl",
     ],
 )
 
@@ -38,8 +38,8 @@ crate_unit_test(
     crate_features = FEATURES,
     declared_features = DECLARED_FEATURES,
     deps = [
-        "@alloy_crates//:assert_matches",
-        "@alloy_crates//:serde",
-        "@alloy_crates//:tokio",
+        "@crates//:assert_matches",
+        "@crates//:serde",
+        "@crates//:tokio",
     ],
 )

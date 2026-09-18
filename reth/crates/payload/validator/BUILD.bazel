@@ -23,9 +23,9 @@ crate_library(
     crate_features = FEATURES,
     declared_features = DECLARED_FEATURES,
     deps = [
-        "@reth_crates//:alloy-consensus",
-        "@reth_crates//:alloy-rpc-types-engine",
-        "@reth_crates//:reth-primitives-traits",
+        "//alloy/crates/consensus:alloy_consensus",
+        "//alloy/crates/rpc-types-engine:alloy_rpc_types_engine",
+        "@crates//:reth-primitives-traits",
     ],
 )
 

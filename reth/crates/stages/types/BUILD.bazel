@@ -32,12 +32,12 @@ crate_library(
     declared_features = DECLARED_FEATURES,
     deps = [
         "//reth/crates/trie/common:reth_trie_common",
-        "@reth_crates//:alloy-primitives",
-        "@reth_crates//:arbitrary",
-        "@reth_crates//:bytes",
-        "@reth_crates//:modular-bitfield",
-        "@reth_crates//:reth-codecs",
-        "@reth_crates//:serde",
+        "@crates//:alloy-primitives",
+        "@crates//:arbitrary",
+        "@crates//:bytes",
+        "@crates//:modular-bitfield",
+        "@crates//:reth-codecs",
+        "@crates//:serde",
     ],
 )
 
@@ -48,8 +48,8 @@ crate_unit_test(
     crate_features = FEATURES,
     declared_features = DECLARED_FEATURES,
     deps = [
-        "@reth_crates//:proptest",
-        "@reth_crates//:proptest-arbitrary-interop",
-        "@reth_crates//:rand-0.9.4",
+        "@crates//:proptest",
+        "@crates//:proptest-arbitrary-interop",
+        "@crates//:rand-0.9.4",
     ],
 )

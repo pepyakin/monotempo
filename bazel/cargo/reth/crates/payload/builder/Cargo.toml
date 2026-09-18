@@ -1,0 +1,52 @@
+# GENERATED FILE - DO NOT EDIT. Regenerate with `python3 bazel/generate.py`.
+#
+# Bazel-only derivation of `reth/crates/payload/builder/Cargo.toml`: the same
+# package as `cargo metadata` describes it in the reth workspace, with
+# workspace inheritance resolved. Cargo builds are unaffected.
+
+[package]
+name = "reth-payload-builder"
+version = "2.5.2"
+edition = "2024"
+rust-version = "1.95"
+build = false
+autolib = false
+autobins = false
+autoexamples = false
+autotests = false
+autobenches = false
+
+[lib]
+name = "reth_payload_builder"
+path = "src/lib.rs"
+
+[features]
+test-utils = [
+    "reth-chain-state/test-utils",
+    "reth-primitives-traits/test-utils",
+    "tokio/rt",
+    "reth-execution-cache/test-utils",
+    "reth-trie-parallel/test-utils",
+]
+
+[dependencies]
+alloy-consensus = { version = "^2.4.2", default-features = false }
+alloy-primitives = { version = "^1.6.1", features = ["map-foldhash"], default-features = false }
+alloy-rpc-types = { version = "^2.4.2", features = ["eth", "engine"], default-features = false }
+derive_more = { version = "^2", features = ["full"], default-features = false }
+futures-util = { version = "^0.3", default-features = false }
+metrics = { version = "^0.24.0" }
+reth-chain-state = { path = "../../chain-state" }
+reth-ethereum-engine-primitives = { path = "../../ethereum/engine-primitives", default-features = false }
+reth-execution-cache = { path = "../../engine/execution-cache" }
+reth-metrics = { path = "../../metrics" }
+reth-payload-builder-primitives = { path = "../builder-primitives" }
+reth-payload-primitives = { path = "../primitives" }
+reth-primitives-traits = { version = "^0.7.1", default-features = false }
+reth-trie-parallel = { path = "../../trie/parallel" }
+tokio = { version = "^1.52.3", features = ["sync"], default-features = false }
+tokio-stream = { version = "^0.1.11" }
+tracing = { version = "^0.1.0", features = ["attributes"], default-features = false }
+
+[dev-dependencies]
+tokio = { version = "^1.52.3", features = ["sync", "rt"], default-features = false }

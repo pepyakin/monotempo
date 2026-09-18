@@ -1,0 +1,135 @@
+# GENERATED FILE - DO NOT EDIT. Regenerate with `python3 bazel/generate.py`.
+#
+# Bazel-only derivation of `alloy/crates/provider/Cargo.toml`: the same
+# package as `cargo metadata` describes it in the alloy workspace, with
+# workspace inheritance resolved. Cargo builds are unaffected.
+
+[package]
+name = "alloy-provider"
+version = "2.4.2"
+edition = "2021"
+rust-version = "1.94.1"
+build = false
+autolib = false
+autobins = false
+autoexamples = false
+autotests = false
+autobenches = false
+
+[lib]
+name = "alloy_provider"
+path = "src/lib.rs"
+
+[[test]]
+name = "it"
+path = "tests/it/main.rs"
+
+[features]
+default = ["reqwest", "reqwest-default-tls"]
+ccip-read = []
+ccip-read-http = ["ccip-read", "dep:reqwest"]
+pubsub = ["alloy-rpc-client/pubsub", "dep:alloy-pubsub"]
+reqwest = ["dep:reqwest", "dep:url", "dep:alloy-transport-http", "alloy-rpc-client/reqwest"]
+hyper = ["dep:alloy-transport-http", "dep:url", "alloy-rpc-client/hyper"]
+hyper-tls = ["hyper", "alloy-transport-http/hyper-tls"]
+ws-base = ["pubsub", "dep:alloy-transport-ws", "alloy-rpc-client/ws-base"]
+ws = ["ws-base", "alloy-rpc-client/ws", "alloy-transport-ws/aws-lc-rs"]
+ws-ring = ["ws-base", "alloy-rpc-client/ws-ring", "alloy-transport-ws/ring"]
+ws-native-tls = ["ws-base", "alloy-rpc-client/ws-native-tls", "alloy-transport-ws/native-tls"]
+ipc = ["pubsub", "alloy-rpc-client/ipc", "alloy-transport-ipc"]
+reqwest-default-tls = ["alloy-transport-http?/reqwest-default-tls", "reqwest?/default-tls"]
+reqwest-rustls-tls = ["alloy-transport-http?/reqwest-rustls-tls", "reqwest?/rustls"]
+reqwest-native-tls = ["alloy-transport-http?/reqwest-native-tls", "reqwest?/native-tls"]
+admin-api = ["dep:alloy-rpc-types-admin"]
+anvil-api = ["dep:alloy-rpc-types-anvil"]
+anvil-node = ["anvil-api", "reqwest", "dep:alloy-node-bindings"]
+debug-api = ["dep:alloy-rpc-types-trace", "dep:alloy-rpc-types-debug"]
+erc4337-api = []
+engine-api = ["dep:alloy-rpc-types-engine"]
+net-api = []
+tenderly-api = ["dep:alloy-rpc-types-tenderly", "dep:alloy-rpc-types-trace"]
+tenderly-admin-api = []
+trace-api = ["dep:alloy-rpc-types-trace"]
+rpc-api = ["dep:alloy-rpc-types"]
+txpool-api = ["dep:alloy-rpc-types-txpool"]
+throttle = ["alloy-transport/throttle"]
+mev-api = ["dep:alloy-rpc-types-mev"]
+more-tuple-impls = ["alloy-sol-types/more-tuple-impls"]
+
+[dependencies]
+alloy-chains = { version = "^0.2", default-features = false }
+alloy-consensus = { path = "../consensus", default-features = false }
+alloy-eips = { path = "../eips", default-features = false }
+alloy-json-rpc = { path = "../json-rpc", default-features = false }
+alloy-network = { path = "../network", default-features = false }
+alloy-network-primitives = { path = "../network-primitives", default-features = false }
+alloy-node-bindings = { path = "../node-bindings", optional = true, default-features = false }
+alloy-primitives = { version = "^1.6.0", default-features = false }
+alloy-pubsub = { path = "../pubsub", optional = true, default-features = false }
+alloy-rpc-client = { path = "../rpc-client", default-features = false }
+alloy-rpc-types = { path = "../rpc-types", optional = true, default-features = false }
+alloy-rpc-types-admin = { path = "../rpc-types-admin", optional = true, default-features = false }
+alloy-rpc-types-anvil = { path = "../rpc-types-anvil", optional = true, default-features = false }
+alloy-rpc-types-debug = { path = "../rpc-types-debug", optional = true, default-features = false }
+alloy-rpc-types-engine = { path = "../rpc-types-engine", features = ["serde"], optional = true, default-features = false }
+alloy-rpc-types-eth = { path = "../rpc-types-eth", features = ["serde"], default-features = false }
+alloy-rpc-types-mev = { path = "../rpc-types-mev", optional = true, default-features = false }
+alloy-rpc-types-tenderly = { path = "../rpc-types-tenderly", optional = true, default-features = false }
+alloy-rpc-types-trace = { path = "../rpc-types-trace", optional = true, default-features = false }
+alloy-rpc-types-txpool = { path = "../rpc-types-txpool", optional = true, default-features = false }
+alloy-signer = { path = "../signer", default-features = false }
+alloy-sol-types = { version = "^1.6.0", default-features = false }
+alloy-transport = { path = "../transport", default-features = false }
+alloy-transport-http = { path = "../transport-http", optional = true, default-features = false }
+alloy-transport-ipc = { path = "../transport-ipc", optional = true, default-features = false }
+alloy-transport-ws = { path = "../transport-ws", optional = true, default-features = false }
+async-stream = { version = "^0.3" }
+async-trait = { version = "^0.1" }
+auto_impl = { version = "^1.2" }
+dashmap = { version = "^6.0" }
+either = { version = "^1.15", default-features = false }
+futures = { version = "^0.3" }
+futures-utils-wasm = { version = "^0.1" }
+http = { version = "^1.1.0" }
+lru = { version = "^0.18.2" }
+pin-project = { version = "^1.1" }
+serde = { version = "^1.0.226", features = ["derive", "alloc"], default-features = false }
+serde_json = { version = "^1.0", features = ["alloc"], default-features = false }
+thiserror = { version = "^2.0", default-features = false }
+tokio = { version = "^1", features = ["sync", "macros"] }
+tracing = { version = "^0.1" }
+url = { version = "^2.5", optional = true }
+
+[dev-dependencies]
+alloy-consensus = { path = "../consensus", features = ["kzg", "k256"], default-features = false }
+alloy-node-bindings = { path = "../node-bindings", default-features = false }
+alloy-primitives = { version = "^1.6.0", features = ["rand"], default-features = false }
+alloy-rlp = { version = "^0.3.14", default-features = false }
+alloy-rpc-client = { path = "../rpc-client", features = ["reqwest"], default-features = false }
+alloy-rpc-types-engine = { path = "../rpc-types-engine", features = ["jwt"], default-features = false }
+alloy-serde = { path = "../serde", default-features = false }
+alloy-signer = { path = "../signer", default-features = false }
+alloy-signer-local = { path = "../signer-local", default-features = false }
+alloy-transport-http = { path = "../transport-http", features = ["reqwest", "jwt-auth"], default-features = false }
+ci_info = { version = "^0.14.14" }
+http = { version = "^1.1.0" }
+http-body-util = { version = "^0.1" }
+itertools = { version = ">=0.13, <=0.14", default-features = false }
+reqwest = { version = "^0.13", default-features = false }
+similar-asserts = { version = "^1.5" }
+tokio = { version = "^1", features = ["macros", "rt-multi-thread"] }
+tokio-tungstenite = { version = "^0.29" }
+tower = { version = "^0.5", features = ["util"] }
+tower-http = { version = "^0.6.1", features = ["set-header", "sensitive-headers"] }
+
+[target.'cfg(all(target_family = "wasm", target_os = "unknown"))'.dependencies]
+wasmtimer = { version = "^0.4.0" }
+
+[target.'cfg(not(all(target_family = "wasm", target_os = "unknown")))'.dependencies]
+tokio = { version = "^1", features = ["time"] }
+
+[target.'cfg(not(all(target_os = "wasi", target_env = "p1")))'.dependencies]
+reqwest = { version = "^0.13", optional = true, default-features = false }
+
+[target.'cfg(not(target_family = "wasm"))'.dependencies]
+parking_lot = { version = "^0.12.3" }

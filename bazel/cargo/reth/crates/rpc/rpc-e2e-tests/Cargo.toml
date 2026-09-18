@@ -1,0 +1,43 @@
+# GENERATED FILE - DO NOT EDIT. Regenerate with `python3 bazel/generate.py`.
+#
+# Bazel-only derivation of `reth/crates/rpc/rpc-e2e-tests/Cargo.toml`: the same
+# package as `cargo metadata` describes it in the reth workspace, with
+# workspace inheritance resolved. Cargo builds are unaffected.
+
+[package]
+name = "reth-rpc-e2e-tests"
+version = "2.5.2"
+edition = "2024"
+rust-version = "1.95"
+build = false
+autolib = false
+autobins = false
+autoexamples = false
+autotests = false
+autobenches = false
+
+[lib]
+name = "reth_rpc_e2e_tests"
+path = "src/lib.rs"
+
+[[test]]
+name = "e2e_testsuite"
+path = "tests/e2e-testsuite/main.rs"
+
+[dependencies]
+alloy-rpc-types-engine = { version = "^2.4.2", default-features = false }
+eyre = { version = "^0.6" }
+futures-util = { version = "^0.3", default-features = false }
+jsonrpsee = { version = "^0.26.0" }
+reth-e2e-test-utils = { path = "../../e2e-test-utils" }
+reth-node-api = { path = "../../node/api" }
+reth-rpc-api = { path = "../rpc-api", features = ["client"] }
+serde_json = { version = "^1.0", features = ["alloc"], default-features = false }
+tokio = { version = "^1.52.3", default-features = false }
+tracing = { version = "^0.1.0", features = ["attributes"], default-features = false }
+
+[dev-dependencies]
+alloy-genesis = { version = "^2.4.2", default-features = false }
+reth-chainspec = { path = "../../chainspec", default-features = false }
+reth-node-ethereum = { path = "../../ethereum/node" }
+reth-tracing = { path = "../../tracing" }

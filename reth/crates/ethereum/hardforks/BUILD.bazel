@@ -29,15 +29,15 @@ crate_library(
     crate_features = FEATURES,
     declared_features = DECLARED_FEATURES,
     deps = [
-        "@reth_crates//:alloy-eip2124",
-        "@reth_crates//:alloy-hardforks",
-        "@reth_crates//:alloy-primitives",
-        "@reth_crates//:arbitrary",
-        "@reth_crates//:once_cell",
-        "@reth_crates//:rustc-hash",
+        "@crates//:alloy-eip2124",
+        "@crates//:alloy-hardforks-0.4.8",
+        "@crates//:alloy-primitives",
+        "@crates//:arbitrary",
+        "@crates//:once_cell",
+        "@crates//:rustc-hash",
     ],
     proc_macro_deps = [
-        "@reth_crates//:auto_impl",
+        "@crates//:auto_impl",
     ],
 )
 

@@ -18,8 +18,8 @@ crate_binary(
     declared_features = DECLARED_FEATURES,
     deps = [
         "//reth/crates/ethereum/reth:reth_ethereum",
-        "@reth_crates//:alloy-primitives",
-        "@reth_crates//:eyre",
+        "@crates//:alloy-primitives",
+        "@crates//:eyre",
     ],
 )
 

@@ -13,14 +13,10 @@ reth/data
 reth/testing/ef-tests/ethereum-tests
 reth/crates/storage/libmdbx-rs/mdbx-sys/libmdbx/cmake-build-debug
 
-# Symlinks of the projects' Bazel shadow Cargo workspaces (<project>/bazel/cargo)
-# back into the repository; without these Bazel would discover every package twice.
+# The projects' parts of the Bazel Cargo workspace (bazel/cargo/<project>), whose
+# symlinks lead back into the repository; without these Bazel would discover
+# every package twice.
 # BEGIN GENERATED (bazel/generate.py)
-alloy/bazel/cargo/crates
-reth/bazel/cargo/bin/reth-bb
-reth/bazel/cargo/bin/reth/src
-reth/bazel/cargo/bin/reth/tests
-reth/bazel/cargo/crates
-reth/bazel/cargo/examples
-reth/bazel/cargo/testing
+bazel/cargo/alloy
+bazel/cargo/reth
 # END GENERATED

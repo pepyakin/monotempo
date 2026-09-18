@@ -20,7 +20,7 @@ crate_binary(
     deps = [
         "//reth/crates/ethereum/reth:reth_ethereum",
         "//reth/crates/tracing:reth_tracing",
-        "@reth_crates//:eyre",
+        "@crates//:eyre",
     ],
 )
 

@@ -1,0 +1,35 @@
+# GENERATED FILE - DO NOT EDIT. Regenerate with `python3 bazel/generate.py`.
+#
+# Bazel-only derivation of `reth/crates/metrics/Cargo.toml`: the same
+# package as `cargo metadata` describes it in the reth workspace, with
+# workspace inheritance resolved. Cargo builds are unaffected.
+
+[package]
+name = "reth-metrics"
+version = "2.5.2"
+edition = "2024"
+rust-version = "1.95"
+build = false
+autolib = false
+autobins = false
+autoexamples = false
+autotests = false
+autobenches = false
+
+[lib]
+name = "reth_metrics"
+path = "src/lib.rs"
+
+[features]
+common = ["tokio", "futures", "tokio-util", "reth-primitives-traits"]
+
+[dependencies]
+futures = { version = "^0.3", optional = true }
+metrics = { version = "^0.24.0" }
+metrics-derive = { version = "^0.1.1" }
+reth-primitives-traits = { version = "^0.7.1", optional = true, default-features = false }
+tokio = { version = "^1.52.3", features = ["full"], optional = true, default-features = false }
+tokio-util = { version = "^0.7.4", features = ["codec"], optional = true }
+
+[target.'cfg(target_os = "linux")'.dependencies]
+libc = { version = "^0.2" }

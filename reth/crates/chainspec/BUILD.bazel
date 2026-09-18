@@ -27,21 +27,21 @@ crate_library(
     crate_features = FEATURES,
     declared_features = DECLARED_FEATURES,
     deps = [
+        "//alloy/crates/consensus:alloy_consensus",
+        "//alloy/crates/eips:alloy_eips",
+        "//alloy/crates/genesis:alloy_genesis",
         "//reth/crates/ethereum/hardforks:reth_ethereum_forks",
         "//reth/crates/net/peers:reth_network_peers",
-        "@reth_crates//:alloy-chains",
-        "@reth_crates//:alloy-consensus",
-        "@reth_crates//:alloy-eips",
-        "@reth_crates//:alloy-evm",
-        "@reth_crates//:alloy-genesis",
-        "@reth_crates//:alloy-primitives",
-        "@reth_crates//:alloy-trie",
-        "@reth_crates//:derive_more",
-        "@reth_crates//:reth-primitives-traits",
-        "@reth_crates//:serde_json",
+        "@crates//:alloy-chains",
+        "@crates//:alloy-evm",
+        "@crates//:alloy-primitives",
+        "@crates//:alloy-trie",
+        "@crates//:derive_more",
+        "@crates//:reth-primitives-traits",
+        "@crates//:serde_json",
     ],
     proc_macro_deps = [
-        "@reth_crates//:auto_impl",
+        "@crates//:auto_impl",
     ],
 )
 
@@ -52,6 +52,6 @@ crate_unit_test(
     crate_features = FEATURES,
     declared_features = DECLARED_FEATURES,
     deps = [
-        "@reth_crates//:alloy-rlp",
+        "@crates//:alloy-rlp",
     ],
 )

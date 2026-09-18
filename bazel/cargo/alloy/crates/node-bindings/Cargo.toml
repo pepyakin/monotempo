@@ -1,0 +1,47 @@
+# GENERATED FILE - DO NOT EDIT. Regenerate with `python3 bazel/generate.py`.
+#
+# Bazel-only derivation of `alloy/crates/node-bindings/Cargo.toml`: the same
+# package as `cargo metadata` describes it in the alloy workspace, with
+# workspace inheritance resolved. Cargo builds are unaffected.
+
+[package]
+name = "alloy-node-bindings"
+version = "2.4.2"
+edition = "2021"
+rust-version = "1.94.1"
+build = false
+autolib = false
+autobins = false
+autoexamples = false
+autotests = false
+autobenches = false
+
+[lib]
+name = "alloy_node_bindings"
+path = "src/lib.rs"
+
+[[test]]
+name = "it"
+path = "tests/it/main.rs"
+
+[dependencies]
+alloy-genesis = { path = "../genesis", default-features = false }
+alloy-hardforks = { version = "^0.2.0" }
+alloy-network = { path = "../network", default-features = false }
+alloy-primitives = { version = "^1.6.0", features = ["std", "k256", "serde"], default-features = false }
+alloy-signer = { path = "../signer", default-features = false }
+alloy-signer-local = { path = "../signer-local", default-features = false }
+k256 = { version = "^0.13", features = ["ecdsa"], default-features = false }
+rand = { version = "^0.8" }
+serde_json = { version = "^1.0", features = ["alloc", "std"], default-features = false }
+tempfile = { version = "^3.20" }
+thiserror = { version = "^2.0", default-features = false }
+tracing = { version = "^0.1" }
+url = { version = "^2.5" }
+
+[dev-dependencies]
+ci_info = { version = "^0.14.14" }
+tokio = { version = "^1", features = ["macros", "rt-multi-thread"] }
+
+[target.'cfg(unix)'.dependencies]
+libc = { version = "^0.2" }

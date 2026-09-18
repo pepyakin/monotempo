@@ -3,9 +3,6 @@
 # Everything Bazel needs to know about reth that cannot be derived from its
 # Cargo manifests. Labels are written out in full.
 
-# crate_universe repository holding reth's external crates (see reth.MODULE.bazel).
-crates_repo = "@reth_crates"
-
 # Tests built on these crates launch full nodes, which retain GiBs per node for
 # the process lifetime; they and their dependants run one process per test
 # (see //bazel:process_per_test.bzl).

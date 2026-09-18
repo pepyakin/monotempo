@@ -26,13 +26,13 @@ crate_library(
     declared_features = DECLARED_FEATURES,
     deps = [
         "//reth/crates/stages/types:reth_stages_types",
-        "@reth_crates//:alloy-primitives",
-        "@reth_crates//:clap",
-        "@reth_crates//:derive_more",
-        "@reth_crates//:fixed-map",
-        "@reth_crates//:serde",
-        "@reth_crates//:strum",
-        "@reth_crates//:tracing",
+        "@crates//:alloy-primitives",
+        "@crates//:clap",
+        "@crates//:derive_more",
+        "@crates//:fixed-map",
+        "@crates//:serde",
+        "@crates//:strum",
+        "@crates//:tracing",
     ],
 )
 
@@ -44,8 +44,8 @@ crate_unit_test(
     declared_features = DECLARED_FEATURES,
     deps = [
         "//reth/crates/storage/nippy-jar:reth_nippy_jar",
-        "@reth_crates//:insta",
-        "@reth_crates//:serde_json",
-        "@reth_crates//:tempfile",
+        "@crates//:insta",
+        "@crates//:serde_json",
+        "@crates//:tempfile",
     ],
 )

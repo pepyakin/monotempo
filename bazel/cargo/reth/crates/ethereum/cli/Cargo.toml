@@ -1,0 +1,62 @@
+# GENERATED FILE - DO NOT EDIT. Regenerate with `python3 bazel/generate.py`.
+#
+# Bazel-only derivation of `reth/crates/ethereum/cli/Cargo.toml`: the same
+# package as `cargo metadata` describes it in the reth workspace, with
+# workspace inheritance resolved. Cargo builds are unaffected.
+
+[package]
+name = "reth-ethereum-cli"
+version = "2.5.2"
+edition = "2024"
+rust-version = "1.95"
+build = false
+autolib = false
+autobins = false
+autoexamples = false
+autotests = false
+autobenches = false
+
+[lib]
+name = "reth_ethereum_cli"
+path = "src/lib.rs"
+
+[features]
+otlp = ["reth-tracing/otlp", "reth-node-core/otlp"]
+otlp-logs = ["reth-tracing/otlp-logs", "reth-node-core/otlp-logs"]
+dev = ["reth-cli-commands/arbitrary"]
+jit = ["reth-node-ethereum/jit"]
+gmp = ["reth-node-ethereum/gmp"]
+asm-keccak = ["reth-node-core/asm-keccak", "reth-node-ethereum/asm-keccak"]
+jemalloc = ["reth-node-core/jemalloc", "reth-node-metrics/jemalloc"]
+jemalloc-prof = ["jemalloc", "reth-node-metrics/jemalloc-prof"]
+jemalloc-symbols = ["jemalloc-prof", "reth-node-metrics/jemalloc-symbols"]
+tracy-allocator = ["tracy"]
+tracy = ["reth-tracing/tracy", "reth-node-core/tracy"]
+snmalloc = []
+snmalloc-native = []
+min-error-logs = ["tracing/release_max_level_error", "reth-node-core/min-error-logs"]
+min-warn-logs = ["tracing/release_max_level_warn", "reth-node-core/min-warn-logs"]
+min-info-logs = ["tracing/release_max_level_info", "reth-node-core/min-info-logs"]
+min-debug-logs = ["tracing/release_max_level_debug", "reth-node-core/min-debug-logs"]
+min-trace-logs = ["tracing/release_max_level_trace", "reth-node-core/min-trace-logs"]
+
+[dependencies]
+clap = { version = "^4" }
+eyre = { version = "^0.6" }
+reth-chainspec = { path = "../../chainspec", default-features = false }
+reth-cli = { path = "../../cli/cli" }
+reth-cli-commands = { path = "../../cli/commands" }
+reth-cli-runner = { path = "../../cli/runner" }
+reth-db = { path = "../../storage/db", default-features = false }
+reth-node-api = { path = "../../node/api" }
+reth-node-builder = { path = "../../node/builder" }
+reth-node-core = { path = "../../node/core" }
+reth-node-ethereum = { path = "../node" }
+reth-node-metrics = { path = "../../node/metrics" }
+reth-rpc-server-types = { path = "../../rpc/rpc-server-types" }
+reth-tasks = { path = "../../tasks" }
+reth-tracing = { path = "../../tracing" }
+tracing = { version = "^0.1.0", features = ["attributes"], default-features = false }
+
+[dev-dependencies]
+tempfile = { version = "^3.20" }

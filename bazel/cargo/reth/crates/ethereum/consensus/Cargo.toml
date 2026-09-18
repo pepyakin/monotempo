@@ -1,0 +1,51 @@
+# GENERATED FILE - DO NOT EDIT. Regenerate with `python3 bazel/generate.py`.
+#
+# Bazel-only derivation of `reth/crates/ethereum/consensus/Cargo.toml`: the same
+# package as `cargo metadata` describes it in the reth workspace, with
+# workspace inheritance resolved. Cargo builds are unaffected.
+
+[package]
+name = "reth-ethereum-consensus"
+version = "2.5.2"
+edition = "2024"
+rust-version = "1.95"
+build = false
+autolib = false
+autobins = false
+autoexamples = false
+autotests = false
+autobenches = false
+
+[lib]
+name = "reth_ethereum_consensus"
+path = "src/lib.rs"
+
+[features]
+default = ["std"]
+std = [
+    "alloy-consensus/std",
+    "alloy-eips/std",
+    "alloy-primitives/std",
+    "reth-chainspec/std",
+    "reth-consensus/std",
+    "reth-consensus-common/std",
+    "reth-ethereum-primitives/std",
+    "reth-execution-types/std",
+    "reth-primitives-traits/std",
+    "tracing/std",
+]
+
+[dependencies]
+alloy-consensus = { version = "^2.4.2", default-features = false }
+alloy-eips = { version = "^2.4.2", default-features = false }
+alloy-primitives = { version = "^1.6.1", features = ["map-foldhash"], default-features = false }
+reth-chainspec = { path = "../../chainspec", default-features = false }
+reth-consensus = { path = "../../consensus/consensus", default-features = false }
+reth-consensus-common = { path = "../../consensus/common", default-features = false }
+reth-execution-types = { path = "../../evm/execution-types", default-features = false }
+reth-primitives-traits = { version = "^0.7.1", default-features = false }
+tracing = { version = "^0.1.0", features = ["attributes"], default-features = false }
+
+[dev-dependencies]
+alloy-primitives = { version = "^1.6.1", features = ["map-foldhash", "getrandom"], default-features = false }
+reth-ethereum-primitives = { path = "../primitives", default-features = false }

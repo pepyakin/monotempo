@@ -1,0 +1,25 @@
+# GENERATED FILE - DO NOT EDIT. Regenerate with `python3 bazel/generate.py`.
+#
+# Bazel-only derivation of `reth/crates/storage/libmdbx-rs/mdbx-sys/Cargo.toml`: the same
+# package as `cargo metadata` describes it in the reth workspace, with
+# workspace inheritance resolved. Cargo builds are unaffected.
+
+[package]
+name = "reth-mdbx-sys"
+version = "2.5.2"
+edition = "2024"
+rust-version = "1.95"
+build = "build.rs"
+autolib = false
+autobins = false
+autoexamples = false
+autotests = false
+autobenches = false
+
+[lib]
+name = "reth_mdbx_sys"
+path = "src/lib.rs"
+
+[build-dependencies]
+bindgen = { version = "^0.72", features = ["runtime"], default-features = false }
+cc = { version = "^1.2.62" }

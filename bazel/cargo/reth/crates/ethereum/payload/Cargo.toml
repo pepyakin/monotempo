@@ -1,0 +1,46 @@
+# GENERATED FILE - DO NOT EDIT. Regenerate with `python3 bazel/generate.py`.
+#
+# Bazel-only derivation of `reth/crates/ethereum/payload/Cargo.toml`: the same
+# package as `cargo metadata` describes it in the reth workspace, with
+# workspace inheritance resolved. Cargo builds are unaffected.
+
+[package]
+name = "reth-ethereum-payload-builder"
+version = "2.5.2"
+edition = "2024"
+rust-version = "1.95"
+build = false
+autolib = false
+autobins = false
+autoexamples = false
+autotests = false
+autobenches = false
+
+[lib]
+name = "reth_ethereum_payload_builder"
+path = "src/lib.rs"
+
+[dependencies]
+alloy-consensus = { version = "^2.4.2", default-features = false }
+alloy-eips = { version = "^2.4.2", default-features = false }
+alloy-primitives = { version = "^1.6.1", features = ["map-foldhash"], default-features = false }
+alloy-rlp = { version = "^0.3.16", features = ["core-net"], default-features = false }
+alloy-rpc-types-engine = { version = "^2.4.2", default-features = false }
+reth-basic-payload-builder = { path = "../../payload/basic" }
+reth-chainspec = { path = "../../chainspec", default-features = false }
+reth-consensus-common = { path = "../../consensus/common", default-features = false }
+reth-errors = { path = "../../errors" }
+reth-ethereum-primitives = { path = "../primitives", default-features = false }
+reth-evm = { path = "../../evm/evm", default-features = false }
+reth-evm-ethereum = { path = "../evm", features = ["std"], default-features = false }
+reth-execution-cache = { path = "../../engine/execution-cache" }
+reth-payload-builder = { path = "../../payload/builder" }
+reth-payload-builder-primitives = { path = "../../payload/builder-primitives" }
+reth-payload-primitives = { path = "../../payload/primitives" }
+reth-payload-validator = { path = "../../payload/validator" }
+reth-primitives-traits = { version = "^0.7.1", default-features = false }
+reth-revm = { path = "../../revm", default-features = false }
+reth-storage-api = { path = "../../storage/storage-api", default-features = false }
+reth-transaction-pool = { path = "../../transaction-pool" }
+revm = { version = "^43.0.2", default-features = false }
+tracing = { version = "^0.1.0", features = ["attributes"], default-features = false }

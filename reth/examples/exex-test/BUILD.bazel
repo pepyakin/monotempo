@@ -20,10 +20,10 @@ crate_binary(
     deps = [
         "//reth/crates/e2e-test-utils:reth_e2e_test_utils",
         "//reth/crates/ethereum/reth:reth_ethereum",
-        "@reth_crates//:eyre",
-        "@reth_crates//:futures-util",
-        "@reth_crates//:serde_json",
-        "@reth_crates//:tokio",
+        "@crates//:eyre",
+        "@crates//:futures-util",
+        "@crates//:serde_json",
+        "@crates//:tokio",
     ],
     compile_data = [
         "//reth/crates/e2e-test-utils:src/testsuite/assets/genesis.json",

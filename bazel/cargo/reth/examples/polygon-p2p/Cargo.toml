@@ -1,0 +1,30 @@
+# GENERATED FILE - DO NOT EDIT. Regenerate with `python3 bazel/generate.py`.
+#
+# Bazel-only derivation of `reth/examples/polygon-p2p/Cargo.toml`: the same
+# package as `cargo metadata` describes it in the reth workspace, with
+# workspace inheritance resolved. Cargo builds are unaffected.
+
+[package]
+name = "example-polygon-p2p"
+version = "0.0.0"
+edition = "2024"
+build = false
+autolib = false
+autobins = false
+autoexamples = false
+autotests = false
+autobenches = false
+
+[[bin]]
+name = "example-polygon-p2p"
+path = "src/main.rs"
+
+[dependencies]
+alloy-genesis = { version = "^2.4.2", default-features = false }
+reth-discv4 = { path = "../../crates/net/discv4", features = ["test-utils"] }
+reth-ethereum = { path = "../../crates/ethereum/reth", features = ["network"] }
+reth-tracing = { path = "../../crates/tracing" }
+secp256k1 = { version = "^0.30", features = ["global-context", "recovery", "global-context", "std", "recovery"], default-features = false }
+serde_json = { version = "^1.0", features = ["alloc"], default-features = false }
+tokio = { version = "^1.52.3", default-features = false }
+tokio-stream = { version = "^0.1.11" }

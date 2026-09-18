@@ -1,0 +1,55 @@
+# GENERATED FILE - DO NOT EDIT. Regenerate with `python3 bazel/generate.py`.
+#
+# Bazel-only derivation of `reth/crates/storage/storage-overlay/Cargo.toml`: the same
+# package as `cargo metadata` describes it in the reth workspace, with
+# workspace inheritance resolved. Cargo builds are unaffected.
+
+[package]
+name = "reth-storage-overlay"
+version = "2.5.2"
+edition = "2024"
+rust-version = "1.95"
+build = false
+autolib = false
+autobins = false
+autoexamples = false
+autotests = false
+autobenches = false
+
+[lib]
+name = "reth_storage_overlay"
+path = "src/lib.rs"
+
+[features]
+rayon = ["dep:rayon", "dep:reth-tasks"]
+
+[dependencies]
+alloy-eips = { version = "^2.4.2", default-features = false }
+alloy-primitives = { version = "^1.6.1", features = ["map-foldhash"], default-features = false }
+metrics = { version = "^0.24.0" }
+parking_lot = { version = "^0.12" }
+rayon = { version = "^1.7", optional = true }
+reth-chain-state = { path = "../../chain-state" }
+reth-db-api = { path = "../db-api" }
+reth-errors = { path = "../../errors" }
+reth-ethereum-primitives = { path = "../../ethereum/primitives", default-features = false }
+reth-metrics = { path = "../../metrics" }
+reth-primitives-traits = { version = "^0.7.1", features = ["dashmap", "std"], default-features = false }
+reth-prune-types = { path = "../../prune/types", default-features = false }
+reth-stages-types = { path = "../../stages/types", default-features = false }
+reth-storage-api = { path = "../storage-api", features = ["db-api"], default-features = false }
+reth-storage-errors = { path = "../errors", default-features = false }
+reth-tasks = { path = "../../tasks", features = ["rayon"], optional = true }
+reth-trie = { path = "../../trie/trie" }
+reth-trie-common = { path = "../../trie/common", default-features = false }
+reth-trie-db = { path = "../../trie/db" }
+revm = { version = "^43.0.2", default-features = false }
+tracing = { version = "^0.1.0", features = ["attributes"], default-features = false }
+
+[dev-dependencies]
+alloy-consensus = { version = "^2.4.2", default-features = false }
+reth-chain-state = { path = "../../chain-state", features = ["test-utils"] }
+reth-db = { path = "../db", features = ["test-utils"], default-features = false }
+reth-primitives-traits = { version = "^0.7.1", features = ["test-utils"], default-features = false }
+reth-provider = { path = "../provider", features = ["test-utils"] }
+reth-trie = { path = "../../trie/trie", features = ["test-utils"] }

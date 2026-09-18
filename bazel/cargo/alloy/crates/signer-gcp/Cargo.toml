@@ -1,0 +1,39 @@
+# GENERATED FILE - DO NOT EDIT. Regenerate with `python3 bazel/generate.py`.
+#
+# Bazel-only derivation of `alloy/crates/signer-gcp/Cargo.toml`: the same
+# package as `cargo metadata` describes it in the alloy workspace, with
+# workspace inheritance resolved. Cargo builds are unaffected.
+
+[package]
+name = "alloy-signer-gcp"
+version = "2.4.2"
+edition = "2021"
+rust-version = "1.94.1"
+build = false
+autolib = false
+autobins = false
+autoexamples = false
+autotests = false
+autobenches = false
+
+[lib]
+name = "alloy_signer_gcp"
+path = "src/lib.rs"
+
+[features]
+eip712 = ["alloy-signer/eip712"]
+
+[dependencies]
+alloy-consensus = { path = "../consensus", features = ["std"], default-features = false }
+alloy-network = { path = "../network", default-features = false }
+alloy-primitives = { version = "^1.6.0", default-features = false }
+alloy-signer = { path = "../signer", default-features = false }
+async-trait = { version = "^0.1" }
+gcloud-sdk = { version = "^0.29.0", features = ["google-cloud-kms-v1", "google-longrunning", "tls-webpki-roots"], default-features = false }
+k256 = { version = "^0.13", features = ["ecdsa", "pem"], default-features = false }
+spki = { version = "^0.7", default-features = false }
+thiserror = { version = "^2.0", default-features = false }
+tracing = { version = "^0.1" }
+
+[dev-dependencies]
+tokio = { version = "^1", features = ["macros", "rt-multi-thread"] }

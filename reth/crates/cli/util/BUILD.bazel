@@ -25,22 +25,22 @@ crate_library(
     crate_features = FEATURES,
     declared_features = DECLARED_FEATURES,
     deps = [
+        "//alloy/crates/eips:alloy_eips",
         "//reth/crates/fs-util:reth_fs_util",
-        "@reth_crates//:alloy-eips",
-        "@reth_crates//:alloy-primitives",
-        "@reth_crates//:cfg-if",
-        "@reth_crates//:eyre",
-        "@reth_crates//:rand_08-0.8.6",
-        "@reth_crates//:secp256k1",
-        "@reth_crates//:serde",
-        "@reth_crates//:thiserror",
+        "@crates//:alloy-primitives",
+        "@crates//:cfg-if",
+        "@crates//:eyre",
+        "@crates//:rand_08-0.8.6",
+        "@crates//:secp256k1",
+        "@crates//:serde",
+        "@crates//:thiserror",
     ] + select({
-        "@platforms//os:linux": ["@reth_crates//:libc", "@reth_crates//:tikv-jemalloc-sys", "@reth_crates//:tikv-jemallocator"],
-        "@platforms//os:macos": ["@reth_crates//:libc", "@reth_crates//:tikv-jemalloc-sys", "@reth_crates//:tikv-jemallocator"],
+        "@platforms//os:linux": ["@crates//:libc", "@crates//:tikv-jemalloc-sys", "@crates//:tikv-jemallocator"],
+        "@platforms//os:macos": ["@crates//:libc", "@crates//:tikv-jemalloc-sys", "@crates//:tikv-jemallocator"],
         "//conditions:default": [],
     }),
     aliases = {
-        "@reth_crates//:rand_08-0.8.6": "rand_08",
+        "@crates//:rand_08-0.8.6": "rand_08",
     },
 )
 
@@ -51,6 +51,6 @@ crate_unit_test(
     crate_features = FEATURES,
     declared_features = DECLARED_FEATURES,
     deps = [
-        "@reth_crates//:rand-0.9.4",
+        "@crates//:rand-0.9.4",
     ],
 )

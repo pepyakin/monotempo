@@ -1,0 +1,53 @@
+# GENERATED FILE - DO NOT EDIT. Regenerate with `python3 bazel/generate.py`.
+#
+# Bazel-only derivation of `reth/crates/net/network-api/Cargo.toml`: the same
+# package as `cargo metadata` describes it in the reth workspace, with
+# workspace inheritance resolved. Cargo builds are unaffected.
+
+[package]
+name = "reth-network-api"
+version = "2.5.2"
+edition = "2024"
+rust-version = "1.95"
+build = false
+autolib = false
+autobins = false
+autoexamples = false
+autotests = false
+autobenches = false
+
+[lib]
+name = "reth_network_api"
+path = "src/lib.rs"
+
+[features]
+serde = [
+    "dep:serde",
+    "reth-eth-wire-types/serde",
+    "reth-network-types/serde",
+    "alloy-primitives/serde",
+    "enr/serde",
+    "reth-ethereum-forks/serde",
+    "alloy-consensus/serde",
+    "alloy-rpc-types-eth/serde",
+]
+
+[dependencies]
+alloy-consensus = { version = "^2.4.2", default-features = false }
+alloy-primitives = { version = "^1.6.1", features = ["map-foldhash", "getrandom"], default-features = false }
+alloy-rpc-types-admin = { version = "^2.4.2", default-features = false }
+alloy-rpc-types-eth = { version = "^2.4.2", default-features = false }
+auto_impl = { version = "^1" }
+derive_more = { version = "^2", features = ["full"], default-features = false }
+enr = { version = "^0.13", features = ["rust-secp256k1"], default-features = false }
+futures = { version = "^0.3" }
+reth-eth-wire-types = { path = "../eth-wire-types" }
+reth-ethereum-forks = { path = "../../ethereum/hardforks", default-features = false }
+reth-network-p2p = { path = "../p2p" }
+reth-network-peers = { path = "../peers", default-features = false }
+reth-network-types = { path = "../network-types" }
+reth-tokio-util = { path = "../../tokio-util" }
+serde = { version = "^1.0", features = ["derive"], optional = true, default-features = false }
+thiserror = { version = "^2.0.0", default-features = false }
+tokio = { version = "^1.52.3", features = ["sync"], default-features = false }
+tokio-stream = { version = "^0.1.11" }

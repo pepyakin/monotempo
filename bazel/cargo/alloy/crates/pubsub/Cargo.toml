@@ -1,0 +1,39 @@
+# GENERATED FILE - DO NOT EDIT. Regenerate with `python3 bazel/generate.py`.
+#
+# Bazel-only derivation of `alloy/crates/pubsub/Cargo.toml`: the same
+# package as `cargo metadata` describes it in the alloy workspace, with
+# workspace inheritance resolved. Cargo builds are unaffected.
+
+[package]
+name = "alloy-pubsub"
+version = "2.4.2"
+edition = "2021"
+rust-version = "1.94.1"
+build = false
+autolib = false
+autobins = false
+autoexamples = false
+autotests = false
+autobenches = false
+
+[lib]
+name = "alloy_pubsub"
+path = "src/lib.rs"
+
+[dependencies]
+alloy-json-rpc = { path = "../json-rpc", default-features = false }
+alloy-primitives = { version = "^1.6.0", default-features = false }
+alloy-transport = { path = "../transport", default-features = false }
+auto_impl = { version = "^1.2" }
+bimap = { version = "^0.6" }
+futures = { version = "^0.3" }
+parking_lot = { version = "^0.12.3" }
+serde = { version = "^1.0.226", features = ["derive", "alloc"], default-features = false }
+serde_json = { version = "^1.0", features = ["alloc"], default-features = false }
+tokio = { version = "^1", features = ["macros", "sync"] }
+tokio-stream = { version = "^0.1", features = ["sync"], default-features = false }
+tower = { version = "^0.5", features = ["util"] }
+tracing = { version = "^0.1" }
+
+[target.'cfg(all(target_family = "wasm", target_os = "unknown"))'.dependencies]
+wasmtimer = { version = "^0.4.0" }

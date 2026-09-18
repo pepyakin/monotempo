@@ -1,0 +1,48 @@
+# GENERATED FILE - DO NOT EDIT. Regenerate with `python3 bazel/generate.py`.
+#
+# Bazel-only derivation of `reth/crates/exex/test-utils/Cargo.toml`: the same
+# package as `cargo metadata` describes it in the reth workspace, with
+# workspace inheritance resolved. Cargo builds are unaffected.
+
+[package]
+name = "reth-exex-test-utils"
+version = "2.5.2"
+edition = "2024"
+rust-version = "1.95"
+build = false
+autolib = false
+autobins = false
+autoexamples = false
+autotests = false
+autobenches = false
+
+[lib]
+name = "reth_exex_test_utils"
+path = "src/lib.rs"
+
+[dependencies]
+alloy-eips = { version = "^2.4.2", default-features = false }
+eyre = { version = "^0.6" }
+futures-util = { version = "^0.3", default-features = false }
+reth-chainspec = { path = "../../chainspec", default-features = false }
+reth-config = { path = "../../config", default-features = false }
+reth-consensus = { path = "../../consensus/consensus", features = ["test-utils"], default-features = false }
+reth-db = { path = "../../storage/db", features = ["test-utils"], default-features = false }
+reth-db-common = { path = "../../storage/db-common" }
+reth-ethereum-primitives = { path = "../../ethereum/primitives", default-features = false }
+reth-evm-ethereum = { path = "../../ethereum/evm", features = ["test-utils"], default-features = false }
+reth-execution-types = { path = "../../evm/execution-types", default-features = false }
+reth-exex = { path = "../exex" }
+reth-network = { path = "../../net/network" }
+reth-node-api = { path = "../../node/api" }
+reth-node-builder = { path = "../../node/builder", features = ["test-utils"] }
+reth-node-core = { path = "../../node/core" }
+reth-node-ethereum = { path = "../../ethereum/node" }
+reth-payload-builder = { path = "../../payload/builder" }
+reth-primitives-traits = { version = "^0.7.1", default-features = false }
+reth-provider = { path = "../../storage/provider", features = ["test-utils"] }
+reth-tasks = { path = "../../tasks" }
+reth-transaction-pool = { path = "../../transaction-pool", features = ["test-utils"] }
+tempfile = { version = "^3.20" }
+thiserror = { version = "^2.0.0", default-features = false }
+tokio = { version = "^1.52.3", default-features = false }

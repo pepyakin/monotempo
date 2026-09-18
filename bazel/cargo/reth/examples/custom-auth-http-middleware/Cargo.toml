@@ -1,0 +1,29 @@
+# GENERATED FILE - DO NOT EDIT. Regenerate with `python3 bazel/generate.py`.
+#
+# Bazel-only derivation of `reth/examples/custom-auth-http-middleware/Cargo.toml`: the same
+# package as `cargo metadata` describes it in the reth workspace, with
+# workspace inheritance resolved. Cargo builds are unaffected.
+
+[package]
+name = "example-custom-auth-http-middleware"
+version = "0.0.0"
+edition = "2024"
+build = false
+autolib = false
+autobins = false
+autoexamples = false
+autotests = false
+autobenches = false
+
+[[bin]]
+name = "example-custom-auth-http-middleware"
+path = "src/main.rs"
+
+[dependencies]
+clap = { version = "^4", features = ["derive"] }
+http = { version = "^1.0" }
+jsonrpsee = { version = "^0.26.0", features = ["server"] }
+reth-ethereum = { path = "../../crates/ethereum/reth", features = ["node", "rpc", "cli"] }
+serde_json = { version = "^1.0", features = ["alloc"], default-features = false }
+tower = { version = "^0.5" }
+tracing = { version = "^0.1.0", features = ["attributes"], default-features = false }

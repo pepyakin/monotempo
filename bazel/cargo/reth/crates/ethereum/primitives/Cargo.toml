@@ -1,0 +1,82 @@
+# GENERATED FILE - DO NOT EDIT. Regenerate with `python3 bazel/generate.py`.
+#
+# Bazel-only derivation of `reth/crates/ethereum/primitives/Cargo.toml`: the same
+# package as `cargo metadata` describes it in the reth workspace, with
+# workspace inheritance resolved. Cargo builds are unaffected.
+
+[package]
+name = "reth-ethereum-primitives"
+version = "2.5.2"
+edition = "2024"
+rust-version = "1.95"
+build = false
+autolib = false
+autobins = false
+autoexamples = false
+autotests = false
+autobenches = false
+
+[lib]
+name = "reth_ethereum_primitives"
+path = "src/lib.rs"
+
+[features]
+default = ["std"]
+test-utils = ["reth-codecs?/test-utils", "reth-primitives-traits/test-utils"]
+std = [
+    "alloy-consensus/std",
+    "alloy-primitives/std",
+    "reth-primitives-traits/std",
+    "reth-primitives-traits/quanta",
+    "serde?/std",
+    "alloy-eips/std",
+    "alloy-rpc-types-eth?/std",
+    "alloy-rlp/std",
+    "reth-zstd-compressors/std",
+    "serde_json/std",
+    "serde_with/std",
+    "reth-codecs?/std",
+]
+reth-codec = ["std", "dep:reth-codecs"]
+arbitrary = [
+    "std",
+    "alloy-consensus/arbitrary",
+    "alloy-consensus/k256",
+    "alloy-primitives/arbitrary",
+    "reth-codecs?/arbitrary",
+    "reth-primitives-traits/arbitrary",
+    "alloy-eips/arbitrary",
+    "alloy-rpc-types-eth?/arbitrary",
+]
+serde = [
+    "dep:serde",
+    "alloy-consensus/serde",
+    "alloy-eips/serde",
+    "alloy-primitives/serde",
+    "reth-codecs?/serde",
+    "reth-primitives-traits/serde",
+    "alloy-rpc-types-eth?/serde",
+    "rand/serde",
+]
+rpc = ["dep:alloy-rpc-types-eth", "alloy-rpc-types-eth?/serde"]
+
+[dependencies]
+alloy-consensus = { version = "^2.4.2", features = ["serde"], default-features = false }
+alloy-eips = { version = "^2.4.2", features = ["k256"], default-features = false }
+alloy-rpc-types-eth = { version = "^2.4.2", optional = true, default-features = false }
+reth-codecs = { version = "^0.7.0", features = ["alloy"], optional = true, default-features = false }
+reth-primitives-traits = { version = "^0.7.1", default-features = false }
+serde = { version = "^1.0", optional = true, default-features = false }
+
+[dev-dependencies]
+alloy-consensus = { version = "^2.4.2", features = ["serde", "arbitrary"], default-features = false }
+alloy-primitives = { version = "^1.6.1", features = ["map-foldhash"], default-features = false }
+alloy-rlp = { version = "^0.3.16", features = ["core-net"], default-features = false }
+arbitrary = { version = "^1.3" }
+proptest = { version = "^1.7" }
+proptest-arbitrary-interop = { version = "^0.1.0" }
+rand = { version = "^0.9" }
+reth-codecs = { version = "^0.7.0", features = ["test-utils"], default-features = false }
+reth-zstd-compressors = { version = "^0.7.0", default-features = false }
+serde_json = { version = "^1.0", features = ["alloc"], default-features = false }
+serde_with = { version = "^3", features = ["macros"], default-features = false }

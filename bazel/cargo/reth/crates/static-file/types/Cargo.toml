@@ -1,0 +1,52 @@
+# GENERATED FILE - DO NOT EDIT. Regenerate with `python3 bazel/generate.py`.
+#
+# Bazel-only derivation of `reth/crates/static-file/types/Cargo.toml`: the same
+# package as `cargo metadata` describes it in the reth workspace, with
+# workspace inheritance resolved. Cargo builds are unaffected.
+
+[package]
+name = "reth-static-file-types"
+version = "2.5.2"
+edition = "2024"
+rust-version = "1.95"
+build = false
+autolib = false
+autobins = false
+autoexamples = false
+autotests = false
+autobenches = false
+
+[lib]
+name = "reth_static_file_types"
+path = "src/lib.rs"
+
+[features]
+default = ["std"]
+std = [
+    "alloy-primitives/std",
+    "derive_more/std",
+    "reth-stages-types/std",
+    "serde/std",
+    "strum/std",
+    "serde_json/std",
+    "fixed-map/std",
+    "dep:tracing",
+    "tracing?/std",
+]
+clap = ["dep:clap"]
+
+[dependencies]
+alloy-primitives = { version = "^1.6.1", features = ["map-foldhash"], default-features = false }
+clap = { version = "^4", features = ["derive"], optional = true }
+derive_more = { version = "^2", features = ["full"], default-features = false }
+fixed-map = { version = "^0.9", default-features = false }
+reth-stages-types = { path = "../../stages/types", default-features = false }
+serde = { version = "^1.0", features = ["alloc", "derive"], default-features = false }
+strum = { version = "^0.27", features = ["derive"], default-features = false }
+tracing = { version = "^0.1.0", features = ["attributes"], optional = true, default-features = false }
+
+[dev-dependencies]
+insta = { version = "^1.47" }
+reth-nippy-jar = { path = "../../storage/nippy-jar" }
+serde_json = { version = "^1.0", features = ["alloc"], default-features = false }
+tempfile = { version = "^3.20" }

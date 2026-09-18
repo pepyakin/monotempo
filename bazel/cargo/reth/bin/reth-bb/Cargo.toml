@@ -1,0 +1,109 @@
+# GENERATED FILE - DO NOT EDIT. Regenerate with `python3 bazel/generate.py`.
+#
+# Bazel-only derivation of `reth/bin/reth-bb/Cargo.toml`: the same
+# package as `cargo metadata` describes it in the reth workspace, with
+# workspace inheritance resolved. Cargo builds are unaffected.
+
+[package]
+name = "reth-bb"
+version = "2.5.2"
+edition = "2024"
+rust-version = "1.95"
+build = false
+autolib = false
+autobins = false
+autoexamples = false
+autotests = false
+autobenches = false
+
+[[bin]]
+name = "reth-bb"
+path = "src/main.rs"
+
+[features]
+default = [
+    "jemalloc",
+    "reth-cli-util/jemalloc",
+    "asm-keccak",
+    "keccak-cache-global",
+    "min-trace-logs",
+    "otlp",
+    "otlp-logs",
+    "reth-revm/portable",
+    "js-tracer",
+]
+otlp = ["reth-ethereum-cli/otlp", "reth-node-core/otlp"]
+otlp-logs = ["reth-ethereum-cli/otlp-logs", "reth-node-core/otlp-logs"]
+js-tracer = ["reth-node-builder/js-tracer", "reth-node-ethereum/js-tracer"]
+jemalloc = [
+    "reth-cli-util/jemalloc",
+    "reth-node-core/jemalloc",
+    "reth-ethereum-cli/jemalloc",
+    "reth-provider/jemalloc",
+]
+asm-keccak = [
+    "reth-node-core/asm-keccak",
+    "reth-ethereum-cli/asm-keccak",
+    "reth-node-ethereum/asm-keccak",
+    "alloy-primitives/asm-keccak",
+    "alloy-evm/asm-keccak",
+    "revm/asm-keccak",
+]
+keccak-cache-global = [
+    "reth-node-core/keccak-cache-global",
+    "reth-node-ethereum/keccak-cache-global",
+    "alloy-primitives/keccak-cache-global",
+]
+min-debug-logs = [
+    "tracing/release_max_level_debug",
+    "reth-ethereum-cli/min-debug-logs",
+    "reth-node-core/min-debug-logs",
+]
+min-trace-logs = [
+    "tracing/release_max_level_trace",
+    "reth-ethereum-cli/min-trace-logs",
+    "reth-node-core/min-trace-logs",
+]
+
+[dependencies]
+alloy-consensus = { version = "^2.4.2", default-features = false }
+alloy-eips = { version = "^2.4.2", default-features = false }
+alloy-evm = { version = "^0.39.0", default-features = false }
+alloy-hardforks = { version = "^0.4.8" }
+alloy-primitives = { version = "^1.6.1", features = ["map-foldhash"], default-features = false }
+alloy-rlp = { version = "^0.3.16", features = ["core-net"], default-features = false }
+alloy-rpc-types = { version = "^2.4.2", features = ["eth", "engine"], default-features = false }
+async-trait = { version = "^0.1.68" }
+clap = { version = "^4", features = ["derive", "env"] }
+crossbeam-channel = { version = "^0.5.13" }
+derive_more = { version = "^2", features = ["full"], default-features = false }
+eyre = { version = "^0.6" }
+jsonrpsee = { version = "^0.26.0", features = ["server", "macros"] }
+metrics = { version = "^0.24.0" }
+reth-chain-state = { path = "../../crates/chain-state" }
+reth-chainspec = { path = "../../crates/chainspec", default-features = false }
+reth-cli-util = { path = "../../crates/cli/util" }
+reth-consensus = { path = "../../crates/consensus/consensus", default-features = false }
+reth-engine-primitives = { path = "../../crates/engine/primitives", features = ["std"], default-features = false }
+reth-engine-tree = { path = "../../crates/engine/tree" }
+reth-errors = { path = "../../crates/errors" }
+reth-ethereum-cli = { path = "../../crates/ethereum/cli", default-features = false }
+reth-ethereum-consensus = { path = "../../crates/ethereum/consensus", default-features = false }
+reth-ethereum-forks = { path = "../../crates/ethereum/hardforks", default-features = false }
+reth-ethereum-primitives = { path = "../../crates/ethereum/primitives", default-features = false }
+reth-evm = { path = "../../crates/evm/evm", default-features = false }
+reth-evm-ethereum = { path = "../../crates/ethereum/evm", default-features = false }
+reth-node-api = { path = "../../crates/node/api" }
+reth-node-builder = { path = "../../crates/node/builder" }
+reth-node-core = { path = "../../crates/node/core" }
+reth-node-ethereum = { path = "../../crates/ethereum/node" }
+reth-payload-primitives = { path = "../../crates/payload/primitives" }
+reth-primitives-traits = { version = "^0.7.1", default-features = false }
+reth-provider = { path = "../../crates/storage/provider" }
+reth-revm = { path = "../../crates/revm", default-features = false }
+reth-rpc-api = { path = "../../crates/rpc/rpc-api" }
+reth-rpc-engine-api = { path = "../../crates/rpc/rpc-engine-api" }
+reth-storage-errors = { path = "../../crates/storage/errors", default-features = false }
+revm = { version = "^43.0.2", default-features = false }
+tokio = { version = "^1.52.3", features = ["sync"], default-features = false }
+tracing = { version = "^0.1.0", features = ["attributes"], default-features = false }

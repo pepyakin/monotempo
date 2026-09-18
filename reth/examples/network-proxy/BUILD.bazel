@@ -21,9 +21,9 @@ crate_binary(
         "//reth/crates/ethereum/reth:reth_ethereum",
         "//reth/crates/metrics:reth_metrics",
         "//reth/crates/tracing:reth_tracing",
-        "@reth_crates//:eyre",
-        "@reth_crates//:futures",
-        "@reth_crates//:tokio",
+        "@crates//:eyre",
+        "@crates//:futures",
+        "@crates//:tokio",
     ],
 )
 

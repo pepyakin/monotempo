@@ -17,6 +17,7 @@ crate_library(
     crate_features = FEATURES,
     declared_features = DECLARED_FEATURES,
     deps = [
+        "//alloy/crates/eips:alloy_eips",
         "//reth/crates/chainspec:reth_chainspec",
         "//reth/crates/config:reth_config",
         "//reth/crates/consensus/consensus:reth_consensus",
@@ -35,13 +36,12 @@ crate_library(
         "//reth/crates/storage/provider:reth_provider",
         "//reth/crates/tasks:reth_tasks",
         "//reth/crates/transaction-pool:reth_transaction_pool",
-        "@reth_crates//:alloy-eips",
-        "@reth_crates//:eyre",
-        "@reth_crates//:futures-util",
-        "@reth_crates//:reth-primitives-traits",
-        "@reth_crates//:tempfile",
-        "@reth_crates//:thiserror",
-        "@reth_crates//:tokio",
+        "@crates//:eyre",
+        "@crates//:futures-util",
+        "@crates//:reth-primitives-traits",
+        "@crates//:tempfile",
+        "@crates//:thiserror",
+        "@crates//:tokio",
     ],
 )
 

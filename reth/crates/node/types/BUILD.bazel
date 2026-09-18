@@ -27,7 +27,7 @@ crate_library(
         "//reth/crates/engine/primitives:reth_engine_primitives",
         "//reth/crates/payload/primitives:reth_payload_primitives",
         "//reth/crates/storage/db-api:reth_db_api",
-        "@reth_crates//:reth-primitives-traits",
+        "@crates//:reth-primitives-traits",
     ],
 )
 

@@ -40,10 +40,13 @@ Shared, at the root:
 
 | Path | Purpose |
 | --- | --- |
-| `MODULE.bazel` | Root module: rules_rust, Rust toolchain version, LLVM toolchain; `include()`s each project's part. |
+| `MODULE.bazel` | Root module: rules_rust, Rust toolchain version, LLVM toolchain, the crate_universe repository `@crates`; `include()`s each project's part. |
+| `Cargo.Bazel.lock` | crate_universe's rendered view of `bazel/cargo/Cargo.lock` (which crates, features and build scripts each external crate needs). |
 | `.bazelrc` | Hermeticity flags, `--config=release`, `--config=ci`, `--config=dev`. |
-| `.bazelignore` | Directories Bazel must not treat as packages (Cargo `target/` dirs, docs, shadow-workspace symlinks; the last block is generated). |
-| `bazel/generate.py` | The generator: renders every project's `BUILD.bazel` files from its `Cargo.toml` files. |
+| `.bazelignore` | Directories Bazel must not treat as packages (Cargo `target/` dirs, docs, the Bazel Cargo workspace; the last block is generated). |
+| `bazel/generate.py` | The generator: derives the Bazel Cargo workspace from the projects' manifests and renders every project's `BUILD.bazel` files. |
+| `bazel/cargo/` | The Bazel Cargo workspace: one Cargo workspace over every project, with its own `Cargo.lock` (see below). Generated. |
+| `bazel/cargo/member_deps.MODULE.bazel` | Generated: `crate.annotation`s giving external crates their dependencies on in-tree crates (see "Cross-project dependencies"). |
 | `bazel/rust.bzl` | `crate_library`, `crate_proc_macro`, `crate_binary`, `crate_unit_test`, `crate_integration_test`, `crate_build_script` wrappers around rules_rust, used by the generated files. |
 | `bazel/BUILD.bazel` | clang builtin headers for bindgen; exports the test runner. |
 | `bazel/process_per_test.bzl`, `bazel/process_per_test.sh` | Test rule that runs each test of a `rust_test` in its own process (used for node-launching tests). |
@@ -53,12 +56,10 @@ Per project (`<p>/`):
 
 | Path | Purpose |
 | --- | --- |
-| `<p>.MODULE.bazel` | The project's part of the module: its crate_universe (`@<p>_crates`) and crate annotations (patches, build-script inputs of external crates). |
-| `Cargo.Bazel.lock` | crate_universe's rendered view of the project's `Cargo.lock` (which crates, features, and build scripts each external crate needs). |
+| `<p>.MODULE.bazel` | Optional: the project's crate_universe annotations (patches, build-script inputs of external crates). |
 | `bazel/project.toml` | Hand-written: what Bazel needs to know about the project beyond its manifests (see below). |
 | `bazel/workspace.bzl` | Generated: the `WORKSPACE` struct (version, edition, manifest and lint labels) and `[workspace.lints]`. |
 | `bazel/BUILD.bazel` | Generated: the project's `rust_lint_config`. |
-| `bazel/cargo/` | The Bazel shadow of the Cargo workspace (see below). |
 | `bazel/patches/` | Patches applied to external crates by crate_universe annotations (optional). |
 | `<crate>/BUILD.bazel` | Generated per crate from its `Cargo.toml`. |
 
@@ -66,7 +67,7 @@ Every workspace crate `foo-bar` becomes `//<p>/path/to/crate:foo_bar` (its lib),
 `//<p>/path/to/crate:foo_bar_test` (its `#[cfg(test)]` tests) and
 `//<p>/path/to/crate:foo_bar_<name>_test` per `tests/<name>.rs`. Binaries keep
 their Cargo name (`//reth/bin/reth:reth`, aliased as `//reth`). External crates
-are `@<p>_crates//:<name>`.
+are `@crates//:<name>`, the same targets for every project.
 
 ## When you change a `Cargo.toml` or `Cargo.lock`
 
@@ -74,8 +75,8 @@ Run the generator, then repin crate_universe if external dependencies or
 features changed:
 
 ```bash
-python3 bazel/generate.py           # rewrites BUILD.bazel files of every project (~2 s)
-CARGO_BAZEL_REPIN=1 bazel mod deps   # rewrites <p>/Cargo.Bazel.lock (~1 min per project)
+python3 bazel/generate.py           # rewrites bazel/cargo/ and the BUILD.bazel files of every project (~5 s)
+CARGO_BAZEL_REPIN=1 bazel mod deps   # rewrites Cargo.Bazel.lock (~1 min)
 ```
 
 CI runs `bazel/generate.py --check` and builds with `--config=ci`
@@ -83,16 +84,16 @@ CI runs `bazel/generate.py --check` and builds with `--config=ci`
 build with a message naming the file.
 
 The generator needs `cargo` on `PATH` (any recent toolchain; it only runs
-`cargo metadata --locked`).
+`cargo metadata`: `--locked` on each project, and unlocked on the Bazel
+Cargo workspace so that `bazel/cargo/Cargo.lock` follows the projects).
 
 ## `bazel/project.toml`
 
 Everything the generator cannot derive from Cargo, per project. Labels are
 written in full. Keys:
 
-* `crates_repo`: the crate_universe repository, `"@<p>_crates"`.
 * `disabled_features.<crate>.<feature> = "<reason>"`: default features not
-  built by Bazel (see the shadow workspace below).
+  built by Bazel (see the Bazel Cargo workspace below).
 * `build_scripts.<crate>`: `data_globs` (relative to the crate), `data`
   (labels) and `env` for the crate's `build.rs`. Build scripts run in the
   sandbox and see only their declared inputs.
@@ -110,43 +111,70 @@ written in full. Keys:
 
 See `reth/bazel/project.toml` for a commented example.
 
-## The shadow workspace (`<p>/bazel/cargo/`)
+## The Bazel Cargo workspace (`bazel/cargo/`)
 
-crate_universe and the generator read each Cargo workspace through a
-*shadow*: a directory that mirrors the project layout with symlinks
-(`crates`, `examples`, ...) and replaces a few manifests by generated copies:
+Bazel builds the projects from one Cargo workspace that the generator derives
+from them, not from the projects' own workspaces. Two facts force this:
 
-* The root `Cargo.toml` is a copy that carries a digest of every member
-  manifest, so that editing any crate's `Cargo.toml` invalidates
-  `Cargo.Bazel.lock` (crate_universe only watches the manifests it is given).
-  `path` dependencies on other projects (`../alloy/crates/x`) are rewritten to
-  go through a symlink inside the shadow (`alloy -> ../../../alloy`), because
-  crate_universe copies the shadow root's children into a temporary workspace
-  and cannot follow `../` out of it.
-* Manifests of crates in `disabled_features` are copies without those
-  features in `default`. Cargo resolves features for the whole workspace at
-  once, using every member's default features, and crate_universe has no way
-  to subtract a feature from that resolution. reth drops two of `bin/reth`'s
-  defaults this way: `jit` (revmc -> llvm-sys, needs a system LLVM) and `gmp`
-  (gmp-mpfr-sys, builds GMP with autotools); reth falls back to the pure-Rust
-  `modexp` implementation.
+* A project depends on another in-tree (reth on alloy, through
+  `[patch.crates-io]` in `reth/Cargo.toml`), and a crate compiled against
+  `@x//:alloy-primitives` cannot be linked with one compiled against
+  `@y//:alloy-primitives`. Everything that shares types must share one
+  crate_universe repository, and one crate_universe repository is one Cargo
+  resolution with one lockfile.
+* Cargo does not nest workspaces, and the projects' `[workspace.package]` and
+  `[workspace.dependencies]` tables (versions, feature sets) cannot be merged
+  into one root without editing every crate.
 
-The symlinks are listed in the generated block of `.bazelignore` so Bazel
-does not discover each package a second time through them.
+So `bazel/cargo/` holds, for each member crate of each project, a *derived*
+manifest at `bazel/cargo/<p>/<crate path>/Cargo.toml`: what `cargo metadata`
+reports for that crate in its own project, with `workspace = true`
+inheritance resolved, every target listed explicitly, path dependencies
+pointing at the other derived manifests, and the sources reached through
+symlinks (`src`, `build.rs`, `tests`, ...). `bazel/cargo/Cargo.toml` lists them
+all as members and carries the union of the projects' `[patch]` sections
+rebased onto the derived tree, plus a digest of every derived manifest so that
+editing any crate's `Cargo.toml` invalidates `Cargo.Bazel.lock` (crate_universe
+only watches the manifests it is given).
+
+`bazel/cargo/Cargo.lock` is that workspace's lockfile and is committed. The
+generator seeds it from the union of the projects' lockfiles the first time,
+lets Cargo update it afterwards, and fails if it pins an external crate
+version that no project's `Cargo.lock` pins (with the `cargo update
+--precise` command to fix it). The projects' lockfiles are kept aligned with
+each other for the same reason: whatever they disagree on, Bazel can only
+build one version of.
+
+The derived manifests also drop the features listed in `disabled_features`
+from `default`. Cargo resolves features for the whole workspace at once,
+using every member's default features, and crate_universe has no way to
+subtract a feature from that resolution. reth drops two of `bin/reth`'s
+defaults this way: `jit` (revmc -> llvm-sys, needs a system LLVM) and `gmp`
+(gmp-mpfr-sys, builds GMP with autotools); reth falls back to the pure-Rust
+`modexp` implementation.
+
+`bazel/cargo/<p>/` is listed in the generated block of `.bazelignore` so
+Bazel does not discover each crate a second time through the symlinks.
+Features are unified across all projects: an alloy crate is built once, with
+the features alloy's own crates and reth's together enable.
 
 ## Cross-project dependencies
 
 reth uses alloy from the tree: `[patch.crates-io]` in `reth/Cargo.toml` points
-every `alloy-*` crate at `../alloy/crates/*`, so `cargo` in `reth/` and Bazel
-build the same code. On the Bazel side crate_universe renders the patched
-crates into `@reth_crates` from the source in `alloy/` (through the shadow
-symlink), so an edit to alloy rebuilds the reth crates that use it.
+every `alloy-*` crate at `../alloy/crates/*`, so `cargo` in `reth/` builds the
+in-tree alloy. Under Bazel the same patch, carried into the Bazel Cargo
+workspace, makes the alloy crates workspace members, so reth's generated
+`BUILD.bazel` files depend on `//alloy/crates/<x>:alloy_<x>` directly and an
+edit to alloy rebuilds (and retests) exactly the reth crates that use it.
 
-Those rendered crates are compiled separately from the `//alloy/...` targets
-(the two universes do not share compilation), which is the same duplication as
-between any two crate_universe repositories; it costs build time, not
-correctness. Sharing them is possible later with crate_universe's
-`override_targets` annotation.
+The patch also redirects external crates that depend on alloy (crates.io
+`alloy-evm`, `revm-inspectors`, the crates.io `reth-*` a few of reth's
+dependencies pull in). crate_universe deliberately leaves dependencies on
+workspace members out of the crates it renders, so the generator writes them
+back as `crate.annotation(crate = ..., version = "=...", deps = ["@@//alloy/..."])`
+in `bazel/cargo/member_deps.MODULE.bazel`, which the root `MODULE.bazel`
+`include()`s. Changing which external crates reach into the tree therefore
+needs a repin (`CARGO_BAZEL_REPIN=1 bazel mod deps`) after the generator.
 
 ## Hermeticity
 
@@ -278,5 +306,5 @@ action and runs one rustc per core; linking reth's larger test binaries takes
   project (`test_tags` in `project.toml`); reth's `ef-tests` and
   `reth-era-utils`, and in alloy the tests that spawn `anvil`/`geth` or reach
   public RPC endpoints.
-* Windows is not supported (the shadow workspace uses symlinks; no Windows
-  platform triple is configured).
+* Windows is not supported (the Bazel Cargo workspace uses symlinks; no
+  Windows platform triple is configured).

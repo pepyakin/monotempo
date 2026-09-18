@@ -1,0 +1,71 @@
+# GENERATED FILE - DO NOT EDIT. Regenerate with `python3 bazel/generate.py`.
+#
+# Bazel-only derivation of `reth/crates/engine/primitives/Cargo.toml`: the same
+# package as `cargo metadata` describes it in the reth workspace, with
+# workspace inheritance resolved. Cargo builds are unaffected.
+
+[package]
+name = "reth-engine-primitives"
+version = "2.5.2"
+edition = "2024"
+rust-version = "1.95"
+build = false
+autolib = false
+autobins = false
+autoexamples = false
+autotests = false
+autobenches = false
+
+[lib]
+name = "reth_engine_primitives"
+path = "src/lib.rs"
+
+[features]
+default = ["std"]
+trie-debug = []
+std = [
+    "dep:reth-evm",
+    "dep:reth-payload-builder-primitives",
+    "reth-execution-errors/std",
+    "reth-execution-types/std",
+    "reth-ethereum-primitives/std",
+    "reth-primitives-traits/std",
+    "reth-trie-common/std",
+    "reth-storage-api/std",
+    "alloy-primitives/std",
+    "alloy-consensus/std",
+    "alloy-rpc-types-engine/std",
+    "alloy-eips/std",
+    "futures/std",
+    "tokio",
+    "serde/std",
+    "thiserror/std",
+    "reth-evm?/std",
+    "alloy-rlp/std",
+]
+
+[dependencies]
+alloy-consensus = { version = "^2.4.2", default-features = false }
+alloy-eips = { version = "^2.4.2", default-features = false }
+alloy-primitives = { version = "^1.6.1", features = ["map-foldhash"], default-features = false }
+alloy-rpc-types-engine = { version = "^2.4.2", default-features = false }
+auto_impl = { version = "^1" }
+futures = { version = "^0.3", optional = true }
+reth-chain-state = { path = "../../chain-state" }
+reth-errors = { path = "../../errors" }
+reth-ethereum-primitives = { path = "../../ethereum/primitives", default-features = false }
+reth-evm = { path = "../../evm/evm", optional = true, default-features = false }
+reth-execution-errors = { path = "../../evm/execution-errors", default-features = false }
+reth-execution-types = { path = "../../evm/execution-types", default-features = false }
+reth-payload-builder-primitives = { path = "../../payload/builder-primitives", optional = true }
+reth-payload-primitives = { path = "../../payload/primitives" }
+reth-primitives-traits = { version = "^0.7.1", default-features = false }
+reth-storage-api = { path = "../../storage/storage-api", default-features = false }
+reth-trie-common = { path = "../../trie/common", default-features = false }
+serde = { version = "^1.0", default-features = false }
+thiserror = { version = "^2.0.0", default-features = false }
+tokio = { version = "^1.52.3", features = ["sync"], optional = true, default-features = false }
+
+[dev-dependencies]
+alloy-primitives = { version = "^1.6.1", features = ["map-foldhash", "getrandom"], default-features = false }
+alloy-rlp = { version = "^0.3.16", features = ["core-net"], default-features = false }

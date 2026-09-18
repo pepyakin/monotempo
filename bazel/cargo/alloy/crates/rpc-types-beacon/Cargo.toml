@@ -1,0 +1,49 @@
+# GENERATED FILE - DO NOT EDIT. Regenerate with `python3 bazel/generate.py`.
+#
+# Bazel-only derivation of `alloy/crates/rpc-types-beacon/Cargo.toml`: the same
+# package as `cargo metadata` describes it in the alloy workspace, with
+# workspace inheritance resolved. Cargo builds are unaffected.
+
+[package]
+name = "alloy-rpc-types-beacon"
+version = "2.4.2"
+edition = "2021"
+rust-version = "1.94.1"
+build = false
+autolib = false
+autobins = false
+autoexamples = false
+autotests = false
+autobenches = false
+
+[lib]
+name = "alloy_rpc_types_beacon"
+path = "src/lib.rs"
+
+[features]
+sha2 = ["alloy-eips/sha2"]
+ssz = [
+    "dep:ethereum_ssz",
+    "dep:ethereum_ssz_derive",
+    "dep:tree_hash",
+    "dep:tree_hash_derive",
+    "alloy-rpc-types-engine/ssz",
+    "alloy-eips/ssz",
+]
+
+[dependencies]
+alloy-eips = { path = "../eips", features = ["serde"], default-features = false }
+alloy-primitives = { version = "^1.6.0", default-features = false }
+alloy-rpc-types-engine = { path = "../rpc-types-engine", features = ["serde"], default-features = false }
+derive_more = { version = "^2", default-features = false }
+ethereum_ssz = { version = "^0.10", optional = true }
+ethereum_ssz_derive = { version = "^0.10", optional = true }
+serde = { version = "^1.0.226", features = ["derive", "alloc"], default-features = false }
+serde_json = { version = "^1.0", features = ["alloc"], default-features = false }
+serde_with = { version = "^3", features = ["macros", "alloc"], default-features = false }
+thiserror = { version = "^2.0", default-features = false }
+tree_hash = { version = "^0.12", optional = true }
+tree_hash_derive = { version = "^0.12", optional = true }
+
+[dev-dependencies]
+similar-asserts = { version = "^1.5" }

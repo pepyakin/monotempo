@@ -24,9 +24,9 @@ crate_library(
         "//alloy/crates/eips:alloy_eips",
         "//alloy/crates/rpc-types-eth:alloy_rpc_types_eth",
         "//alloy/crates/serde:alloy_serde",
-        "@alloy_crates//:alloy-primitives",
-        "@alloy_crates//:serde",
-        "@alloy_crates//:serde_json",
+        "@crates//:alloy-primitives",
+        "@crates//:serde",
+        "@crates//:serde_json",
     ],
 )
 
@@ -37,7 +37,7 @@ crate_unit_test(
     crate_features = FEATURES,
     declared_features = DECLARED_FEATURES,
     deps = [
-        "@alloy_crates//:bincode",
-        "@alloy_crates//:similar-asserts",
+        "@crates//:bincode-2.0.1",
+        "@crates//:similar-asserts",
     ],
 )

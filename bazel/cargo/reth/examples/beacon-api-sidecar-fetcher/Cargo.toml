@@ -1,0 +1,34 @@
+# GENERATED FILE - DO NOT EDIT. Regenerate with `python3 bazel/generate.py`.
+#
+# Bazel-only derivation of `reth/examples/beacon-api-sidecar-fetcher/Cargo.toml`: the same
+# package as `cargo metadata` describes it in the reth workspace, with
+# workspace inheritance resolved. Cargo builds are unaffected.
+
+[package]
+name = "example-beacon-api-sidecar-fetcher"
+version = "0.1.0"
+edition = "2024"
+build = false
+autolib = false
+autobins = false
+autoexamples = false
+autotests = false
+autobenches = false
+
+[[bin]]
+name = "example-beacon-api-sidecar-fetcher"
+path = "src/main.rs"
+
+[dependencies]
+alloy-consensus = { version = "^2.4.2", default-features = false }
+alloy-eips = { version = "^2.4.2", default-features = false }
+alloy-primitives = { version = "^1.6.1", features = ["map-foldhash"], default-features = false }
+alloy-rpc-types-beacon = { version = "^2.4.2", default-features = false }
+clap = { version = "^4" }
+eyre = { version = "^0.6" }
+futures-util = { version = "^0.3", default-features = false }
+reqwest = { version = "^0.13", features = ["rustls", "stream"], default-features = false }
+reth-ethereum = { path = "../../crates/ethereum/reth", features = ["node", "pool", "cli"] }
+serde = { version = "^1.0", default-features = false }
+serde_json = { version = "^1.0", features = ["alloc"], default-features = false }
+thiserror = { version = "^2.0.0", default-features = false }

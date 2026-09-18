@@ -1,0 +1,46 @@
+# GENERATED FILE - DO NOT EDIT. Regenerate with `python3 bazel/generate.py`.
+#
+# Bazel-only derivation of `reth/crates/tasks/Cargo.toml`: the same
+# package as `cargo metadata` describes it in the reth workspace, with
+# workspace inheritance resolved. Cargo builds are unaffected.
+
+[package]
+name = "reth-tasks"
+version = "2.5.2"
+edition = "2024"
+rust-version = "1.95"
+build = false
+autolib = false
+autobins = false
+autoexamples = false
+autotests = false
+autobenches = false
+
+[lib]
+name = "reth_tasks"
+path = "src/lib.rs"
+
+[features]
+rayon = ["dep:rayon", "dep:crossbeam-utils", "pin-project"]
+test-utils = []
+
+[dependencies]
+crossbeam-utils = { version = "^0.8", optional = true }
+dashmap = { version = "^6.2" }
+futures-util = { version = "^0.3", features = ["std"], default-features = false }
+metrics = { version = "^0.24.0" }
+parking_lot = { version = "^0.12" }
+pin-project = { version = "^1.1.12", optional = true }
+rayon = { version = "^1.7", optional = true }
+reth-metrics = { path = "../metrics" }
+thiserror = { version = "^2.0.0", default-features = false }
+thread-priority = { version = "^3.0.0" }
+tokio = { version = "^1.52.3", features = ["sync", "rt", "rt-multi-thread"], default-features = false }
+tracing = { version = "^0.1.0", features = ["attributes"], default-features = false }
+tracing-futures = { version = "^0.2" }
+
+[dev-dependencies]
+tokio = { version = "^1.52.3", features = ["sync", "rt", "rt-multi-thread", "time", "macros"], default-features = false }
+
+[target.'cfg(target_os = "linux")'.dependencies]
+libc = { version = "^0.2" }

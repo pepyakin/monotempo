@@ -19,10 +19,10 @@ crate_library(
     deps = [
         "//alloy/crates/rpc-types-eth:alloy_rpc_types_eth",
         "//alloy/crates/serde:alloy_serde",
-        "@alloy_crates//:alloy-primitives",
-        "@alloy_crates//:serde",
-        "@alloy_crates//:serde_json",
-        "@alloy_crates//:thiserror",
+        "@crates//:alloy-primitives",
+        "@crates//:serde",
+        "@crates//:serde_json",
+        "@crates//:thiserror",
     ],
 )
 
@@ -33,6 +33,6 @@ crate_unit_test(
     crate_features = FEATURES,
     declared_features = DECLARED_FEATURES,
     deps = [
-        "@alloy_crates//:similar-asserts",
+        "@crates//:similar-asserts",
     ],
 )

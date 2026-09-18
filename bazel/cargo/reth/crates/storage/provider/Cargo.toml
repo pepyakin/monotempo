@@ -1,0 +1,103 @@
+# GENERATED FILE - DO NOT EDIT. Regenerate with `python3 bazel/generate.py`.
+#
+# Bazel-only derivation of `reth/crates/storage/provider/Cargo.toml`: the same
+# package as `cargo metadata` describes it in the reth workspace, with
+# workspace inheritance resolved. Cargo builds are unaffected.
+
+[package]
+name = "reth-provider"
+version = "2.5.2"
+edition = "2024"
+rust-version = "1.95"
+build = false
+autolib = false
+autobins = false
+autoexamples = false
+autotests = false
+autobenches = false
+
+[lib]
+name = "reth_provider"
+path = "src/lib.rs"
+
+[features]
+jemalloc = ["rocksdb/jemalloc"]
+test-utils = [
+    "reth-db/test-utils",
+    "reth-nippy-jar/test-utils",
+    "reth-trie/test-utils",
+    "reth-chain-state/test-utils",
+    "reth-ethereum-engine-primitives",
+    "reth-ethereum-primitives/test-utils",
+    "reth-chainspec/test-utils",
+    "reth-primitives-traits/test-utils",
+    "reth-codecs/test-utils",
+    "reth-db-api/test-utils",
+    "reth-trie-db/test-utils",
+    "reth-prune-types/test-utils",
+    "reth-stages-types/test-utils",
+    "reth-tasks/test-utils",
+    "dep:tokio",
+]
+
+[dependencies]
+alloy-consensus = { version = "^2.4.2", default-features = false }
+alloy-eip7928 = { version = "^0.4.10", features = ["rlp"], default-features = false }
+alloy-eips = { version = "^2.4.2", default-features = false }
+alloy-genesis = { version = "^2.4.2", default-features = false }
+alloy-primitives = { version = "^1.6.1", features = ["map-foldhash"], default-features = false }
+alloy-rpc-types-engine = { version = "^2.4.2", default-features = false }
+eyre = { version = "^0.6" }
+itertools = { version = "^0.14", default-features = false }
+metrics = { version = "^0.24.0" }
+notify = { version = "^8.0.0", features = ["macos_fsevent", "macos_fsevent"], default-features = false }
+parking_lot = { version = "^0.12" }
+rayon = { version = "^1.7" }
+reth-chain-state = { path = "../../chain-state" }
+reth-chainspec = { path = "../../chainspec", default-features = false }
+reth-codecs = { version = "^0.7.0", default-features = false }
+reth-db = { path = "../db", features = ["mdbx"], default-features = false }
+reth-db-api = { path = "../db-api" }
+reth-errors = { path = "../../errors" }
+reth-ethereum-engine-primitives = { path = "../../ethereum/engine-primitives", optional = true, default-features = false }
+reth-ethereum-primitives = { path = "../../ethereum/primitives", features = ["reth-codec"], default-features = false }
+reth-execution-types = { path = "../../evm/execution-types", default-features = false }
+reth-fs-util = { path = "../../fs-util" }
+reth-metrics = { path = "../../metrics" }
+reth-nippy-jar = { path = "../nippy-jar" }
+reth-node-types = { path = "../../node/types" }
+reth-primitives-traits = { version = "^0.7.1", features = ["reth-codec", "secp256k1", "dashmap"], default-features = false }
+reth-prune-types = { path = "../../prune/types", default-features = false }
+reth-stages-types = { path = "../../stages/types", default-features = false }
+reth-static-file-types = { path = "../../static-file/types", features = ["std"], default-features = false }
+reth-storage-api = { path = "../storage-api", features = ["std", "db-api"], default-features = false }
+reth-storage-errors = { path = "../errors", default-features = false }
+reth-storage-overlay = { path = "../storage-overlay" }
+reth-tasks = { path = "../../tasks", features = ["rayon"] }
+reth-tokio-util = { path = "../../tokio-util" }
+reth-trie = { path = "../../trie/trie", features = ["metrics"] }
+reth-trie-db = { path = "../../trie/db", features = ["metrics"] }
+revm = { version = "^43.0.2", default-features = false }
+rocksdb = { version = "^0.24" }
+smallvec = { version = "^1" }
+strum = { version = "^0.27", default-features = false }
+tokio = { version = "^1.52.3", features = ["sync"], optional = true, default-features = false }
+tracing = { version = "^0.1.0", features = ["attributes"], default-features = false }
+
+[dev-dependencies]
+assert_matches = { version = "^1.5.0" }
+rand = { version = "^0.9" }
+reth-chain-state = { path = "../../chain-state", features = ["test-utils"] }
+reth-db = { path = "../db", features = ["test-utils"], default-features = false }
+reth-ethereum-engine-primitives = { path = "../../ethereum/engine-primitives", default-features = false }
+reth-ethereum-primitives = { path = "../../ethereum/primitives", default-features = false }
+reth-primitives-traits = { version = "^0.7.1", features = ["arbitrary", "test-utils"], default-features = false }
+reth-testing-utils = { path = "../../../testing/testing-utils" }
+reth-tracing = { path = "../../tracing" }
+reth-trie = { path = "../../trie/trie", features = ["test-utils"] }
+tempfile = { version = "^3.20" }
+tokio = { version = "^1.52.3", features = ["sync", "macros", "rt-multi-thread"], default-features = false }
+tokio-stream = { version = "^0.1.11", features = ["sync"] }
+
+[target.'cfg(unix)'.dependencies]
+libc = { version = "^0.2" }

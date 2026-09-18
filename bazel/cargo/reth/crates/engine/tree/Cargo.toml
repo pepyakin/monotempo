@@ -1,0 +1,133 @@
+# GENERATED FILE - DO NOT EDIT. Regenerate with `python3 bazel/generate.py`.
+#
+# Bazel-only derivation of `reth/crates/engine/tree/Cargo.toml`: the same
+# package as `cargo metadata` describes it in the reth workspace, with
+# workspace inheritance resolved. Cargo builds are unaffected.
+
+[package]
+name = "reth-engine-tree"
+version = "2.5.2"
+edition = "2024"
+rust-version = "1.95"
+build = false
+autolib = false
+autobins = false
+autoexamples = false
+autotests = false
+autobenches = false
+
+[lib]
+name = "reth_engine_tree"
+path = "src/lib.rs"
+
+[[test]]
+name = "e2e_testsuite"
+path = "tests/e2e-testsuite/main.rs"
+
+[features]
+test-utils = [
+    "reth-chain-state/test-utils",
+    "reth-chainspec/test-utils",
+    "reth-consensus/test-utils",
+    "reth-db/test-utils",
+    "reth-evm/test-utils",
+    "reth-network-p2p/test-utils",
+    "reth-payload-builder/test-utils",
+    "reth-primitives-traits/test-utils",
+    "reth-provider/test-utils",
+    "reth-prune-types",
+    "reth-prune-types?/test-utils",
+    "reth-revm/test-utils",
+    "reth-stages-api/test-utils",
+    "reth-stages/test-utils",
+    "reth-static-file",
+    "reth-tracing",
+    "reth-trie/test-utils",
+    "reth-trie-common/test-utils",
+    "reth-trie-sparse/test-utils",
+    "reth-prune-types?/test-utils",
+    "reth-trie-parallel/test-utils",
+    "reth-ethereum-primitives/test-utils",
+    "reth-node-ethereum/test-utils",
+    "reth-tasks/test-utils",
+    "reth-execution-cache/test-utils",
+    "reth-evm-ethereum/test-utils",
+]
+trie-debug = ["reth-trie-parallel/trie-debug", "reth-engine-primitives/trie-debug"]
+
+[dependencies]
+alloy-consensus = { version = "^2.4.2", default-features = false }
+alloy-eip7928 = { version = "^0.4.10", features = ["rlp", "rlp"], default-features = false }
+alloy-eips = { version = "^2.4.2", default-features = false }
+alloy-evm = { version = "^0.39.0", default-features = false }
+alloy-primitives = { version = "^1.6.1", features = ["map-foldhash"], default-features = false }
+alloy-rlp = { version = "^0.3.16", features = ["core-net"], default-features = false }
+alloy-rpc-types-engine = { version = "^2.4.2", default-features = false }
+crossbeam-channel = { version = "^0.5.13" }
+derive_more = { version = "^2", features = ["full"], default-features = false }
+futures = { version = "^0.3" }
+indexmap = { version = "^2" }
+metrics = { version = "^0.24.0" }
+moka = { version = "^0.12", features = ["sync"] }
+parking_lot = { version = "^0.12" }
+rayon = { version = "^1.7" }
+reth-chain-state = { path = "../../chain-state" }
+reth-chainspec = { path = "../../chainspec", optional = true, default-features = false }
+reth-consensus = { path = "../../consensus/consensus", default-features = false }
+reth-db = { path = "../../storage/db", default-features = false }
+reth-engine-primitives = { path = "../primitives", features = ["std"], default-features = false }
+reth-errors = { path = "../../errors" }
+reth-ethereum-primitives = { path = "../../ethereum/primitives", default-features = false }
+reth-evm = { path = "../../evm/evm", features = ["metrics"], default-features = false }
+reth-execution-cache = { path = "../execution-cache" }
+reth-execution-types = { path = "../../evm/execution-types", default-features = false }
+reth-metrics = { path = "../../metrics", features = ["common"] }
+reth-network-p2p = { path = "../../net/p2p" }
+reth-payload-builder = { path = "../../payload/builder" }
+reth-payload-primitives = { path = "../../payload/primitives" }
+reth-primitives-traits = { version = "^0.7.1", features = ["rayon", "dashmap", "eip7928"], default-features = false }
+reth-provider = { path = "../../storage/provider" }
+reth-prune = { path = "../../prune/prune" }
+reth-prune-types = { path = "../../prune/types", optional = true, default-features = false }
+reth-revm = { path = "../../revm", features = ["optional-balance-check", "optional-no-base-fee"], default-features = false }
+reth-stages = { path = "../../stages/stages", optional = true }
+reth-stages-api = { path = "../../stages/api" }
+reth-static-file = { path = "../../static-file/static-file", optional = true }
+reth-storage-overlay = { path = "../../storage/storage-overlay", features = ["rayon"] }
+reth-tasks = { path = "../../tasks", features = ["rayon"] }
+reth-tracing = { path = "../../tracing", optional = true }
+reth-trie = { path = "../../trie/trie" }
+reth-trie-common = { path = "../../trie/common", default-features = false }
+reth-trie-parallel = { path = "../../trie/parallel" }
+reth-trie-sparse = { path = "../../trie/sparse", features = ["std", "metrics"], default-features = false }
+revm = { version = "^43.0.2", default-features = false }
+schnellru = { version = "^0.2" }
+thiserror = { version = "^2.0.0", default-features = false }
+tokio = { version = "^1.52.3", features = ["rt", "rt-multi-thread", "sync", "macros"], default-features = false }
+tracing = { version = "^0.1.0", features = ["attributes"], default-features = false }
+
+[dev-dependencies]
+assert_matches = { version = "^1.5.0" }
+eyre = { version = "^0.6" }
+metrics-util = { version = "^0.20.3", features = ["debugging"], default-features = false }
+proptest = { version = "^1.7" }
+rand = { version = "^0.9" }
+rand_08 = { package = "rand", version = "^0.8" }
+reth-chain-state = { path = "../../chain-state", features = ["test-utils"] }
+reth-chainspec = { path = "../../chainspec", default-features = false }
+reth-db = { path = "../../storage/db", features = ["test-utils"], default-features = false }
+reth-db-common = { path = "../../storage/db-common" }
+reth-e2e-test-utils = { path = "../../e2e-test-utils" }
+reth-ethereum-consensus = { path = "../../ethereum/consensus", default-features = false }
+reth-ethereum-engine-primitives = { path = "../../ethereum/engine-primitives", default-features = false }
+reth-evm = { path = "../../evm/evm", features = ["test-utils"], default-features = false }
+reth-evm-ethereum = { path = "../../ethereum/evm", features = ["test-utils"], default-features = false }
+reth-exex-types = { path = "../../exex/types" }
+reth-network-p2p = { path = "../../net/p2p", features = ["test-utils"] }
+reth-node-ethereum = { path = "../../ethereum/node" }
+reth-prune-types = { path = "../../prune/types", default-features = false }
+reth-stages = { path = "../../stages/stages", features = ["test-utils"] }
+reth-static-file = { path = "../../static-file/static-file" }
+reth-testing-utils = { path = "../../../testing/testing-utils" }
+reth-tracing = { path = "../../tracing" }
+serde_json = { version = "^1.0", features = ["alloc"], default-features = false }

@@ -1,0 +1,29 @@
+# GENERATED FILE - DO NOT EDIT. Regenerate with `python3 bazel/generate.py`.
+#
+# Bazel-only derivation of `reth/examples/custom-rlpx-subprotocol/Cargo.toml`: the same
+# package as `cargo metadata` describes it in the reth workspace, with
+# workspace inheritance resolved. Cargo builds are unaffected.
+
+[package]
+name = "example-custom-rlpx-subprotocol"
+version = "0.0.0"
+edition = "2024"
+build = false
+autolib = false
+autobins = false
+autoexamples = false
+autotests = false
+autobenches = false
+
+[[bin]]
+name = "example-custom-rlpx-subprotocol"
+path = "src/main.rs"
+
+[dependencies]
+alloy-primitives = { version = "^1.6.1", features = ["map-foldhash"], default-features = false }
+eyre = { version = "^0.6" }
+futures = { version = "^0.3" }
+reth-ethereum = { path = "../../crates/ethereum/reth", features = ["node", "network", "cli"] }
+tokio = { version = "^1.52.3", features = ["full"], default-features = false }
+tokio-stream = { version = "^0.1.11" }
+tracing = { version = "^0.1.0", features = ["attributes"], default-features = false }

@@ -25,11 +25,11 @@ crate_library(
     deps = [
         "//reth/crates/net/banlist:reth_net_banlist",
         "//reth/crates/net/peers:reth_network_peers",
-        "@reth_crates//:alloy-eip2124",
-        "@reth_crates//:humantime-serde",
-        "@reth_crates//:serde",
-        "@reth_crates//:serde_json",
-        "@reth_crates//:tracing",
+        "@crates//:alloy-eip2124",
+        "@crates//:humantime-serde",
+        "@crates//:serde",
+        "@crates//:serde_json",
+        "@crates//:tracing",
     ],
 )
 

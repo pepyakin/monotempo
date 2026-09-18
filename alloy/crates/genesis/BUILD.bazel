@@ -27,9 +27,9 @@ crate_library(
     deps = [
         "//alloy/crates/eips:alloy_eips",
         "//alloy/crates/serde:alloy_serde",
-        "@alloy_crates//:alloy-primitives",
-        "@alloy_crates//:alloy-trie",
-        "@alloy_crates//:serde",
+        "@crates//:alloy-primitives",
+        "@crates//:alloy-trie",
+        "@crates//:serde",
     ],
     compile_data = [
         "dumpgenesis/holesky.json",
@@ -45,7 +45,7 @@ crate_unit_test(
     crate_features = FEATURES,
     declared_features = DECLARED_FEATURES,
     deps = [
-        "@alloy_crates//:bincode",
-        "@alloy_crates//:serde_json",
+        "@crates//:bincode-2.0.1",
+        "@crates//:serde_json",
     ],
 )

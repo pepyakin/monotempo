@@ -1,0 +1,42 @@
+# GENERATED FILE - DO NOT EDIT. Regenerate with `python3 bazel/generate.py`.
+#
+# Bazel-only derivation of `reth/crates/static-file/static-file/Cargo.toml`: the same
+# package as `cargo metadata` describes it in the reth workspace, with
+# workspace inheritance resolved. Cargo builds are unaffected.
+
+[package]
+name = "reth-static-file"
+version = "2.5.2"
+edition = "2024"
+rust-version = "1.95"
+build = false
+autolib = false
+autobins = false
+autoexamples = false
+autotests = false
+autobenches = false
+
+[lib]
+name = "reth_static_file"
+path = "src/lib.rs"
+
+[dependencies]
+alloy-primitives = { version = "^1.6.1", features = ["map-foldhash"], default-features = false }
+parking_lot = { version = "^0.12", features = ["send_guard", "arc_lock"] }
+rayon = { version = "^1.7" }
+reth-codecs = { version = "^0.7.0", default-features = false }
+reth-db-api = { path = "../../storage/db-api" }
+reth-primitives-traits = { version = "^0.7.1", default-features = false }
+reth-provider = { path = "../../storage/provider" }
+reth-prune-types = { path = "../../prune/types", default-features = false }
+reth-stages-types = { path = "../../stages/types", default-features = false }
+reth-static-file-types = { path = "../types", default-features = false }
+reth-storage-errors = { path = "../../storage/errors", default-features = false }
+reth-tokio-util = { path = "../../tokio-util" }
+tracing = { version = "^0.1.0", features = ["attributes"], default-features = false }
+
+[dev-dependencies]
+assert_matches = { version = "^1.5.0" }
+reth-stages = { path = "../../stages/stages", features = ["test-utils"] }
+reth-testing-utils = { path = "../../../testing/testing-utils" }
+tempfile = { version = "^3.20" }

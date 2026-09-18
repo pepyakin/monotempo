@@ -5,7 +5,9 @@
 load("//bazel:rust.bzl", "crate_cargo_toml_env_vars", "crate_library", "crate_unit_test")
 load("//alloy/bazel:workspace.bzl", "WORKSPACE")
 
-FEATURES = []
+FEATURES = [
+    "ssz",
+]
 
 DECLARED_FEATURES = [
     "sha2",
@@ -22,12 +24,18 @@ crate_library(
     deps = [
         "//alloy/crates/eips:alloy_eips",
         "//alloy/crates/rpc-types-engine:alloy_rpc_types_engine",
-        "@alloy_crates//:alloy-primitives",
-        "@alloy_crates//:derive_more",
-        "@alloy_crates//:serde",
-        "@alloy_crates//:serde_json",
-        "@alloy_crates//:serde_with",
-        "@alloy_crates//:thiserror",
+        "@crates//:alloy-primitives",
+        "@crates//:derive_more",
+        "@crates//:ethereum_ssz",
+        "@crates//:serde",
+        "@crates//:serde_json",
+        "@crates//:serde_with",
+        "@crates//:thiserror",
+        "@crates//:tree_hash",
+    ],
+    proc_macro_deps = [
+        "@crates//:ethereum_ssz_derive",
+        "@crates//:tree_hash_derive",
     ],
 )
 
@@ -38,6 +46,6 @@ crate_unit_test(
     crate_features = FEATURES,
     declared_features = DECLARED_FEATURES,
     deps = [
-        "@alloy_crates//:similar-asserts",
+        "@crates//:similar-asserts",
     ],
 )

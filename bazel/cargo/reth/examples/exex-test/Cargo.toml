@@ -1,0 +1,28 @@
+# GENERATED FILE - DO NOT EDIT. Regenerate with `python3 bazel/generate.py`.
+#
+# Bazel-only derivation of `reth/examples/exex-test/Cargo.toml`: the same
+# package as `cargo metadata` describes it in the reth workspace, with
+# workspace inheritance resolved. Cargo builds are unaffected.
+
+[package]
+name = "example-exex-test"
+version = "0.0.0"
+edition = "2024"
+build = false
+autolib = false
+autobins = false
+autoexamples = false
+autotests = false
+autobenches = false
+
+[[bin]]
+name = "example-exex-test"
+path = "src/main.rs"
+
+[dependencies]
+eyre = { version = "^0.6" }
+futures-util = { version = "^0.3", default-features = false }
+reth-e2e-test-utils = { path = "../../crates/e2e-test-utils" }
+reth-ethereum = { path = "../../crates/ethereum/reth", features = ["full", "node"] }
+serde_json = { version = "^1.0", features = ["alloc"], default-features = false }
+tokio = { version = "^1.52.3", features = ["full"], default-features = false }

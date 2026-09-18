@@ -18,12 +18,12 @@ crate_library(
     declared_features = DECLARED_FEATURES,
     deps = [
         "//alloy/crates/signer-local:alloy_signer_local",
-        "@alloy_crates//:alloy-primitives",
-        "@alloy_crates//:dirs",
-        "@alloy_crates//:serde",
-        "@alloy_crates//:thiserror",
-        "@alloy_crates//:toml",
-        "@alloy_crates//:tracing",
+        "@crates//:alloy-primitives",
+        "@crates//:dirs",
+        "@crates//:serde",
+        "@crates//:thiserror",
+        "@crates//:toml-0.8.23",
+        "@crates//:tracing",
     ],
 )
 
@@ -34,8 +34,9 @@ crate_unit_test(
     crate_features = FEATURES,
     declared_features = DECLARED_FEATURES,
     deps = [
-        "@alloy_crates//:tempfile",
+        "@crates//:tempfile",
     ],
+    process_per_test = True,
 )
 
 crate_integration_test(
@@ -47,14 +48,15 @@ crate_integration_test(
     deps = [
         "//alloy/crates/signer-local:alloy_signer_local",
         ":alloy_signer_tempo",
-        "@alloy_crates//:alloy-primitives",
-        "@alloy_crates//:dirs",
-        "@alloy_crates//:serde",
-        "@alloy_crates//:tempfile",
-        "@alloy_crates//:thiserror",
-        "@alloy_crates//:toml",
-        "@alloy_crates//:tracing",
+        "@crates//:alloy-primitives",
+        "@crates//:dirs",
+        "@crates//:serde",
+        "@crates//:tempfile",
+        "@crates//:thiserror",
+        "@crates//:toml-0.8.23",
+        "@crates//:tracing",
     ],
+    process_per_test = True,
 )
 
 crate_integration_test(
@@ -66,14 +68,15 @@ crate_integration_test(
     deps = [
         "//alloy/crates/signer-local:alloy_signer_local",
         ":alloy_signer_tempo",
-        "@alloy_crates//:alloy-primitives",
-        "@alloy_crates//:dirs",
-        "@alloy_crates//:serde",
-        "@alloy_crates//:tempfile",
-        "@alloy_crates//:thiserror",
-        "@alloy_crates//:toml",
-        "@alloy_crates//:tracing",
+        "@crates//:alloy-primitives",
+        "@crates//:dirs",
+        "@crates//:serde",
+        "@crates//:tempfile",
+        "@crates//:thiserror",
+        "@crates//:toml-0.8.23",
+        "@crates//:tracing",
     ],
+    process_per_test = True,
 )
 
 crate_integration_test(
@@ -85,12 +88,13 @@ crate_integration_test(
     deps = [
         "//alloy/crates/signer-local:alloy_signer_local",
         ":alloy_signer_tempo",
-        "@alloy_crates//:alloy-primitives",
-        "@alloy_crates//:dirs",
-        "@alloy_crates//:serde",
-        "@alloy_crates//:tempfile",
-        "@alloy_crates//:thiserror",
-        "@alloy_crates//:toml",
-        "@alloy_crates//:tracing",
+        "@crates//:alloy-primitives",
+        "@crates//:dirs",
+        "@crates//:serde",
+        "@crates//:tempfile",
+        "@crates//:thiserror",
+        "@crates//:toml-0.8.23",
+        "@crates//:tracing",
     ],
+    process_per_test = True,
 )

@@ -1,0 +1,84 @@
+# GENERATED FILE - DO NOT EDIT. Regenerate with `python3 bazel/generate.py`.
+#
+# Bazel-only derivation of `reth/crates/exex/exex/Cargo.toml`: the same
+# package as `cargo metadata` describes it in the reth workspace, with
+# workspace inheritance resolved. Cargo builds are unaffected.
+
+[package]
+name = "reth-exex"
+version = "2.5.2"
+edition = "2024"
+rust-version = "1.95"
+build = false
+autolib = false
+autobins = false
+autoexamples = false
+autotests = false
+autobenches = false
+
+[lib]
+name = "reth_exex"
+path = "src/lib.rs"
+
+[features]
+serde = [
+    "reth-exex-types/serde",
+    "reth-revm/serde",
+    "alloy-consensus/serde",
+    "alloy-eips/serde",
+    "alloy-primitives/serde",
+    "parking_lot/serde",
+    "rand/serde",
+    "secp256k1/serde",
+    "reth-primitives-traits/serde",
+    "reth-trie-common/serde",
+    "reth-prune-types/serde",
+    "reth-config/serde",
+    "reth-ethereum-primitives/serde",
+    "reth-chain-state/serde",
+]
+
+[dependencies]
+alloy-consensus = { version = "^2.4.2", default-features = false }
+alloy-eips = { version = "^2.4.2", default-features = false }
+alloy-primitives = { version = "^1.6.1", features = ["map-foldhash"], default-features = false }
+eyre = { version = "^0.6" }
+futures = { version = "^0.3" }
+itertools = { version = "^0.14", features = ["use_std"], default-features = false }
+metrics = { version = "^0.24.0" }
+parking_lot = { version = "^0.12" }
+reth-chain-state = { path = "../../chain-state" }
+reth-chainspec = { path = "../../chainspec", default-features = false }
+reth-config = { path = "../../config", default-features = false }
+reth-ethereum-primitives = { path = "../../ethereum/primitives", default-features = false }
+reth-evm = { path = "../../evm/evm", default-features = false }
+reth-exex-types = { path = "../types", features = ["serde", "serde-bincode-compat"] }
+reth-fs-util = { path = "../../fs-util" }
+reth-metrics = { path = "../../metrics" }
+reth-node-api = { path = "../../node/api" }
+reth-node-core = { path = "../../node/core" }
+reth-payload-builder = { path = "../../payload/builder" }
+reth-primitives-traits = { version = "^0.7.1", default-features = false }
+reth-provider = { path = "../../storage/provider" }
+reth-prune-types = { path = "../../prune/types", default-features = false }
+reth-revm = { path = "../../revm", default-features = false }
+reth-stages-api = { path = "../../stages/api" }
+reth-tasks = { path = "../../tasks" }
+reth-tracing = { path = "../../tracing" }
+rmp-serde = { version = "^1.3" }
+thiserror = { version = "^2.0.0", default-features = false }
+tokio = { version = "^1.52.3", default-features = false }
+tokio-util = { version = "^0.7.4", features = ["codec"] }
+tracing = { version = "^0.1.0", features = ["attributes"], default-features = false }
+
+[dev-dependencies]
+alloy-genesis = { version = "^2.4.2", default-features = false }
+rand = { version = "^0.9" }
+reth-db-common = { path = "../../storage/db-common" }
+reth-evm-ethereum = { path = "../../ethereum/evm", default-features = false }
+reth-primitives-traits = { version = "^0.7.1", features = ["test-utils"], default-features = false }
+reth-provider = { path = "../../storage/provider", features = ["test-utils"] }
+reth-testing-utils = { path = "../../../testing/testing-utils" }
+reth-trie-common = { path = "../../trie/common", features = ["serde-bincode-compat"], default-features = false }
+secp256k1 = { version = "^0.30", features = ["global-context", "recovery"], default-features = false }
+tempfile = { version = "^3.20" }

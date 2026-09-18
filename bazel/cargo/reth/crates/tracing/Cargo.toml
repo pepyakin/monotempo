@@ -1,0 +1,55 @@
+# GENERATED FILE - DO NOT EDIT. Regenerate with `python3 bazel/generate.py`.
+#
+# Bazel-only derivation of `reth/crates/tracing/Cargo.toml`: the same
+# package as `cargo metadata` describes it in the reth workspace, with
+# workspace inheritance resolved. Cargo builds are unaffected.
+
+[package]
+name = "reth-tracing"
+version = "2.5.2"
+edition = "2024"
+rust-version = "1.95"
+build = false
+autolib = false
+autobins = false
+autoexamples = false
+autotests = false
+autobenches = false
+
+[lib]
+name = "reth_tracing"
+path = "src/lib.rs"
+
+[features]
+default = ["std", "otlp"]
+std = [
+    "tracing-subscriber",
+    "tracing-appender",
+    "tracing-chrome",
+    "tracing-journald",
+    "tracing-logfmt",
+    "tracing-samply",
+    "clap",
+    "eyre",
+    "rolling-file",
+    "tracing/std",
+    "tracing-subscriber?/std",
+]
+otlp = ["reth-tracing-otlp"]
+otlp-logs = ["reth-tracing-otlp/otlp-logs"]
+tracy = ["tracing-tracy", "tracy-client"]
+
+[dependencies]
+clap = { version = "^4", features = ["derive"], optional = true }
+eyre = { version = "^0.6", optional = true }
+reth-tracing-otlp = { path = "../tracing-otlp", optional = true }
+rolling-file = { version = "^0.2.0", optional = true }
+tracing = { version = "^0.1.0", features = ["attributes"], default-features = false }
+tracing-appender = { version = "^0.2.5", optional = true }
+tracing-chrome = { version = "^0.7.2", optional = true }
+tracing-journald = { version = "^0.3", optional = true }
+tracing-logfmt = { version = "^0.3.7", optional = true }
+tracing-samply = { version = "^0.1", optional = true }
+tracing-subscriber = { version = "^0.3", features = ["env-filter", "fmt", "ansi", "json"], optional = true, default-features = false }
+tracing-tracy = { version = "^0.11", optional = true }
+tracy-client = { version = "^0.18.0", features = ["demangle"], optional = true }

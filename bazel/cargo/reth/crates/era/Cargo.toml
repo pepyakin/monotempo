@@ -1,0 +1,48 @@
+# GENERATED FILE - DO NOT EDIT. Regenerate with `python3 bazel/generate.py`.
+#
+# Bazel-only derivation of `reth/crates/era/Cargo.toml`: the same
+# package as `cargo metadata` describes it in the reth workspace, with
+# workspace inheritance resolved. Cargo builds are unaffected.
+
+[package]
+name = "reth-era"
+version = "2.5.2"
+edition = "2024"
+rust-version = "1.95"
+build = false
+autolib = false
+autobins = false
+autoexamples = false
+autotests = false
+autobenches = false
+
+[lib]
+name = "reth_era"
+path = "src/lib.rs"
+
+[[test]]
+name = "it"
+path = "tests/it/main.rs"
+
+[dependencies]
+alloy-consensus = { version = "^2.4.2", default-features = false }
+alloy-eips = { version = "^2.4.2", default-features = false }
+alloy-primitives = { version = "^1.6.1", features = ["map-foldhash"], default-features = false }
+alloy-rlp = { version = "^0.3.16", features = ["core-net", "derive"], default-features = false }
+alloy-rpc-types-beacon = { version = "^2.4.2", features = ["ssz"], default-features = false }
+alloy-rpc-types-engine = { version = "^2.4.2", features = ["ssz"], default-features = false }
+ethereum_ssz = { version = "^0.10.4" }
+ethereum_ssz_derive = { version = "^0.10.4" }
+sha2 = { version = "^0.10", default-features = false }
+snap = { version = "^1.1.1" }
+thiserror = { version = "^2.0.0", default-features = false }
+
+[dev-dependencies]
+eyre = { version = "^0.6" }
+rand = { version = "^0.9" }
+reqwest = { version = "^0.13", features = ["rustls", "stream"], default-features = false }
+reth-era-downloader = { path = "../era-downloader" }
+reth-ethereum-primitives = { path = "../ethereum/primitives", default-features = false }
+tempfile = { version = "^3.20" }
+test-case = { version = "^3" }
+tokio = { version = "^1.52.3", features = ["sync", "macros", "time", "rt-multi-thread"], default-features = false }

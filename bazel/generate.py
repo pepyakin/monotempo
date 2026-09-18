@@ -1,9 +1,10 @@
 #!/usr/bin/env python3
 """Generate Bazel BUILD files for every crate of every project's Cargo workspace.
 
-Cargo manifests remain the source of truth. For each project (a directory of
-the monorepo holding a Cargo workspace and a `bazel/project.toml`), this script
-asks Cargo how it would resolve the workspace (`cargo metadata`) and renders,
+Cargo manifests remain the source of truth. Each project (a directory of the
+monorepo holding a Cargo workspace and a `bazel/project.toml`) keeps its own
+`Cargo.toml`, `Cargo.lock` and `cargo` workflow. For Bazel, this script folds
+all of them into one *Bazel Cargo workspace* in `bazel/cargo/` and renders,
 for every workspace member, a `BUILD.bazel` that calls the macros in
 `//bazel:rust.bzl`:
 
@@ -12,23 +13,24 @@ for every workspace member, a `BUILD.bazel` that calls the macros in
 * a `crate_integration_test` per `tests/*.rs` target,
 * a `crate_build_script` when the crate has a `build.rs`.
 
-External crates are referenced through the project's crate_universe
-repository (`@<project>_crates`), rendered from the same manifests, so every
-dependency edge Bazel sees is one Cargo resolved.
+External crates are referenced through the single crate_universe repository
+`@crates`, rendered from the same Bazel Cargo workspace, so every dependency
+edge Bazel sees is one Cargo resolved.
 
-Both this script and crate_universe read a project's Cargo workspace through
-its *Bazel shadow workspace* in `<project>/bazel/cargo/` (see
-`shadow_workspace`): a directory of symlinks into the real workspace in which
-
-* the root manifest is a copy that carries a digest of every member manifest
-  (so that crate_universe notices member edits) and whose `path` dependencies
-  pointing outside the project (`../alloy/...`) are rewritten to go through a
-  symlink inside the shadow, where crate_universe can follow them;
-* the manifests listed in the project's `disabled_features` are replaced by
-  copies that drop those features from `default`. Cargo resolves features
-  workspace-wide from every member's default features, and crate_universe
-  offers no way to subtract a feature, so this is the only place where "what
-  Bazel builds" can diverge from `cargo build`.
+Why one workspace: a project depends on another (reth on alloy) by patching
+the other's crates to its in-tree sources, and Bazel can only build that when
+both share every external crate (a type from `@x//:alloy-primitives` is not a
+type from `@y//:alloy-primitives`). One crate_universe repository requires one
+Cargo resolution, hence one workspace. Cargo forbids nesting workspaces and the
+projects' `[workspace.package]`/`[workspace.dependencies]` tables would clash,
+so `bazel/cargo/<project>/<member>/Cargo.toml` is a *derived* manifest of each
+member: what `cargo metadata` reports for it in its own project (inheritance
+resolved), with the project's `disabled_features` dropped from `default`, the
+sources reached through symlinks. `bazel/cargo/Cargo.toml` lists them all as
+members and carries the union of the projects' `[patch]` sections;
+`bazel/cargo/Cargo.lock` is the resolution of that workspace, kept in step with
+the projects' lockfiles (every external crate version it picks must appear in a
+project's `Cargo.lock`).
 
 Usage (from anywhere):
     python3 bazel/generate.py          # rewrite generated files
@@ -42,6 +44,7 @@ import hashlib
 import json
 import os
 import re
+import shutil
 import subprocess
 import sys
 import tomllib
@@ -56,6 +59,9 @@ GENERATOR = Path(__file__).resolve().relative_to(WORKSPACE_ROOT).as_posix()
 BAZELIGNORE_BEGIN = f"# BEGIN GENERATED ({GENERATOR})\n"
 BAZELIGNORE_END = "# END GENERATED\n"
 RUST_BZL = "//bazel:rust.bzl"
+# The Bazel Cargo workspace (see the module docstring) and its crate_universe repository.
+SHADOW_ROOT = WORKSPACE_ROOT / "bazel" / "cargo"
+CRATES_REPO = "@crates"
 
 HEADER = f"""# GENERATED FILE - DO NOT EDIT.
 #
@@ -103,11 +109,10 @@ class Project:
     """
 
     root: Path  # absolute path of the project directory
-    crates_repo: str  # crate_universe repository, e.g. "@reth_crates"
     # Cargo features that are enabled by default but are *not* built by Bazel.
     # Keys are package names, values map feature -> reason. Each reason must
-    # explain why the feature cannot (yet) be built hermetically. The package's
-    # manifest is shadowed in `bazel/cargo/`.
+    # explain why the feature cannot (yet) be built hermetically. The feature
+    # is dropped from `default` in the package's derived manifest.
     disabled_features: dict[str, dict[str, str]]
     build_scripts: dict[str, BuildScript]  # keyed by crate name
     # Extra compile-time inputs for targets that `include_*!` files from outside
@@ -141,7 +146,8 @@ class Project:
 
     @property
     def shadow_root(self) -> Path:
-        return self.root / "bazel" / "cargo"
+        """Where the project's derived manifests live in the Bazel Cargo workspace."""
+        return SHADOW_ROOT / self.name
 
     @property
     def workspace_bzl(self) -> Path:
@@ -158,7 +164,6 @@ class Project:
             cfg = tomllib.load(f)
         root = config_path.parents[1]
         known = {
-            "crates_repo",
             "disabled_features",
             "build_scripts",
             "compile_data",
@@ -179,7 +184,6 @@ class Project:
             )
         return Project(
             root=root,
-            crates_repo=cfg["crates_repo"],
             disabled_features=cfg.get("disabled_features", {}),
             build_scripts=build_scripts,
             compile_data=cfg.get("compile_data", {}),
@@ -221,6 +225,7 @@ class Target:
 
 @dataclass
 class Crate:
+    project: Project
     name: str
     ident: str
     package_path: str  # project-relative directory, e.g. "crates/storage/db"
@@ -252,260 +257,324 @@ class Crate:
         """The `[lib]` target, whether an ordinary library or a proc macro."""
         return self.target("lib") or self.target("proc-macro")
 
+    @property
+    def is_proc_macro(self) -> bool:
+        return self.target("proc-macro") is not None
+
 
 def load_root_manifest(project: Project) -> dict:
     with open(project.root / "Cargo.toml", "rb") as f:
         return tomllib.load(f)
 
 
-def member_dirs(project: Project, root: dict) -> list[Path]:
-    """Project-relative directories of the workspace members, `members` globs expanded."""
-    excluded = {Path(e.rstrip("/")) for e in root["workspace"].get("exclude", [])}
-    dirs = []
-    for member in root["workspace"]["members"]:
-        matches = sorted(project.root.glob(member.rstrip("/"))) if "*" in member else [project.root / member.rstrip("/")]
-        for path in matches:
-            rel = path.relative_to(project.root)
-            if rel in excluded or not (path / "Cargo.toml").exists():
-                if "*" in member:
-                    continue
-                sys.exit(f"{project.name}: workspace member without Cargo.toml: {member}")
-            dirs.append(rel)
-    return sorted(set(dirs))
+def cargo_metadata(manifest: Path, *, locked: bool) -> subprocess.CompletedProcess:
+    cmd = ["cargo", "metadata", "--format-version", "1", "--manifest-path", str(manifest)]
+    if locked:
+        cmd.append("--locked")
+    return subprocess.run(cmd, cwd=manifest.parent, capture_output=True, text=True)
 
 
-# --- shadow workspace ----------------------------------------------------------
+def project_metadata(project: Project) -> dict:
+    """`cargo metadata` of the project's own workspace, which must be in step with its lockfile."""
+    result = cargo_metadata(project.root / "Cargo.toml", locked=True)
+    if result.returncode != 0:
+        sys.exit(f"{project.name}: cargo metadata failed:\n{result.stderr}")
+    return json.loads(result.stdout)
+
+
+# --- the Bazel Cargo workspace -------------------------------------------------
 
 
 @dataclass
-class ShadowWorkspace:
-    """The Bazel view of the Cargo workspace, materialized under `<project>/bazel/cargo/`.
-
-    `links` maps a path below `bazel/cargo/` to the relative symlink target that
-    must be there; `manifests` maps the shadowed manifests (including the root)
-    to their rendered contents. Everything else in the directory is a symlink
-    into the real tree, so the shadow has the same layout as the project and
-    Cargo reports the same project-relative package paths for both.
-    """
+class Member:
+    """A workspace member of a project, as Cargo describes it in that project."""
 
     project: Project
-    links: dict[Path, str]
-    manifests: dict[Path, str]
+    pkg: dict  # the `packages[]` entry of the project's `cargo metadata`
+    manifest: dict  # the real manifest, parsed
 
     @property
-    def root_manifest(self) -> Path:
-        return self.project.shadow_root / "Cargo.toml"
+    def name(self) -> str:
+        return self.pkg["name"]
 
-    def manifest_labels(self) -> list[str]:
-        rel = sorted(p.relative_to(self.project.shadow_root).as_posix() for p in self.manifests)
-        return [self.project.label("bazel/cargo", p) for p in rel]
+    @property
+    def real_dir(self) -> Path:
+        return Path(self.pkg["manifest_path"]).parent
+
+    @property
+    def package_path(self) -> str:
+        return self.real_dir.relative_to(self.project.root).as_posix()
+
+    @property
+    def shadow_dir(self) -> Path:
+        return self.project.shadow_root / self.package_path
+
+
+def collect_members(project: Project, meta: dict) -> list[Member]:
+    packages = {p["id"]: p for p in meta["packages"]}
+    members = []
+    for member_id in meta["workspace_members"]:
+        pkg = packages[member_id]
+        with open(pkg["manifest_path"], "rb") as f:
+            manifest = tomllib.load(f)
+        members.append(Member(project=project, pkg=pkg, manifest=manifest))
+    unknown = set(project.disabled_features) - {m.name for m in members}
+    if unknown:
+        sys.exit(f"{project.name}: disabled_features lists unknown crates {sorted(unknown)}")
+    return sorted(members, key=lambda m: m.package_path)
+
+
+# TOML emission, limited to what a derived manifest needs.
+
+
+def toml_key(key: str) -> str:
+    return key if re.fullmatch(r"[A-Za-z0-9_-]+", key) else json.dumps(key)
+
+
+def toml_value(value) -> str:
+    if isinstance(value, bool):
+        return "true" if value else "false"
+    if isinstance(value, int):
+        return str(value)
+    if isinstance(value, str):
+        return json.dumps(value)  # a TOML basic string accepts JSON's escapes
+    if isinstance(value, list):
+        return "[" + ", ".join(toml_value(v) for v in value) + "]"
+    if isinstance(value, dict):
+        return "{ " + ", ".join(f"{toml_key(k)} = {toml_value(v)}" for k, v in value.items()) + " }"
+    raise TypeError(f"cannot emit {value!r} as TOML")
+
+
+def toml_table(header: str, table: dict) -> str:
+    lines = []
+    for key, value in table.items():
+        rendered = toml_value(value)
+        if isinstance(value, list) and len(rendered) > 100:
+            rendered = "[\n" + "".join(f"    {toml_value(v)},\n" for v in value) + "]"
+        lines.append(f"{toml_key(key)} = {rendered}\n")
+    return f"[{header}]\n{''.join(lines)}\n"
 
 
 def relative_link(link: Path, target: Path) -> str:
     return os.path.relpath(target, link.parent)
 
 
-def members_digest(project: Project, manifests: list[Path]) -> str:
-    """Hash of every member manifest, so that crate_universe notices member edits.
+def git_source(source: str) -> dict:
+    """`git+https://host/repo?rev=abc` -> `{git: ..., rev: ...}` as a manifest dependency spec."""
+    url, _, query = source[len("git+") :].partition("?")
+    spec = {"git": url}
+    if query:
+        key, _, value = query.partition("=")
+        if key not in ("rev", "branch", "tag"):
+            sys.exit(f"unsupported git dependency source {source!r}")
+        spec[key] = value
+    return spec
 
-    crate_universe only re-resolves when a manifest it was given changes. It is
-    given the shadow root and the shadowed manifests, not the members behind
-    the symlinks, so the members' contents are folded into the shadow root
-    manifest through this digest instead.
+
+@dataclass
+class DerivedManifest:
+    text: str
+    # Children of the real crate directory the manifest refers to (`src`,
+    # `build.rs`, `tests`, ...), to be symlinked next to it.
+    children: set[str]
+
+
+def derive_manifest(member: Member, by_dir: dict[Path, Member]) -> DerivedManifest:
+    """The member's manifest as Cargo sees it in its project, made self-contained.
+
+    Package fields and dependency specs come from `cargo metadata` and thus
+    have `workspace = true` inheritance resolved. Targets are listed
+    explicitly (auto-discovery off) so the derived package has exactly the
+    project's targets. `[features]` is copied from the real manifest because
+    `cargo metadata` adds the implicit features of optional dependencies, and
+    spelling those out would change how `dep/feature` entries behave.
     """
-    h = hashlib.sha256()
-    for manifest in sorted(manifests):
-        h.update(str(manifest.relative_to(project.root)).encode())
-        h.update(b"\0")
-        h.update(manifest.read_bytes())
-        h.update(b"\0")
-    return h.hexdigest()
+    pkg, project = member.pkg, member.project
+    children: set[str] = set()
 
+    def rel(path: str) -> str:
+        p = Path(path).relative_to(member.real_dir)
+        children.add(p.parts[0])
+        return p.as_posix()
 
-def generated_manifest_header(project: Project, rel: Path, what: str) -> str:
-    return (
-        f"# GENERATED FILE - DO NOT EDIT. Regenerate with `python3 {GENERATOR}`.\n"
-        "#\n"
-        f"# Bazel-only shadow of `{project.prefix}/{rel.as_posix()}`. It is identical to the real\n"
-        f"# manifest except that{what}"
-    )
+    package = {
+        "name": pkg["name"],
+        "version": pkg["version"],
+        "edition": pkg["edition"],
+    }
+    if pkg.get("rust_version"):
+        package["rust-version"] = pkg["rust_version"]
+    if pkg.get("links"):
+        package["links"] = pkg["links"]
+    build_script = next((t for t in pkg["targets"] if t["kind"] == ["custom-build"]), None)
+    package["build"] = rel(build_script["src_path"]) if build_script else False
+    for auto in ("autolib", "autobins", "autoexamples", "autotests", "autobenches"):
+        package[auto] = False
 
+    out = [
+        f"# GENERATED FILE - DO NOT EDIT. Regenerate with `python3 {GENERATOR}`.\n",
+        "#\n",
+        f"# Bazel-only derivation of `{project.prefix}/{member.package_path}/Cargo.toml`: the same\n",
+        f"# package as `cargo metadata` describes it in the {project.name} workspace, with\n",
+        "# workspace inheritance resolved. Cargo builds are unaffected.\n",
+    ]
+    disabled = project.disabled_features.get(pkg["name"], {})
+    if disabled:
+        out += [
+            "#\n",
+            "# These default features are left out, because Bazel cannot build them\n",
+            "# hermetically yet (see bazel/project.toml, disabled_features):\n",
+        ] + [f"#   - {feature}: {why}\n" for feature, why in disabled.items()]
+    out.append("\n")
+    out.append(toml_table("package", package))
 
-def render_shadow_root_manifest(project: Project, digest: str) -> tuple[str, dict[str, Path]]:
-    """Copy of the root manifest with escaping `path`s rewritten and the members digest.
-
-    Returns the rendered text and the symlinks it relies on: shadow-relative
-    link name -> absolute target. A dependency on `../alloy/crates/x` becomes
-    `alloy/crates/x` next to a link `alloy -> <workspace>/alloy`, so that Cargo
-    (and crate_universe, which only sees the children of the shadow root) can
-    reach it without leaving the shadow.
-    """
-    real = project.root / "Cargo.toml"
-    text = real.read_text()
-    original = tomllib.loads(text)
-
-    links: dict[str, Path] = {}
-
-    def rewrite(m: re.Match) -> str:
-        path = m.group(1)
-        if not path.startswith("../"):
-            return m.group(0)
-        target = (project.root / path).resolve()
-        if WORKSPACE_ROOT not in target.parents:
-            sys.exit(f"{project.name}: path dependency {path!r} leaves the monorepo")
-        rel = target.relative_to(WORKSPACE_ROOT)
-        link, rest = rel.parts[0], Path(*rel.parts[1:]).as_posix()
-        links[link] = WORKSPACE_ROOT / link
-        return f'path = "{link}/{rest}"' if rest else f'path = "{link}"'
-
-    rewritten = re.sub(r'\bpath\s*=\s*"([^"]+)"', rewrite, text)
-
-    what = "\n".join(
-        [
-            ":",
-            "# * `path` dependencies on other projects of the monorepo go through the",
-            "#   symlinks next to this file instead of `../`, so that crate_universe",
-            "#   (which mirrors this directory) can follow them;",
-            "# * it carries a digest of every workspace member manifest (below), so that",
-            "#   crate_universe re-resolves the external crate graph when a member's",
-            "#   Cargo.toml changes (it only watches the manifests it is given).",
-            "#",
-            f"# Cargo builds are unaffected; see {GENERATOR}.",
-            "",
-            "",
-        ]
-    )
-    header = generated_manifest_header(project, Path("Cargo.toml"), what)
-    section = "package" if "package" in original else "workspace"
-    footer = (
-        "\n# Digest of every workspace member manifest; see the header.\n"
-        f"[{section}.metadata.bazel]\n"
-        f'workspace-members-digest = "{digest}"\n'
-    )
-    out = header + rewritten + footer
-
-    # The rewrite is textual; check against the parsed manifests that it
-    # touched exactly the escaping paths and nothing else.
-    rendered = tomllib.loads(out)
-    del rendered[section]["metadata"]["bazel"]
-    if not rendered[section]["metadata"]:
-        del rendered[section]["metadata"]
-    original_rest, original_paths = split_paths(original)
-    rendered_rest, rendered_paths = split_paths(rendered)
-    expected = {(p[len("../") :] if p.startswith("../") else p) for p in original_paths}
-    if rendered_paths != expected or any(p.startswith("../") for p in expected):
-        sys.exit(f"{project.name}: failed to rewrite path dependencies in the shadow root manifest")
-    if rendered_rest != original_rest:
-        sys.exit(f"{project.name}: shadow root manifest differs from the real one beyond `path` values")
-    return out, links
-
-
-def split_paths(manifest: dict) -> tuple[dict, set[str]]:
-    """The manifest with every `path = ...` value blanked, and those values."""
-    found: set[str] = set()
-
-    def walk(node):
-        if isinstance(node, dict):
-            out = {}
-            for k, v in node.items():
-                if k == "path" and isinstance(v, str):
-                    found.add(v)
-                    out[k] = None
-                else:
-                    out[k] = walk(v)
-            return out
-        if isinstance(node, list):
-            return [walk(v) for v in node]
-        return node
-
-    return walk(manifest), found
-
-
-def render_shadow_member_manifest(project: Project, real: Path, disabled: dict[str, str]) -> str:
-    """Copy of `real` with `disabled` removed from `[features] default`."""
-    text = real.read_text()
-    manifest = tomllib.loads(text)
-    name = manifest["package"]["name"]
-    default = manifest.get("features", {}).get("default", [])
-    unknown = set(disabled) - set(default)
-    if unknown:
-        sys.exit(f"{name}: disabled_features lists non-default features {sorted(unknown)}")
-
-    # Edit the text rather than re-serializing the TOML so the shadow stays a
-    # readable diff of the real manifest.
-    m = re.search(r"^default = \[\n(.*?)^\]\n", text, re.S | re.M)
-    if m is None:
-        sys.exit(f"{name}: expected a multi-line `default = [...]` feature list in {real}")
-    removed = {f'"{f}",' for f in disabled}
-    kept = [line for line in m.group(1).splitlines(keepends=True) if line.strip() not in removed]
-    text = text[: m.start(1)] + "".join(kept) + text[m.end(1) :]
-
-    reasons = "".join(f"#   - {f}: {why}\n" for f, why in disabled.items())
-    what = (
-        " these features are removed from `default`, because\n"
-        "# Bazel cannot build them hermetically yet:\n"
-        f"{reasons}"
-        "#\n"
-        f"# Cargo builds are unaffected; see {project.prefix}/bazel/project.toml (disabled_features).\n\n"
-    )
-    out = generated_manifest_header(project, real.relative_to(project.root), what) + text
-
-    rendered = tomllib.loads(out)
-    expected = [f for f in default if f not in disabled]
-    if rendered["features"].get("default", []) != expected:
-        sys.exit(f"{name}: failed to rewrite `default` features in shadow manifest")
-    return out
-
-
-def shadow_workspace(project: Project, root: dict, members: list[Path]) -> ShadowWorkspace:
-    shadow_root = project.shadow_root
-    packages = {}
-    for member in members:
-        with open(project.root / member / "Cargo.toml", "rb") as f:
-            packages[tomllib.load(f)["package"]["name"]] = member
-    unknown_crates = set(project.disabled_features) - set(packages)
-    if unknown_crates:
-        sys.exit(f"{project.name}: disabled_features lists unknown crates {sorted(unknown_crates)}")
-    shadowed = {packages[name]: name for name in project.disabled_features}
-
-    links: dict[Path, str] = {}
-    manifests: dict[Path, str] = {}
-
-    def link(rel: Path, target: Path | None = None) -> None:
-        links[shadow_root / rel] = relative_link(shadow_root / rel, target or project.root / rel)
-
-    digest = members_digest(project, [project.root / m / "Cargo.toml" for m in members])
-    manifests[shadow_root / "Cargo.toml"], external = render_shadow_root_manifest(project, digest)
-    link(Path("Cargo.lock"))
-    for name, target in external.items():
-        if any(Path(name) == Path(m.parts[0]) for m in members):
-            sys.exit(f"{project.name}: path dependency link {name!r} collides with a workspace member directory")
-        link(Path(name), target)
-
-    for member in members:
-        if member in shadowed:
-            # Real sources, shadow manifest. BUILD.bazel is left out so Bazel
-            # never sees a second copy of the package.
-            for entry in sorted((project.root / member).iterdir()):
-                if entry.name not in ("Cargo.toml", "BUILD.bazel"):
-                    link(member / entry.name)
-            manifests[shadow_root / member / "Cargo.toml"] = render_shadow_member_manifest(
-                project, project.root / member / "Cargo.toml", project.disabled_features[shadowed[member]]
-            )
+    for t in pkg["targets"]:
+        (kind,) = t["kind"]
+        if kind == "custom-build":
             continue
-        # Link the shortest prefix of the member path that contains no shadowed
-        # member, e.g. `crates` for `crates/foo` but `bin/reth-bb` next to the
-        # shadowed `bin/reth`.
-        for depth in range(1, len(member.parts) + 1):
-            prefix = Path(*member.parts[:depth])
-            if not any(prefix in s.parents or prefix == s for s in shadowed):
-                link(prefix)
-                break
-    return ShadowWorkspace(project=project, links=links, manifests=manifests)
+        target = {"name": t["name"], "path": rel(t["src_path"])}
+        if kind == "proc-macro":
+            target["proc-macro"] = True
+            header = "lib"
+        elif kind == "lib":
+            if t["crate_types"] != ["lib"]:
+                target["crate-type"] = t["crate_types"]
+            header = "lib"
+        elif kind in ("bin", "test", "bench", "example"):
+            if kind == "example" and t["crate_types"] != ["bin"]:
+                target["crate-type"] = t["crate_types"]
+            header = f"[{kind}]"
+        else:
+            sys.exit(f"{pkg['name']}: unsupported target kind {kind!r}")
+        if t.get("required-features"):
+            target["required-features"] = t["required-features"]
+        out.append(toml_table(header, target))
+
+    features = dict(member.manifest.get("features", {}))
+    if disabled:
+        default = features.get("default", [])
+        unknown = set(disabled) - set(default)
+        if unknown:
+            sys.exit(f"{pkg['name']}: disabled_features lists non-default features {sorted(unknown)}")
+        features["default"] = [f for f in default if f not in disabled]
+    if features:
+        out.append(toml_table("features", features))
+
+    tables: dict[str, dict[str, dict]] = defaultdict(dict)
+    for dep in pkg["dependencies"]:
+        if dep.get("registry"):
+            sys.exit(f"{pkg['name']}: dependency {dep['name']} uses an alternative registry; unsupported")
+        spec: dict = {}
+        if dep["rename"]:
+            spec["package"] = dep["name"]
+        if dep.get("path"):
+            target_member = by_dir.get(Path(dep["path"]))
+            if target_member is None:
+                sys.exit(f"{pkg['name']}: path dependency {dep['name']} at {dep['path']} is not a workspace member of any project")
+            spec["path"] = relative_link(member.shadow_dir / "Cargo.toml", target_member.shadow_dir)
+        elif dep["source"] and dep["source"].startswith("git+"):
+            spec.update(git_source(dep["source"]))
+        else:
+            spec["version"] = dep["req"]
+        if dep["features"]:
+            spec["features"] = dep["features"]
+        if dep["optional"]:
+            spec["optional"] = True
+        if not dep["uses_default_features"]:
+            spec["default-features"] = False
+        table = {None: "dependencies", "dev": "dev-dependencies", "build": "build-dependencies"}[dep["kind"]]
+        if dep["target"]:
+            table = f"target.'{dep['target']}'.{table}"
+        tables[table][dep["rename"] or dep["name"]] = spec
+    for table in sorted(tables, key=lambda t: (t.startswith("target."), t)):
+        out.append(toml_table(table, tables[table]))
+
+    return DerivedManifest(text="".join(out).rstrip("\n") + "\n", children=children)
 
 
-def sync_shadow_links(shadow: ShadowWorkspace, check: bool) -> list[Path]:
-    """Create/replace the shadow symlinks; return the ones that were wrong."""
+def render_shadow_root_manifest(projects: list[Project], roots: dict[str, dict], members: list[Member], digest: str) -> str:
+    by_dir = {m.real_dir: m for m in members}
+    patches: dict[str, dict[str, dict]] = defaultdict(dict)
+    for project in projects:
+        for registry, entries in roots[project.name].get("patch", {}).items():
+            for name, spec in entries.items():
+                spec = dict(spec)
+                if "path" in spec:
+                    target = by_dir.get((project.root / spec["path"]).resolve())
+                    if target is None:
+                        sys.exit(f"{project.name}: [patch.{registry}] {name} points outside the projects' workspace members")
+                    spec["path"] = target.shadow_dir.relative_to(SHADOW_ROOT).as_posix()
+                previous = patches[registry].get(name)
+                if previous is not None and previous != spec:
+                    sys.exit(f"[patch.{registry}] {name}: {project.name} disagrees with another project")
+                patches[registry][name] = spec
+
+    resolvers = {roots[p.name]["workspace"].get("resolver", "2") for p in projects}
+    if len(resolvers) != 1:
+        sys.exit(f"projects use different Cargo resolvers: {sorted(resolvers)}")
+
+    out = [
+        f"# GENERATED FILE - DO NOT EDIT. Regenerate with `python3 {GENERATOR}`.\n",
+        "#\n",
+        "# The Cargo workspace Bazel builds: every crate of every project, so that\n",
+        "# crate_universe resolves one set of external crates for all of them and\n",
+        "# projects can depend on each other's sources. Members are derived manifests\n",
+        f"# (see {GENERATOR}); this workspace is never used by `cargo build`.\n",
+        "\n",
+        toml_table(
+            "workspace",
+            {"resolver": resolvers.pop(), "members": [m.shadow_dir.relative_to(SHADOW_ROOT).as_posix() for m in members]},
+        ),
+    ]
+    for registry in sorted(patches):
+        out.append(f"# Union of the projects' `[patch.{registry}]` sections.\n")
+        out.append(toml_table(f"patch.{registry}", patches[registry]))
+    out += [
+        "# Digest of every member manifest. crate_universe only re-resolves when a\n",
+        "# manifest it was given changes, and it is given this one alone.\n",
+        toml_table("workspace.metadata.bazel", {"members-digest": digest}),
+    ]
+    return "".join(out).rstrip("\n") + "\n"
+
+
+@dataclass
+class ShadowWorkspace:
+    """The Bazel Cargo workspace in `bazel/cargo/`, as it must be on disk.
+
+    `manifests` maps every generated manifest (root and members) to its
+    contents, `links` every symlink to its relative target.
+    """
+
+    manifests: dict[Path, str]
+    links: dict[Path, str]
+
+    @property
+    def root_manifest(self) -> Path:
+        return SHADOW_ROOT / "Cargo.toml"
+
+
+def shadow_workspace(projects: list[Project], roots: dict[str, dict], members: list[Member]) -> ShadowWorkspace:
+    by_dir = {m.real_dir: m for m in members}
+    manifests: dict[Path, str] = {}
+    links: dict[Path, str] = {}
+    digest = hashlib.sha256()
+    for member in members:
+        derived = derive_manifest(member, by_dir)
+        manifests[member.shadow_dir / "Cargo.toml"] = derived.text
+        digest.update(member.shadow_dir.relative_to(SHADOW_ROOT).as_posix().encode() + b"\0")
+        digest.update(derived.text.encode() + b"\0")
+        for child in derived.children:
+            link = member.shadow_dir / child
+            links[link] = relative_link(link, member.real_dir / child)
+    manifests[SHADOW_ROOT / "Cargo.toml"] = render_shadow_root_manifest(projects, roots, members, digest.hexdigest())
+    return ShadowWorkspace(manifests=manifests, links=links)
+
+
+def sync_shadow_tree(projects: list[Project], shadow: ShadowWorkspace, check: bool) -> list[Path]:
+    """Make the shadow's symlinks match; drop anything else under the projects' shadow roots.
+
+    Returns the paths that were wrong (created, replaced or removed).
+    """
     stale = []
     for link, target in shadow.links.items():
         if link.is_symlink() and os.readlink(link) == target:
@@ -515,56 +584,125 @@ def sync_shadow_links(shadow: ShadowWorkspace, check: bool) -> list[Path]:
             continue
         if link.is_symlink() or link.exists():
             if link.is_dir() and not link.is_symlink():
-                sys.exit(f"{link} is a real directory, expected a symlink; remove it by hand")
-            link.unlink()
+                shutil.rmtree(link)
+            else:
+                link.unlink()
         link.parent.mkdir(parents=True, exist_ok=True)
         link.symlink_to(target)
+
+    expected = set(shadow.manifests) | set(shadow.links)
+    for project in projects:
+        if not project.shadow_root.is_dir():
+            continue
+        for dirpath, dirnames, filenames in os.walk(project.shadow_root, topdown=False):
+            dir = Path(dirpath)
+            for name in filenames + [d for d in dirnames if (dir / d).is_symlink()]:
+                path = dir / name
+                if path not in expected:
+                    stale.append(path)
+                    if not check:
+                        path.unlink()
+            if not check and dir != project.shadow_root and not any(dir.iterdir()):
+                dir.rmdir()
     return stale
 
 
-def render_shadow_build_file(shadow: ShadowWorkspace) -> str:
-    files = [l.split(":", 1)[1] for l in shadow.manifest_labels()] + ["Cargo.lock"]
+def render_shadow_build_file() -> str:
     return (
         HEADER
         + "\n"
         + f"# The Cargo workspace as seen by Bazel; see {GENERATOR}.\n"
-        + f"exports_files({render_list([starlark_str(f) for f in sorted(files)], 0)})\n"
+        + 'exports_files([\n    "Cargo.lock",\n    "Cargo.toml",\n])\n'
     )
 
 
-def render_bazelignore(shadows: list[ShadowWorkspace]) -> str:
-    """Keep Bazel from discovering packages twice through the shadow symlinks."""
+def render_bazelignore(projects: list[Project]) -> str:
+    """Keep Bazel from discovering the projects' packages twice through the shadow symlinks."""
     text = BAZELIGNORE.read_text()
     begin = text.index(BAZELIGNORE_BEGIN) + len(BAZELIGNORE_BEGIN)
     end = text.index(BAZELIGNORE_END)
-    dirs = sorted(
-        str(link.relative_to(WORKSPACE_ROOT))
-        for shadow in shadows
-        for link, target in shadow.links.items()
-        if (link.parent / target).is_dir()
-    )
+    dirs = sorted(p.shadow_root.relative_to(WORKSPACE_ROOT).as_posix() for p in projects)
     return text[:begin] + "".join(f"{d}\n" for d in dirs) + text[end:]
 
 
-def cargo_metadata(shadow: ShadowWorkspace) -> dict:
-    cmd = [
-        "cargo",
-        "metadata",
-        "--format-version",
-        "1",
-        "--locked",
-        "--manifest-path",
-        str(shadow.root_manifest),
-    ]
-    result = subprocess.run(cmd, cwd=shadow.project.root, check=True, capture_output=True, text=True)
-    return json.loads(result.stdout)
+# The Bazel workspace's lockfile.
 
 
-def build_crates(project: Project, meta: dict) -> dict[str, Crate]:
+def lock_packages(lock: Path) -> list[dict]:
+    with open(lock, "rb") as f:
+        return tomllib.load(f).get("package", [])
+
+
+def seed_lockfile(projects: list[Project], lock: Path) -> None:
+    """Start the Bazel workspace's lockfile from the projects' locked versions.
+
+    Cargo keeps whatever a lockfile already pins, so seeding it with the union
+    of the projects' entries makes the workspace resolve to the versions the
+    projects use wherever possible. Cargo drops the entries nothing needs.
+    """
+    packages: dict[tuple[str, str, str], dict] = {}
+    for project in projects:
+        for pkg in lock_packages(project.root / "Cargo.lock"):
+            if pkg.get("source"):
+                packages.setdefault((pkg["name"], pkg["version"], pkg["source"]), pkg)
+    out = ["# This file is automatically @generated by Cargo.\n# It is not intended for manual editing.\n", "version = 4\n\n"]
+    for _, pkg in sorted(packages.items()):
+        out.append("[[package]]\n")
+        for key in ("name", "version", "source", "checksum"):
+            if key in pkg:
+                out.append(f"{key} = {toml_value(pkg[key])}\n")
+        out.append("\n")
+    lock.write_text("".join(out))
+
+
+def check_lockfile_alignment(projects: list[Project], lock: Path) -> None:
+    """Every external crate version Bazel builds must be one some project's Cargo builds."""
+    pinned: dict[tuple[str, str], list[str]] = defaultdict(list)
+    for project in projects:
+        for pkg in lock_packages(project.root / "Cargo.lock"):
+            if pkg.get("source"):
+                pinned[(pkg["name"], pkg["source"])].append(pkg["version"])
+    problems = []
+    for pkg in lock_packages(lock):
+        if not pkg.get("source"):
+            continue
+        versions = pinned.get((pkg["name"], pkg["source"]))
+        if versions is None:
+            problems.append(f"  {pkg['name']} {pkg['version']}: not in any project's Cargo.lock")
+        elif pkg["version"] not in versions:
+            problems.append(f"  {pkg['name']} {pkg['version']}: projects pin {', '.join(sorted(set(versions)))}")
+    if problems:
+        rel = lock.relative_to(WORKSPACE_ROOT)
+        sys.exit(
+            f"{rel} pins external crates no project pins; align it with\n"
+            f"  cargo update --manifest-path {rel.parent}/Cargo.toml -p <name>@<version> --precise <version>\n"
+            + "\n".join(problems)
+        )
+
+
+def bazel_workspace_metadata(projects: list[Project], shadow: ShadowWorkspace, check: bool) -> tuple[dict, bool]:
+    """`cargo metadata` of the Bazel Cargo workspace; returns it and whether the lockfile changed."""
+    lock = SHADOW_ROOT / "Cargo.lock"
+    if not lock.exists():
+        if check:
+            return {}, True
+        seed_lockfile(projects, lock)
+    before = lock.read_text()
+    result = cargo_metadata(shadow.root_manifest, locked=check)
+    if result.returncode != 0:
+        if check and "--locked" in result.stderr:
+            return {}, True
+        sys.exit(f"cargo metadata failed for {shadow.root_manifest.relative_to(WORKSPACE_ROOT)}:\n{result.stderr}")
+    check_lockfile_alignment(projects, lock)
+    return json.loads(result.stdout), lock.read_text() != before
+
+
+def build_crates(projects: list[Project], members: list[Member], meta: dict) -> dict[str, Crate]:
+    """Crates of the Bazel workspace with their resolved features and dependency edges."""
     packages = {p["id"]: p for p in meta["packages"]}
     nodes = {n["id"]: n for n in meta["resolve"]["nodes"]}
-    members = set(meta["workspace_members"])
-    root = Path(meta["workspace_root"])
+    member_ids = set(meta["workspace_members"])
+    by_shadow_dir = {m.shadow_dir: m for m in members}
 
     def lib_target(pkg: dict) -> dict | None:
         for t in pkg["targets"]:
@@ -573,45 +711,47 @@ def build_crates(project: Project, meta: dict) -> dict[str, Crate]:
         return None
 
     # External crates that workspace members depend on at more than one version
-    # only get `@<repo>//:<name>-<version>` aliases, never a bare `@<repo>//:<name>`.
+    # only get `@crates//:<name>-<version>` aliases, never a bare `@crates//:<name>`.
     external_versions: dict[str, set[str]] = defaultdict(set)
-    for member in members:
-        for dep in nodes[member]["deps"]:
-            if dep["pkg"] not in members:
+    for member_id in member_ids:
+        for dep in nodes[member_id]["deps"]:
+            if dep["pkg"] not in member_ids:
                 pkg = packages[dep["pkg"]]
                 external_versions[pkg["name"]].add(pkg["version"])
 
     crates: dict[str, Crate] = {}
-    for member in members:
-        pkg = packages[member]
-        with open(pkg["manifest_path"], "rb") as f:
-            manifest = tomllib.load(f)
-        package_path = Path(pkg["manifest_path"]).parent.relative_to(root).as_posix()
+    for member_id in member_ids:
+        pkg = packages[member_id]
+        shadow_dir = Path(pkg["manifest_path"]).parent
+        member = by_shadow_dir.get(shadow_dir)
+        if member is None:
+            sys.exit(f"{pkg['name']}: workspace member {shadow_dir} was not derived from any project")
         crate = Crate(
+            project=member.project,
             name=pkg["name"],
             ident=crate_name_to_ident(pkg["name"]),
-            package_path=package_path,
-            features=sorted(nodes[member]["features"]),
+            package_path=member.package_path,
+            features=sorted(nodes[member_id]["features"]),
             declared_features=sorted(pkg["features"]),
-            workspace_lints=bool(manifest.get("lints", {}).get("workspace", False)),
+            workspace_lints=bool(member.manifest.get("lints", {}).get("workspace", False)),
             targets=[
                 Target(
                     kind=t["kind"][0],
                     name=t["name"],
-                    src_path=str(Path(t["src_path"]).relative_to(Path(pkg["manifest_path"]).parent)),
+                    src_path=Path(t["src_path"]).relative_to(shadow_dir).as_posix(),
                     required_features=t.get("required-features", []),
                 )
                 for t in pkg["targets"]
             ],
             label="",
         )
-        crate.label = project.label(package_path, crate.lib_target)
-        crates[member] = crate
+        crate.label = member.project.label(member.package_path, crate.lib_target)
+        crates[member_id] = crate
 
-    for member, crate in crates.items():
-        activated = activated_optional_deps(packages[member], crate.features)
-        for dep in nodes[member]["deps"]:
-            if dep["pkg"] == member:
+    for member_id, crate in crates.items():
+        activated = activated_optional_deps(packages[member_id], crate.features)
+        for dep in nodes[member_id]["deps"]:
+            if dep["pkg"] == member_id:
                 # A crate listing itself in `[dev-dependencies]` to enable extra
                 # features for its tests; unified features already cover that,
                 # and the test targets link the crate explicitly.
@@ -621,7 +761,7 @@ def build_crates(project: Project, meta: dict) -> dict[str, Crate]:
             if lib is None:
                 continue  # binary-only dependency (artifact deps are not used)
             proc_macro = "proc-macro" in lib["kind"]
-            if dep["pkg"] in members:
+            if dep["pkg"] in member_ids:
                 dep_label = crates[dep["pkg"]].label
                 lib_name = crates[dep["pkg"]].ident
             else:
@@ -631,18 +771,18 @@ def build_crates(project: Project, meta: dict) -> dict[str, Crate]:
                 # member depends on several versions of the crate.
                 renames = {
                     crate_name_to_ident(d["rename"]): d["rename"]
-                    for d in packages[member]["dependencies"]
+                    for d in packages[member_id]["dependencies"]
                     if d["name"] == dep_pkg["name"] and d["rename"]
                 }
                 alias_name = renames.get(dep["name"], dep_pkg["name"])
                 if len(external_versions[dep_pkg["name"]]) > 1:
-                    dep_label = f"{project.crates_repo}//:{alias_name}-{dep_pkg['version']}"
+                    dep_label = f"{CRATES_REPO}//:{alias_name}-{dep_pkg['version']}"
                 else:
-                    dep_label = f"{project.crates_repo}//:{alias_name}"
+                    dep_label = f"{CRATES_REPO}//:{alias_name}"
                 lib_name = crate_name_to_ident(lib["name"])
             alias = dep["name"] if dep["name"] != lib_name else None
             for dk in dep["dep_kinds"]:
-                if is_disabled_optional_dep(packages[member], dep["name"], dk["kind"], activated):
+                if is_disabled_optional_dep(packages[member_id], dep["name"], dk["kind"], activated):
                     # `cargo metadata` lists an optional dependency whenever it is
                     # in the lockfile, even if no enabled feature turns it on
                     # (weak `dep?/feature` entries put it there). Cargo would
@@ -665,6 +805,63 @@ def build_crates(project: Project, meta: dict) -> dict[str, Crate]:
         crate.dev = sorted(set(crate.dev) - set(crate.normal))
         crate.build = sorted(set(crate.build))
     return crates
+
+
+@dataclass
+class MemberDeps:
+    """Dependencies of one external crate on workspace members, by annotation attribute."""
+
+    name: str
+    version: str
+    attrs: dict[str, list[str]] = field(default_factory=lambda: defaultdict(list))
+
+
+def external_member_deps(crates: dict[str, Crate], meta: dict) -> list[MemberDeps]:
+    """External crates whose resolved dependencies include workspace members.
+
+    Happens whenever `[patch.crates-io]` redirects a crate that external crates
+    also depend on to the tree (crates.io `alloy-evm` -> in-tree
+    `alloy-consensus`). crate_universe never renders an edge to a workspace
+    member, so those edges are added back as `crate.annotation(deps = ...)`.
+    """
+    packages = {p["id"]: p for p in meta["packages"]}
+    member_ids = set(meta["workspace_members"])
+    attr_for = {
+        (None, False): "deps",
+        (None, True): "proc_macro_deps",
+        ("build", False): "build_script_deps",
+        ("build", True): "build_script_proc_macro_deps",
+    }
+    result = []
+    for node in meta["resolve"]["nodes"]:
+        if node["id"] in member_ids:
+            continue
+        pkg = packages[node["id"]]
+        activated = activated_optional_deps(pkg, node["features"])
+        found = MemberDeps(name=pkg["name"], version=pkg["version"])
+        for dep in node["deps"]:
+            if dep["pkg"] not in member_ids:
+                continue
+            member = crates[dep["pkg"]]
+            if dep["name"] != member.ident:
+                sys.exit(
+                    f"{pkg['name']} {pkg['version']}: depends on workspace member {member.name} under the"
+                    f" name {dep['name']!r}; crate annotations cannot express renamed dependencies"
+                )
+            for dk in dep["dep_kinds"]:
+                if dk["kind"] == "dev":
+                    continue  # external crates' tests are never built
+                if is_disabled_optional_dep(pkg, dep["name"], dk["kind"], activated):
+                    continue
+                # Annotation attributes are unconditional; a platform-specific
+                # edge is added on every platform, which only builds the member
+                # once more than Cargo would. `@@//` names the main repository
+                # from inside the crate repositories, which have no mapping for it.
+                found.attrs[attr_for[(dk["kind"], member.is_proc_macro)]].append(f"@@{member.label}")
+        if found.attrs:
+            found.attrs = {k: sorted(set(v)) for k, v in sorted(found.attrs.items())}
+            result.append(found)
+    return sorted(result, key=lambda m: (m.name, m.version))
 
 
 def activated_optional_deps(pkg: dict, enabled_features: list[str]) -> set[str]:
@@ -760,17 +957,18 @@ def render_build_script_data(bs: BuildScript) -> str | None:
     return " + ".join(parts)
 
 
-def render_build_file(project: Project, crate: Crate, crates: dict[str, Crate]) -> str:
+def render_build_file(crate: Crate, crates: dict[str, Crate]) -> str:
+    project = crate.project
     lib = crate.lib
     lib_rule = "crate_proc_macro" if lib and lib.kind == "proc-macro" else "crate_library"
     bins = [t for t in crate.targets if t.kind == "bin"]
     tests = [t for t in crate.targets if t.kind == "test"]
     build_script = crate.target("custom-build")
     # `#[test_fuzz]`-instrumented tests need extra runtime plumbing (see rust.bzl).
-    test_fuzz = "True" if any(d.label == f"{project.crates_repo}//:test-fuzz" for d in crate.dev) else None
+    test_fuzz = "True" if any(d.label == f"{CRATES_REPO}//:test-fuzz" for d in crate.dev) else None
     # Tests that launch nodes retain GiBs per node for the process lifetime
     # (see bazel/process_per_test.bzl); run them one process per test.
-    per_process_labels = {c.label for c in crates.values() if c.name in project.process_per_test}
+    per_process_labels = {c.label for c in crates.values() if c.name in c.project.process_per_test}
     launches_nodes = crate.name in project.process_per_test or any(
         d.label in per_process_labels for d in crate.normal + crate.dev
     )
@@ -992,6 +1190,36 @@ def render_workspace_bzl(project: Project, root: dict) -> str:
     return "".join(lines)
 
 
+MEMBER_DEPS_MODULE = SHADOW_ROOT / "member_deps.MODULE.bazel"
+
+
+def render_member_deps_module(member_deps: list[MemberDeps]) -> str:
+    """`bazel/cargo/member_deps.MODULE.bazel`: edges from external crates back into the tree."""
+    lines = [
+        HEADER,
+        "\n",
+        '"""Dependencies of external crates on workspace members (included from //MODULE.bazel).\n',
+        "\n",
+        "A `[patch.crates-io]` entry redirects every use of a crate to the tree, including\n",
+        "uses by external crates. crate_universe leaves dependencies on workspace members\n",
+        "out of the crates it renders, so they are added back here, one annotation per\n",
+        "external crate, with the members' Bazel labels.\n",
+        '"""\n',
+        "\n",
+        'crate = use_extension("@rules_rust//crate_universe:extensions.bzl", "crate")\n',
+    ]
+    for m in member_deps:
+        lines.append("\n")
+        lines.append("crate.annotation(\n")
+        for attr, labels in m.attrs.items():
+            lines.append(f"    {attr} = {render_list([starlark_str(l) for l in labels], indent=4)},\n")
+        lines.append(f"    crate = {starlark_str(m.name)},\n")
+        lines.append(f'    repositories = [{starlark_str(CRATES_REPO.lstrip("@"))}],\n')
+        lines.append(f"    version = {starlark_str('=' + m.version)},\n")
+        lines.append(")\n")
+    return "".join(lines)
+
+
 def render_project_build_file(project: Project) -> str:
     """`<project>/bazel/BUILD.bazel`: the lint config every crate of the project uses."""
     return (
@@ -1021,35 +1249,37 @@ def main() -> int:
 
     projects = discover_projects()
     roots = {p.name: load_root_manifest(p) for p in projects}
-    shadows = {p.name: shadow_workspace(p, roots[p.name], member_dirs(p, roots[p.name])) for p in projects}
+    members = [m for p in projects for m in collect_members(p, project_metadata(p))]
+    shadow = shadow_workspace(projects, roots, members)
 
-    # The shadow workspaces must be in place before Cargo can be asked about them.
-    stale: list[Path] = []
-    outputs: dict[Path, str] = {}
-    for shadow in shadows.values():
-        stale += sync_shadow_links(shadow, args.check)
-        outputs.update(shadow.manifests)
-        outputs[shadow.project.shadow_root / "BUILD.bazel"] = render_shadow_build_file(shadow)
-    outputs[BAZELIGNORE] = render_bazelignore(list(shadows.values()))
+    # The Bazel Cargo workspace must be on disk before Cargo can be asked about it.
+    stale = sync_shadow_tree(projects, shadow, args.check)
+    outputs = dict(shadow.manifests)
+    outputs[SHADOW_ROOT / "BUILD.bazel"] = render_shadow_build_file()
+    outputs[BAZELIGNORE] = render_bazelignore(projects)
     stale += write_outputs(outputs, args.check)
     if args.check and stale:
         return report_stale(stale)
 
-    outputs = {}
-    total = 0
+    meta, lock_changed = bazel_workspace_metadata(projects, shadow, args.check)
+    if lock_changed:
+        stale.append(SHADOW_ROOT / "Cargo.lock")
+        if args.check:
+            return report_stale(stale)
+
+    crates = build_crates(projects, members, meta)
+    outputs = {MEMBER_DEPS_MODULE: render_member_deps_module(external_member_deps(crates, meta))}
     for project in projects:
-        crates = build_crates(project, cargo_metadata(shadows[project.name]))
-        total += len(crates)
         outputs[project.workspace_bzl] = render_workspace_bzl(project, roots[project.name])
         outputs[project.root / "bazel" / "BUILD.bazel"] = render_project_build_file(project)
-        for crate in crates.values():
-            outputs[project.root / crate.package_path / "BUILD.bazel"] = render_build_file(project, crate, crates)
+    for crate in crates.values():
+        outputs[crate.project.root / crate.package_path / "BUILD.bazel"] = render_build_file(crate, crates)
     stale += write_outputs(outputs, args.check)
 
     if args.check and stale:
         return report_stale(stale)
     if not args.check:
-        print(f"{len(projects)} project(s), {total} crates, {len(stale)} file(s) updated")
+        print(f"{len(projects)} project(s), {len(crates)} crates, {len(stale)} file(s) updated")
     return 0
 
 

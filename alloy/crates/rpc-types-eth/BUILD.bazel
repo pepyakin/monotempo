@@ -6,8 +6,10 @@ load("//bazel:rust.bzl", "crate_cargo_toml_env_vars", "crate_library", "crate_un
 load("//alloy/bazel:workspace.bzl", "WORKSPACE")
 
 FEATURES = [
+    "arbitrary",
     "default",
     "serde",
+    "serde-bincode-compat",
     "std",
 ]
 
@@ -33,13 +35,15 @@ crate_library(
         "//alloy/crates/eips:alloy_eips",
         "//alloy/crates/network-primitives:alloy_network_primitives",
         "//alloy/crates/serde:alloy_serde",
-        "@alloy_crates//:alloy-primitives",
-        "@alloy_crates//:alloy-rlp",
-        "@alloy_crates//:alloy-sol-types",
-        "@alloy_crates//:itertools",
-        "@alloy_crates//:serde",
-        "@alloy_crates//:serde_json",
-        "@alloy_crates//:thiserror",
+        "@crates//:alloy-primitives",
+        "@crates//:alloy-rlp",
+        "@crates//:alloy-sol-types",
+        "@crates//:arbitrary",
+        "@crates//:itertools",
+        "@crates//:serde",
+        "@crates//:serde_json",
+        "@crates//:serde_with",
+        "@crates//:thiserror",
     ],
 )
 
@@ -50,10 +54,9 @@ crate_unit_test(
     crate_features = FEATURES,
     declared_features = DECLARED_FEATURES,
     deps = [
-        "@alloy_crates//:arbitrary",
-        "@alloy_crates//:assert_matches",
-        "@alloy_crates//:bincode",
-        "@alloy_crates//:rand",
-        "@alloy_crates//:similar-asserts",
+        "@crates//:assert_matches",
+        "@crates//:bincode-2.0.1",
+        "@crates//:rand-0.8.6",
+        "@crates//:similar-asserts",
     ],
 )

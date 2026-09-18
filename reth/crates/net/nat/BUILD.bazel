@@ -23,13 +23,13 @@ crate_library(
     crate_features = FEATURES,
     declared_features = DECLARED_FEATURES,
     deps = [
-        "@reth_crates//:futures-util",
-        "@reth_crates//:if-addrs",
-        "@reth_crates//:reqwest",
-        "@reth_crates//:serde_with",
-        "@reth_crates//:thiserror",
-        "@reth_crates//:tokio",
-        "@reth_crates//:tracing",
+        "@crates//:futures-util",
+        "@crates//:if-addrs",
+        "@crates//:reqwest",
+        "@crates//:serde_with",
+        "@crates//:thiserror",
+        "@crates//:tokio",
+        "@crates//:tracing",
     ],
 )
 

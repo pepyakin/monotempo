@@ -1,0 +1,95 @@
+# GENERATED FILE - DO NOT EDIT. Regenerate with `python3 bazel/generate.py`.
+#
+# Bazel-only derivation of `reth/crates/node/core/Cargo.toml`: the same
+# package as `cargo metadata` describes it in the reth workspace, with
+# workspace inheritance resolved. Cargo builds are unaffected.
+
+[package]
+name = "reth-node-core"
+version = "2.5.2"
+edition = "2024"
+rust-version = "1.95"
+build = "build.rs"
+autolib = false
+autobins = false
+autoexamples = false
+autotests = false
+autobenches = false
+
+[lib]
+name = "reth_node_core"
+path = "src/lib.rs"
+
+[[test]]
+name = "default_dev_args"
+path = "tests/default_dev_args.rs"
+
+[features]
+jemalloc = ["reth-cli-util/jemalloc"]
+asm-keccak = ["alloy-primitives/asm-keccak"]
+keccak-cache-global = ["alloy-primitives/keccak-cache-global"]
+otlp = ["reth-tracing/otlp", "reth-tracing-otlp/otlp"]
+otlp-logs = ["reth-tracing/otlp-logs", "reth-tracing-otlp/otlp-logs"]
+tracy = ["reth-tracing/tracy"]
+min-error-logs = ["tracing/release_max_level_error"]
+min-warn-logs = ["tracing/release_max_level_warn"]
+min-info-logs = ["tracing/release_max_level_info"]
+min-debug-logs = ["tracing/release_max_level_debug"]
+min-trace-logs = ["tracing/release_max_level_trace"]
+trie-debug = ["reth-engine-primitives/trie-debug"]
+
+[build-dependencies]
+vergen = { version = "^10.0.1", features = ["build", "cargo", "emit_and_set"] }
+vergen-git2 = { version = "^10.0.1" }
+
+[dependencies]
+alloy-consensus = { version = "^2.4.2", default-features = false }
+alloy-eips = { version = "^2.4.2", default-features = false }
+alloy-primitives = { version = "^1.6.1", features = ["map-foldhash"], default-features = false }
+alloy-rpc-types-engine = { version = "^2.4.2", features = ["std", "jwt-aws-lc-rs"], default-features = false }
+clap = { version = "^4", features = ["derive", "env", "string"] }
+derive_more = { version = "^2", features = ["full"], default-features = false }
+dirs-next = { version = "^2.0.0" }
+eyre = { version = "^0.6" }
+futures = { version = "^0.3" }
+humantime = { version = "^2.1" }
+ipnet = { version = "^2.11" }
+rand = { version = "^0.9" }
+reth-chainspec = { path = "../../chainspec", default-features = false }
+reth-cli-util = { path = "../../cli/util" }
+reth-config = { path = "../../config", features = ["serde"], default-features = false }
+reth-consensus = { path = "../../consensus/consensus", default-features = false }
+reth-db = { path = "../../storage/db", features = ["mdbx"], default-features = false }
+reth-discv4 = { path = "../../net/discv4" }
+reth-discv5 = { path = "../../net/discv5" }
+reth-engine-local = { path = "../../engine/local" }
+reth-engine-primitives = { path = "../../engine/primitives", default-features = false }
+reth-ethereum-forks = { path = "../../ethereum/hardforks", default-features = false }
+reth-net-banlist = { path = "../../net/banlist" }
+reth-net-nat = { path = "../../net/nat" }
+reth-network = { path = "../../net/network", features = ["serde"] }
+reth-network-p2p = { path = "../../net/p2p" }
+reth-network-peers = { path = "../../net/peers", features = ["secp256k1"], default-features = false }
+reth-primitives-traits = { version = "^0.7.1", features = ["rayon"], default-features = false }
+reth-prune-types = { path = "../../prune/types", default-features = false }
+reth-rpc-convert = { path = "../../rpc/rpc-convert" }
+reth-rpc-eth-types = { path = "../../rpc/rpc-eth-types", default-features = false }
+reth-rpc-server-types = { path = "../../rpc/rpc-server-types" }
+reth-stages-types = { path = "../../stages/types", default-features = false }
+reth-storage-api = { path = "../../storage/storage-api", features = ["std", "db-api"], default-features = false }
+reth-storage-errors = { path = "../../storage/errors", default-features = false }
+reth-tasks = { path = "../../tasks" }
+reth-tracing = { path = "../../tracing", features = ["std"] }
+reth-tracing-otlp = { path = "../../tracing-otlp" }
+reth-transaction-pool = { path = "../../transaction-pool" }
+secp256k1 = { version = "^0.30", features = ["global-context", "recovery", "global-context", "std", "recovery"], default-features = false }
+serde = { version = "^1.0", default-features = false }
+strum = { version = "^0.27", features = ["derive"], default-features = false }
+thiserror = { version = "^2.0.0", default-features = false }
+toml = { version = "^0.9" }
+tracing = { version = "^0.1.0", features = ["attributes"], default-features = false }
+url = { version = "^2.3", default-features = false }
+
+[dev-dependencies]
+proptest = { version = "^1.7" }
+tokio = { version = "^1.52.3", default-features = false }

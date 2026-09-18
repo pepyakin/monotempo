@@ -1,0 +1,51 @@
+# GENERATED FILE - DO NOT EDIT. Regenerate with `python3 bazel/generate.py`.
+#
+# Bazel-only derivation of `alloy/crates/transport/Cargo.toml`: the same
+# package as `cargo metadata` describes it in the alloy workspace, with
+# workspace inheritance resolved. Cargo builds are unaffected.
+
+[package]
+name = "alloy-transport"
+version = "2.4.2"
+edition = "2021"
+rust-version = "1.94.1"
+build = false
+autolib = false
+autobins = false
+autoexamples = false
+autotests = false
+autobenches = false
+
+[lib]
+name = "alloy_transport"
+path = "src/lib.rs"
+
+[features]
+wasm-bindgen = ["dep:wasm-bindgen-futures"]
+throttle = ["dep:governor"]
+
+[dependencies]
+alloy-json-rpc = { path = "../json-rpc", default-features = false }
+auto_impl = { version = "^1.2" }
+base64 = { version = "^0.22" }
+derive_more = { version = "^2", default-features = false }
+futures = { version = "^0.3" }
+futures-utils-wasm = { version = "^0.1" }
+governor = { version = "^0.10", features = ["std", "quanta"], optional = true, default-features = false }
+parking_lot = { version = "^0.12.3" }
+serde = { version = "^1.0.226", features = ["derive", "alloc"], default-features = false }
+serde_json = { version = "^1.0", features = ["alloc", "raw_value"], default-features = false }
+thiserror = { version = "^2.0", features = ["std"], default-features = false }
+tower = { version = "^0.5", features = ["util"] }
+tracing = { version = "^0.1" }
+url = { version = "^2.5" }
+
+[dev-dependencies]
+alloy-primitives = { version = "^1.6.0", default-features = false }
+
+[target.'cfg(all(target_family = "wasm", target_os = "unknown"))'.dependencies]
+wasm-bindgen-futures = { version = "^0.4", optional = true }
+wasmtimer = { version = "^0.4.0" }
+
+[target.'cfg(not(all(target_family = "wasm", target_os = "unknown")))'.dependencies]
+tokio = { version = "^1", features = ["rt", "time", "sync", "macros"] }

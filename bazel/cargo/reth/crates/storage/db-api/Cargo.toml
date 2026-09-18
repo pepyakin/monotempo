@@ -1,0 +1,79 @@
+# GENERATED FILE - DO NOT EDIT. Regenerate with `python3 bazel/generate.py`.
+#
+# Bazel-only derivation of `reth/crates/storage/db-api/Cargo.toml`: the same
+# package as `cargo metadata` describes it in the reth workspace, with
+# workspace inheritance resolved. Cargo builds are unaffected.
+
+[package]
+name = "reth-db-api"
+version = "2.5.2"
+edition = "2024"
+rust-version = "1.95"
+build = false
+autolib = false
+autobins = false
+autoexamples = false
+autotests = false
+autobenches = false
+
+[lib]
+name = "reth_db_api"
+path = "src/lib.rs"
+
+[features]
+test-utils = [
+    "arbitrary",
+    "reth-primitives-traits/test-utils",
+    "reth-codecs/test-utils",
+    "reth-db-models/test-utils",
+    "reth-trie-common/test-utils",
+    "reth-prune-types/test-utils",
+    "reth-stages-types/test-utils",
+    "reth-ethereum-primitives/test-utils",
+]
+arbitrary = [
+    "reth-db-models/arbitrary",
+    "dep:arbitrary",
+    "dep:proptest",
+    "reth-primitives-traits/arbitrary",
+    "reth-trie-common/arbitrary",
+    "alloy-primitives/arbitrary",
+    "reth-codecs/arbitrary",
+    "reth-prune-types/arbitrary",
+    "reth-stages-types/arbitrary",
+    "alloy-consensus/arbitrary",
+    "reth-ethereum-primitives/arbitrary",
+    "alloy-eips/arbitrary",
+]
+
+[dependencies]
+alloy-consensus = { version = "^2.4.2", default-features = false }
+alloy-eips = { version = "^2.4.2", features = ["serde"], default-features = false }
+alloy-primitives = { version = "^1.6.1", features = ["map-foldhash"], default-features = false }
+arbitrary = { version = "^1.3", features = ["derive"], optional = true }
+arrayvec = { version = "^0.7.6", default-features = false }
+bytes = { version = "^1.11.1", default-features = false }
+derive_more = { version = "^2", features = ["full"], default-features = false }
+metrics = { version = "^0.24.0" }
+modular-bitfield = { version = "^0.13.1" }
+proptest = { version = "^1.7", optional = true }
+reth-codecs = { version = "^0.7.0", default-features = false }
+reth-db-models = { path = "../db-models", features = ["serde", "reth-codec"], default-features = false }
+reth-ethereum-primitives = { path = "../../ethereum/primitives", features = ["serde", "reth-codec"], default-features = false }
+reth-primitives-traits = { version = "^0.7.1", features = ["serde", "reth-codec"], default-features = false }
+reth-prune-types = { path = "../../prune/types", features = ["serde", "reth-codec"], default-features = false }
+reth-stages-types = { path = "../../stages/types", features = ["serde", "reth-codec"], default-features = false }
+reth-storage-errors = { path = "../errors", default-features = false }
+reth-trie-common = { path = "../../trie/common", default-features = false }
+roaring = { version = "^0.11.3" }
+serde = { version = "^1.0", default-features = false }
+
+[dev-dependencies]
+alloy-primitives = { version = "^1.6.1", features = ["map-foldhash", "rand"], default-features = false }
+arbitrary = { version = "^1.3", features = ["derive"] }
+proptest = { version = "^1.7" }
+proptest-arbitrary-interop = { version = "^0.1.0" }
+rand = { version = "^0.9" }
+reth-codecs = { version = "^0.7.0", features = ["test-utils"], default-features = false }
+reth-db-models = { path = "../db-models", features = ["arbitrary"], default-features = false }
+test-fuzz = { version = "^7" }

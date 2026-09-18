@@ -29,17 +29,17 @@ crate_library(
     crate_features = FEATURES,
     declared_features = DECLARED_FEATURES,
     deps = [
-        "@reth_crates//:futures",
-        "@reth_crates//:metrics",
-        "@reth_crates//:reth-primitives-traits",
-        "@reth_crates//:tokio",
-        "@reth_crates//:tokio-util",
+        "@crates//:futures",
+        "@crates//:metrics",
+        "@crates//:reth-primitives-traits",
+        "@crates//:tokio",
+        "@crates//:tokio-util",
     ] + select({
-        "@platforms//os:linux": ["@reth_crates//:libc"],
+        "@platforms//os:linux": ["@crates//:libc"],
         "//conditions:default": [],
     }),
     proc_macro_deps = [
-        "@reth_crates//:metrics-derive",
+        "@crates//:metrics-derive",
     ],
 )
 

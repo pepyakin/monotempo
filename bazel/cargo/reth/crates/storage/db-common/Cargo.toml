@@ -1,0 +1,51 @@
+# GENERATED FILE - DO NOT EDIT. Regenerate with `python3 bazel/generate.py`.
+#
+# Bazel-only derivation of `reth/crates/storage/db-common/Cargo.toml`: the same
+# package as `cargo metadata` describes it in the reth workspace, with
+# workspace inheritance resolved. Cargo builds are unaffected.
+
+[package]
+name = "reth-db-common"
+version = "2.5.2"
+edition = "2024"
+rust-version = "1.95"
+build = false
+autolib = false
+autobins = false
+autoexamples = false
+autotests = false
+autobenches = false
+
+[lib]
+name = "reth_db_common"
+path = "src/lib.rs"
+
+[dependencies]
+alloy-consensus = { version = "^2.4.2", default-features = false }
+alloy-genesis = { version = "^2.4.2", default-features = false }
+alloy-primitives = { version = "^1.6.1", features = ["map-foldhash"], default-features = false }
+boyer-moore-magiclen = { version = "^0.2.16" }
+eyre = { version = "^0.6" }
+reth-chainspec = { path = "../../chainspec", default-features = false }
+reth-codecs = { version = "^0.7.0", default-features = false }
+reth-config = { path = "../../config", default-features = false }
+reth-db-api = { path = "../db-api" }
+reth-etl = { path = "../../etl" }
+reth-execution-errors = { path = "../../evm/execution-errors", default-features = false }
+reth-fs-util = { path = "../../fs-util" }
+reth-node-types = { path = "../../node/types" }
+reth-primitives-traits = { version = "^0.7.1", default-features = false }
+reth-provider = { path = "../provider" }
+reth-stages-types = { path = "../../stages/types", default-features = false }
+reth-static-file-types = { path = "../../static-file/types", default-features = false }
+reth-trie = { path = "../../trie/trie" }
+reth-trie-db = { path = "../../trie/db" }
+serde = { version = "^1.0", default-features = false }
+serde_json = { version = "^1.0", features = ["alloc"], default-features = false }
+thiserror = { version = "^2.0.0", default-features = false }
+tracing = { version = "^0.1.0", features = ["attributes"], default-features = false }
+
+[dev-dependencies]
+reth-db = { path = "../db", features = ["mdbx"], default-features = false }
+reth-provider = { path = "../provider", features = ["test-utils"] }
+reth-tasks = { path = "../../tasks" }

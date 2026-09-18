@@ -1,0 +1,40 @@
+# GENERATED FILE - DO NOT EDIT. Regenerate with `python3 bazel/generate.py`.
+#
+# Bazel-only derivation of `alloy/crates/signer-aws/Cargo.toml`: the same
+# package as `cargo metadata` describes it in the alloy workspace, with
+# workspace inheritance resolved. Cargo builds are unaffected.
+
+[package]
+name = "alloy-signer-aws"
+version = "2.4.2"
+edition = "2021"
+rust-version = "1.94.1"
+build = false
+autolib = false
+autobins = false
+autoexamples = false
+autotests = false
+autobenches = false
+
+[lib]
+name = "alloy_signer_aws"
+path = "src/lib.rs"
+
+[features]
+eip712 = ["alloy-signer/eip712"]
+
+[dependencies]
+alloy-consensus = { path = "../consensus", features = ["std"], default-features = false }
+alloy-network = { path = "../network", default-features = false }
+alloy-primitives = { version = "^1.6.0", default-features = false }
+alloy-signer = { path = "../signer", default-features = false }
+async-trait = { version = "^0.1" }
+aws-config = { version = "^1", default-features = false }
+aws-sdk-kms = { version = "^1", default-features = false }
+k256 = { version = "^0.13", features = ["ecdsa"], default-features = false }
+spki = { version = "^0.7", features = ["std"], default-features = false }
+thiserror = { version = "^2.0", default-features = false }
+tracing = { version = "^0.1" }
+
+[dev-dependencies]
+tokio = { version = "^1", features = ["macros", "rt-multi-thread"] }

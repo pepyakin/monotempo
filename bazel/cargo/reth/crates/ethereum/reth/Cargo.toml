@@ -1,0 +1,161 @@
+# GENERATED FILE - DO NOT EDIT. Regenerate with `python3 bazel/generate.py`.
+#
+# Bazel-only derivation of `reth/crates/ethereum/reth/Cargo.toml`: the same
+# package as `cargo metadata` describes it in the reth workspace, with
+# workspace inheritance resolved. Cargo builds are unaffected.
+
+[package]
+name = "reth-ethereum"
+version = "2.5.2"
+edition = "2024"
+rust-version = "1.95"
+build = false
+autolib = false
+autobins = false
+autoexamples = false
+autotests = false
+autobenches = false
+
+[lib]
+name = "reth_ethereum"
+path = "src/lib.rs"
+
+[features]
+default = ["std"]
+std = [
+    "reth-chainspec/std",
+    "reth-ethereum-primitives/std",
+    "reth-ethereum-consensus?/std",
+    "reth-primitives-traits/std",
+    "reth-consensus?/std",
+    "reth-consensus-common?/std",
+    "alloy-rpc-types-eth?/std",
+    "reth-storage-api?/std",
+    "reth-evm?/std",
+    "reth-evm-ethereum?/std",
+    "reth-revm?/std",
+    "alloy-rpc-types-engine?/std",
+    "reth-codecs?/std",
+]
+arbitrary = [
+    "std",
+    "reth-chainspec/arbitrary",
+    "reth-ethereum-primitives/arbitrary",
+    "reth-primitives-traits/arbitrary",
+    "reth-db?/arbitrary",
+    "alloy-rpc-types-eth?/arbitrary",
+    "reth-transaction-pool?/arbitrary",
+    "reth-eth-wire?/arbitrary",
+    "alloy-rpc-types-engine?/arbitrary",
+    "reth-codecs?/arbitrary",
+]
+keccak-cache-global = ["reth-node-ethereum?/keccak-cache-global", "reth-node-core?/keccak-cache-global"]
+test-utils = [
+    "reth-chainspec/test-utils",
+    "reth-consensus?/test-utils",
+    "reth-db?/test-utils",
+    "reth-ethereum-primitives/test-utils",
+    "reth-evm?/test-utils",
+    "reth-revm?/test-utils",
+    "reth-network?/test-utils",
+    "reth-node-ethereum?/test-utils",
+    "reth-primitives-traits/test-utils",
+    "reth-provider?/test-utils",
+    "reth-trie?/test-utils",
+    "reth-transaction-pool?/test-utils",
+    "reth-evm-ethereum?/test-utils",
+    "reth-node-builder?/test-utils",
+    "reth-trie-db?/test-utils",
+    "reth-codecs?/test-utils",
+    "reth-tasks?/test-utils",
+]
+full = ["consensus", "evm", "node", "provider", "rpc", "exex", "trie", "pool", "network"]
+cli = ["dep:reth-ethereum-cli", "dep:reth-cli-util"]
+consensus = ["dep:reth-consensus", "dep:reth-consensus-common", "dep:reth-ethereum-consensus"]
+evm = ["dep:reth-evm", "dep:reth-evm-ethereum", "dep:reth-revm"]
+exex = ["provider", "dep:reth-exex"]
+node-api = ["dep:reth-node-api", "dep:reth-node-core"]
+node = [
+    "provider",
+    "consensus",
+    "evm",
+    "network",
+    "node-api",
+    "dep:reth-node-ethereum",
+    "dep:reth-node-builder",
+    "dep:reth-engine-local",
+    "rpc",
+    "trie-db",
+    "pool",
+]
+pool = ["dep:reth-transaction-pool"]
+rpc = [
+    "tasks",
+    "dep:reth-rpc",
+    "dep:reth-rpc-builder",
+    "dep:reth-rpc-api",
+    "dep:reth-rpc-eth-types",
+    "dep:alloy-rpc-types-eth",
+    "dep:alloy-rpc-types-engine",
+]
+tasks = ["dep:reth-tasks"]
+jemalloc = [
+    "reth-cli-util?/jemalloc",
+    "reth-ethereum-cli?/jemalloc",
+    "reth-node-core?/jemalloc",
+    "reth-provider?/jemalloc",
+]
+jemalloc-prof = ["jemalloc", "reth-cli-util?/jemalloc-prof", "reth-ethereum-cli?/jemalloc-prof"]
+jemalloc-symbols = ["jemalloc-prof", "reth-ethereum-cli?/jemalloc-symbols"]
+jit = ["reth-node-ethereum?/jit"]
+js-tracer = [
+    "rpc",
+    "reth-rpc/js-tracer",
+    "reth-node-builder?/js-tracer",
+    "reth-node-ethereum?/js-tracer",
+    "reth-rpc-eth-types?/js-tracer",
+]
+network = ["dep:reth-network", "tasks", "dep:reth-network-api", "dep:reth-eth-wire"]
+otlp = ["reth-ethereum-cli?/otlp", "reth-node-core?/otlp"]
+portable = ["reth-revm?/portable"]
+gmp = ["reth-evm-ethereum?/gmp", "reth-node-ethereum?/gmp", "reth-revm?/gmp"]
+provider = ["storage-api", "tasks", "dep:reth-provider", "dep:reth-db", "dep:reth-codecs"]
+storage-api = ["dep:reth-storage-api"]
+trie = ["dep:reth-trie"]
+trie-db = ["trie", "dep:reth-trie-db"]
+
+[dependencies]
+alloy-rpc-types-engine = { version = "^2.4.2", optional = true, default-features = false }
+alloy-rpc-types-eth = { version = "^2.4.2", optional = true, default-features = false }
+reth-chainspec = { path = "../../chainspec", default-features = false }
+reth-cli-util = { path = "../../cli/util", optional = true }
+reth-codecs = { version = "^0.7.0", optional = true, default-features = false }
+reth-consensus = { path = "../../consensus/consensus", optional = true, default-features = false }
+reth-consensus-common = { path = "../../consensus/common", optional = true, default-features = false }
+reth-db = { path = "../../storage/db", features = ["mdbx"], optional = true, default-features = false }
+reth-engine-local = { path = "../../engine/local", optional = true }
+reth-eth-wire = { path = "../../net/eth-wire", optional = true }
+reth-ethereum-cli = { path = "../cli", optional = true, default-features = false }
+reth-ethereum-consensus = { path = "../consensus", optional = true, default-features = false }
+reth-ethereum-primitives = { path = "../primitives", default-features = false }
+reth-evm = { path = "../../evm/evm", optional = true, default-features = false }
+reth-evm-ethereum = { path = "../evm", optional = true, default-features = false }
+reth-exex = { path = "../../exex/exex", optional = true }
+reth-network = { path = "../../net/network", optional = true }
+reth-network-api = { path = "../../net/network-api", optional = true }
+reth-node-api = { path = "../../node/api", optional = true }
+reth-node-builder = { path = "../../node/builder", optional = true }
+reth-node-core = { path = "../../node/core", optional = true }
+reth-node-ethereum = { path = "../node", optional = true }
+reth-primitives-traits = { version = "^0.7.1", default-features = false }
+reth-provider = { path = "../../storage/provider", optional = true }
+reth-revm = { path = "../../revm", optional = true, default-features = false }
+reth-rpc = { path = "../../rpc/rpc", optional = true }
+reth-rpc-api = { path = "../../rpc/rpc-api", optional = true }
+reth-rpc-builder = { path = "../../rpc/rpc-builder", optional = true }
+reth-rpc-eth-types = { path = "../../rpc/rpc-eth-types", optional = true, default-features = false }
+reth-storage-api = { path = "../../storage/storage-api", optional = true, default-features = false }
+reth-tasks = { path = "../../tasks", optional = true }
+reth-transaction-pool = { path = "../../transaction-pool", optional = true }
+reth-trie = { path = "../../trie/trie", optional = true }
+reth-trie-db = { path = "../../trie/db", optional = true }

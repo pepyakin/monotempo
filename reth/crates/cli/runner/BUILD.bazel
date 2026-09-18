@@ -18,8 +18,8 @@ crate_library(
     declared_features = DECLARED_FEATURES,
     deps = [
         "//reth/crates/tasks:reth_tasks",
-        "@reth_crates//:tokio",
-        "@reth_crates//:tracing",
+        "@crates//:tokio",
+        "@crates//:tracing",
     ],
 )
 

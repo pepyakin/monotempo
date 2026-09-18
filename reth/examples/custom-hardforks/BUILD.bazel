@@ -18,13 +18,13 @@ crate_binary(
     declared_features = DECLARED_FEATURES,
     workspace_lints = False,
     deps = [
+        "//alloy/crates/consensus:alloy_consensus",
+        "//alloy/crates/eips:alloy_eips",
+        "//alloy/crates/genesis:alloy_genesis",
         "//reth/crates/chainspec:reth_chainspec",
         "//reth/crates/net/peers:reth_network_peers",
-        "@reth_crates//:alloy-consensus",
-        "@reth_crates//:alloy-eips",
-        "@reth_crates//:alloy-genesis",
-        "@reth_crates//:alloy-primitives",
-        "@reth_crates//:serde",
+        "@crates//:alloy-primitives",
+        "@crates//:serde",
     ],
 )
 

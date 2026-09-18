@@ -1,0 +1,42 @@
+# GENERATED FILE - DO NOT EDIT. Regenerate with `python3 bazel/generate.py`.
+#
+# Bazel-only derivation of `reth/crates/rpc/rpc-convert/Cargo.toml`: the same
+# package as `cargo metadata` describes it in the reth workspace, with
+# workspace inheritance resolved. Cargo builds are unaffected.
+
+[package]
+name = "reth-rpc-convert"
+version = "2.5.2"
+edition = "2024"
+rust-version = "1.95"
+build = false
+autolib = false
+autobins = false
+autoexamples = false
+autotests = false
+autobenches = false
+
+[lib]
+name = "reth_rpc_convert"
+path = "src/lib.rs"
+
+[features]
+default = []
+
+[dependencies]
+alloy-consensus = { version = "^2.4.2", default-features = false }
+alloy-evm = { version = "^0.39.0", features = ["rpc"], default-features = false }
+alloy-json-rpc = { version = "^2.4.2", default-features = false }
+alloy-network = { version = "^2.4.2", default-features = false }
+alloy-primitives = { version = "^1.6.1", features = ["map-foldhash"], default-features = false }
+alloy-rpc-types-eth = { version = "^2.4.2", features = ["serde"], default-features = false }
+auto_impl = { version = "^1" }
+dyn-clone = { version = "^1.0.17" }
+jsonrpsee-types = { version = "^0.26.0" }
+reth-evm = { path = "../../evm/evm", default-features = false }
+reth-primitives-traits = { version = "^0.7.1", default-features = false }
+reth-rpc-traits = { version = "^0.7.0", default-features = false }
+thiserror = { version = "^2.0.0", default-features = false }
+
+[dev-dependencies]
+serde_json = { version = "^1.0", features = ["alloc"], default-features = false }

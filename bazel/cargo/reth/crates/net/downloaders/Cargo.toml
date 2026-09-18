@@ -1,0 +1,85 @@
+# GENERATED FILE - DO NOT EDIT. Regenerate with `python3 bazel/generate.py`.
+#
+# Bazel-only derivation of `reth/crates/net/downloaders/Cargo.toml`: the same
+# package as `cargo metadata` describes it in the reth workspace, with
+# workspace inheritance resolved. Cargo builds are unaffected.
+
+[package]
+name = "reth-downloaders"
+version = "2.5.2"
+edition = "2024"
+rust-version = "1.95"
+build = false
+autolib = false
+autobins = false
+autoexamples = false
+autotests = false
+autobenches = false
+
+[lib]
+name = "reth_downloaders"
+path = "src/lib.rs"
+
+[features]
+default = []
+file-client = ["dep:async-compression", "dep:itertools"]
+test-utils = [
+    "tempfile",
+    "reth-consensus/test-utils",
+    "reth-network-p2p/test-utils",
+    "reth-testing-utils",
+    "reth-chainspec/test-utils",
+    "reth-provider/test-utils",
+    "reth-primitives-traits/test-utils",
+    "dep:reth-ethereum-primitives",
+    "reth-ethereum-primitives?/test-utils",
+    "reth-tasks/test-utils",
+    "reth-trie-common/test-utils",
+]
+
+[dependencies]
+alloy-consensus = { version = "^2.4.2", default-features = false }
+alloy-eips = { version = "^2.4.2", default-features = false }
+alloy-primitives = { version = "^1.6.1", features = ["map-foldhash"], default-features = false }
+alloy-rlp = { version = "^0.3.16", features = ["core-net"], default-features = false }
+async-compression = { version = "^0.4", features = ["gzip", "tokio"], optional = true, default-features = false }
+futures = { version = "^0.3" }
+futures-util = { version = "^0.3", default-features = false }
+itertools = { version = "^0.14", optional = true, default-features = false }
+metrics = { version = "^0.24.0" }
+pin-project = { version = "^1.1.12" }
+rayon = { version = "^1.7" }
+reth-config = { path = "../../config", default-features = false }
+reth-consensus = { path = "../../consensus/consensus", default-features = false }
+reth-eth-wire-types = { path = "../eth-wire-types" }
+reth-ethereum-primitives = { path = "../../ethereum/primitives", optional = true, default-features = false }
+reth-metrics = { path = "../../metrics" }
+reth-network-p2p = { path = "../p2p" }
+reth-network-peers = { path = "../peers", default-features = false }
+reth-primitives-traits = { version = "^0.7.1", default-features = false }
+reth-storage-api = { path = "../../storage/storage-api", default-features = false }
+reth-tasks = { path = "../../tasks" }
+reth-testing-utils = { path = "../../../testing/testing-utils", optional = true }
+reth-trie-common = { path = "../../trie/common", default-features = false }
+tempfile = { version = "^3.20", optional = true }
+thiserror = { version = "^2.0.0", default-features = false }
+tokio = { version = "^1.52.3", features = ["sync", "fs", "io-util", "rt"], default-features = false }
+tokio-stream = { version = "^0.1.11" }
+tokio-util = { version = "^0.7.4", features = ["codec", "codec"] }
+tracing = { version = "^0.1.0", features = ["attributes"], default-features = false }
+
+[dev-dependencies]
+alloy-rlp = { version = "^0.3.16", features = ["core-net"], default-features = false }
+assert_matches = { version = "^1.5.0" }
+async-compression = { version = "^0.4", features = ["gzip", "tokio"], default-features = false }
+itertools = { version = "^0.14", default-features = false }
+rand = { version = "^0.9" }
+reth-chainspec = { path = "../../chainspec", default-features = false }
+reth-consensus = { path = "../../consensus/consensus", features = ["test-utils"], default-features = false }
+reth-ethereum-primitives = { path = "../../ethereum/primitives", default-features = false }
+reth-network-p2p = { path = "../p2p", features = ["test-utils"] }
+reth-provider = { path = "../../storage/provider", features = ["test-utils"] }
+reth-testing-utils = { path = "../../../testing/testing-utils" }
+reth-tracing = { path = "../../tracing" }
+tempfile = { version = "^3.20" }
+tokio = { version = "^1.52.3", features = ["macros", "rt-multi-thread"], default-features = false }

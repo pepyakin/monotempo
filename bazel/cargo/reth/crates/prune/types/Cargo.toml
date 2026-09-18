@@ -1,0 +1,60 @@
+# GENERATED FILE - DO NOT EDIT. Regenerate with `python3 bazel/generate.py`.
+#
+# Bazel-only derivation of `reth/crates/prune/types/Cargo.toml`: the same
+# package as `cargo metadata` describes it in the reth workspace, with
+# workspace inheritance resolved. Cargo builds are unaffected.
+
+[package]
+name = "reth-prune-types"
+version = "2.5.2"
+edition = "2024"
+rust-version = "1.95"
+build = false
+autolib = false
+autobins = false
+autoexamples = false
+autotests = false
+autobenches = false
+
+[lib]
+name = "reth_prune_types"
+path = "src/lib.rs"
+
+[features]
+default = ["std"]
+std = [
+    "alloy-primitives/std",
+    "derive_more/std",
+    "serde?/std",
+    "serde_json/std",
+    "strum/std",
+    "thiserror/std",
+    "tracing/std",
+    "reth-codecs?/std",
+]
+test-utils = ["std", "dep:arbitrary", "reth-codecs?/test-utils"]
+arbitrary = ["alloy-primitives/arbitrary", "reth-codecs?/arbitrary"]
+reth-codec = ["dep:reth-codecs", "dep:modular-bitfield"]
+serde = ["dep:serde", "alloy-primitives/serde", "reth-codecs?/serde"]
+
+[dependencies]
+alloy-primitives = { version = "^1.6.1", features = ["map-foldhash"], default-features = false }
+arbitrary = { version = "^1.3", features = ["derive"], optional = true }
+derive_more = { version = "^2", features = ["full"], default-features = false }
+modular-bitfield = { version = "^0.13.1", optional = true }
+reth-codecs = { version = "^0.7.0", optional = true, default-features = false }
+serde = { version = "^1.0", features = ["derive"], optional = true, default-features = false }
+strum = { version = "^0.27", features = ["derive"], default-features = false }
+thiserror = { version = "^2.0.0", default-features = false }
+tracing = { version = "^0.1.0", features = ["attributes"], default-features = false }
+
+[dev-dependencies]
+alloy-primitives = { version = "^1.6.1", features = ["map-foldhash", "serde"], default-features = false }
+arbitrary = { version = "^1.3", features = ["derive"] }
+assert_matches = { version = "^1.5.0" }
+proptest = { version = "^1.7" }
+proptest-arbitrary-interop = { version = "^0.1.0" }
+reth-codecs = { version = "^0.7.0", default-features = false }
+serde = { version = "^1.0", default-features = false }
+serde_json = { version = "^1.0", features = ["alloc"], default-features = false }
+toml = { version = "^0.9" }

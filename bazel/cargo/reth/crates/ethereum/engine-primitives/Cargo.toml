@@ -1,0 +1,49 @@
+# GENERATED FILE - DO NOT EDIT. Regenerate with `python3 bazel/generate.py`.
+#
+# Bazel-only derivation of `reth/crates/ethereum/engine-primitives/Cargo.toml`: the same
+# package as `cargo metadata` describes it in the reth workspace, with
+# workspace inheritance resolved. Cargo builds are unaffected.
+
+[package]
+name = "reth-ethereum-engine-primitives"
+version = "2.5.2"
+edition = "2024"
+rust-version = "1.95"
+build = false
+autolib = false
+autobins = false
+autoexamples = false
+autotests = false
+autobenches = false
+
+[lib]
+name = "reth_ethereum_engine_primitives"
+path = "src/lib.rs"
+
+[features]
+default = ["std"]
+std = [
+    "reth-ethereum-primitives/std",
+    "alloy-primitives/std",
+    "alloy-eips/std",
+    "alloy-rpc-types-engine/std",
+    "serde/std",
+    "serde_json/std",
+    "thiserror/std",
+    "reth-engine-primitives/std",
+    "reth-primitives-traits/std",
+]
+
+[dependencies]
+alloy-eips = { version = "^2.4.2", default-features = false }
+alloy-primitives = { version = "^1.6.1", features = ["map-foldhash"], default-features = false }
+alloy-rpc-types-engine = { version = "^2.4.2", default-features = false }
+reth-engine-primitives = { path = "../../engine/primitives", default-features = false }
+reth-ethereum-primitives = { path = "../primitives", default-features = false }
+reth-payload-primitives = { path = "../../payload/primitives" }
+reth-primitives-traits = { version = "^0.7.1", default-features = false }
+serde = { version = "^1.0", default-features = false }
+thiserror = { version = "^2.0.0", default-features = false }
+
+[dev-dependencies]
+serde_json = { version = "^1.0", features = ["alloc"], default-features = false }

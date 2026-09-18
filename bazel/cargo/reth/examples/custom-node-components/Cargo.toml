@@ -1,0 +1,25 @@
+# GENERATED FILE - DO NOT EDIT. Regenerate with `python3 bazel/generate.py`.
+#
+# Bazel-only derivation of `reth/examples/custom-node-components/Cargo.toml`: the same
+# package as `cargo metadata` describes it in the reth workspace, with
+# workspace inheritance resolved. Cargo builds are unaffected.
+
+[package]
+name = "example-custom-node-components"
+version = "0.0.0"
+edition = "2024"
+build = false
+autolib = false
+autobins = false
+autoexamples = false
+autotests = false
+autobenches = false
+
+[[bin]]
+name = "example-custom-node-components"
+path = "src/main.rs"
+
+[dependencies]
+eyre = { version = "^0.6" }
+reth-ethereum = { path = "../../crates/ethereum/reth", features = ["node", "pool", "node-api", "cli"] }
+reth-tracing = { path = "../../crates/tracing" }

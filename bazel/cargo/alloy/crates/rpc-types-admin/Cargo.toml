@@ -1,0 +1,30 @@
+# GENERATED FILE - DO NOT EDIT. Regenerate with `python3 bazel/generate.py`.
+#
+# Bazel-only derivation of `alloy/crates/rpc-types-admin/Cargo.toml`: the same
+# package as `cargo metadata` describes it in the alloy workspace, with
+# workspace inheritance resolved. Cargo builds are unaffected.
+
+[package]
+name = "alloy-rpc-types-admin"
+version = "2.4.2"
+edition = "2021"
+rust-version = "1.94.1"
+build = false
+autolib = false
+autobins = false
+autoexamples = false
+autotests = false
+autobenches = false
+
+[lib]
+name = "alloy_rpc_types_admin"
+path = "src/lib.rs"
+
+[dependencies]
+alloy-genesis = { path = "../genesis", default-features = false }
+alloy-primitives = { version = "^1.6.0", features = ["serde", "std"], default-features = false }
+serde = { version = "^1.0.226", features = ["derive", "alloc"], default-features = false }
+serde_json = { version = "^1.0", features = ["alloc"], default-features = false }
+
+[dev-dependencies]
+similar-asserts = { version = "^1.5" }

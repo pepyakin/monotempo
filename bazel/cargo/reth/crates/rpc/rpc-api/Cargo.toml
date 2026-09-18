@@ -1,0 +1,53 @@
+# GENERATED FILE - DO NOT EDIT. Regenerate with `python3 bazel/generate.py`.
+#
+# Bazel-only derivation of `reth/crates/rpc/rpc-api/Cargo.toml`: the same
+# package as `cargo metadata` describes it in the reth workspace, with
+# workspace inheritance resolved. Cargo builds are unaffected.
+
+[package]
+name = "reth-rpc-api"
+version = "2.5.2"
+edition = "2024"
+rust-version = "1.95"
+build = false
+autolib = false
+autobins = false
+autoexamples = false
+autotests = false
+autobenches = false
+
+[lib]
+name = "reth_rpc_api"
+path = "src/lib.rs"
+
+[features]
+client = ["jsonrpsee/client", "jsonrpsee/async-client", "reth-rpc-eth-api/client"]
+
+[dependencies]
+alloy-eips = { version = "^2.4.2", default-features = false }
+alloy-genesis = { version = "^2.4.2", default-features = false }
+alloy-json-rpc = { version = "^2.4.2", default-features = false }
+alloy-primitives = { version = "^1.6.1", features = ["map-foldhash"], default-features = false }
+alloy-rpc-types = { version = "^2.4.2", features = ["eth"], default-features = false }
+alloy-rpc-types-admin = { version = "^2.4.2", default-features = false }
+alloy-rpc-types-anvil = { version = "^2.4.2", default-features = false }
+alloy-rpc-types-beacon = { version = "^2.4.2", default-features = false }
+alloy-rpc-types-debug = { version = "^2.4.2", default-features = false }
+alloy-rpc-types-engine = { version = "^2.4.2", default-features = false }
+alloy-rpc-types-eth = { version = "^2.4.2", default-features = false }
+alloy-rpc-types-mev = { version = "^2.4.2", default-features = false }
+alloy-rpc-types-trace = { version = "^2.4.2", default-features = false }
+alloy-rpc-types-txpool = { version = "^2.4.2", default-features = false }
+alloy-serde = { version = "^2.4.2", default-features = false }
+jsonrpsee = { version = "^0.26.0", features = ["server", "macros"] }
+reth-chain-state = { path = "../../chain-state" }
+reth-engine-primitives = { path = "../../engine/primitives", default-features = false }
+reth-network-peers = { path = "../../net/peers", default-features = false }
+reth-rpc-eth-api = { path = "../rpc-eth-api" }
+reth-trie-common = { path = "../../trie/common", features = ["serde"], default-features = false }
+serde = { version = "^1.0", features = ["derive"], default-features = false }
+serde_json = { version = "^1.0", features = ["alloc"], default-features = false }
+
+[dev-dependencies]
+jsonrpsee = { version = "^0.26.0", features = ["client", "async-client", "http-client"] }
+tokio = { version = "^1.52.3", features = ["macros", "rt-multi-thread"], default-features = false }

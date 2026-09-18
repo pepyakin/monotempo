@@ -23,12 +23,12 @@ crate_library(
     crate_features = FEATURES,
     declared_features = DECLARED_FEATURES,
     deps = [
+        "//alloy/crates/consensus:alloy_consensus",
+        "//alloy/crates/eips:alloy_eips",
         "//reth/crates/chainspec:reth_chainspec",
         "//reth/crates/consensus/consensus:reth_consensus",
-        "@reth_crates//:alloy-consensus",
-        "@reth_crates//:alloy-eips",
-        "@reth_crates//:alloy-primitives",
-        "@reth_crates//:reth-primitives-traits",
+        "@crates//:alloy-primitives",
+        "@crates//:reth-primitives-traits",
     ],
 )
 
@@ -40,6 +40,6 @@ crate_unit_test(
     declared_features = DECLARED_FEATURES,
     deps = [
         "//reth/crates/ethereum/primitives:reth_ethereum_primitives",
-        "@reth_crates//:rand-0.9.4",
+        "@crates//:rand-0.9.4",
     ],
 )

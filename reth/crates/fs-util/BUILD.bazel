@@ -17,9 +17,9 @@ crate_library(
     crate_features = FEATURES,
     declared_features = DECLARED_FEATURES,
     deps = [
-        "@reth_crates//:serde",
-        "@reth_crates//:serde_json",
-        "@reth_crates//:thiserror",
+        "@crates//:serde",
+        "@crates//:serde_json",
+        "@crates//:thiserror",
     ],
 )
 

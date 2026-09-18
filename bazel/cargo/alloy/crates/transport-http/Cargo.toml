@@ -1,0 +1,77 @@
+# GENERATED FILE - DO NOT EDIT. Regenerate with `python3 bazel/generate.py`.
+#
+# Bazel-only derivation of `alloy/crates/transport-http/Cargo.toml`: the same
+# package as `cargo metadata` describes it in the alloy workspace, with
+# workspace inheritance resolved. Cargo builds are unaffected.
+
+[package]
+name = "alloy-transport-http"
+version = "2.4.2"
+edition = "2021"
+rust-version = "1.94.1"
+build = false
+autolib = false
+autobins = false
+autoexamples = false
+autotests = false
+autobenches = false
+
+[lib]
+name = "alloy_transport_http"
+path = "src/lib.rs"
+
+[features]
+default = ["reqwest", "reqwest-default-tls", "traceparent"]
+reqwest = ["dep:reqwest", "dep:alloy-json-rpc", "dep:serde_json", "dep:tower", "dep:tracing"]
+hyper = [
+    "dep:hyper",
+    "dep:hyper-util",
+    "dep:http-body-util",
+    "dep:alloy-json-rpc",
+    "dep:serde_json",
+    "dep:tower",
+    "dep:tracing",
+    "hyper-tls",
+]
+hyper-tls = ["hyper", "dep:hyper-tls"]
+jwt-auth = [
+    "hyper",
+    "dep:alloy-rpc-types-engine",
+    "alloy-rpc-types-engine/jwt-aws-lc-rs",
+    "alloy-rpc-types-engine/serde",
+    "dep:jsonwebtoken",
+]
+traceparent = [
+    "dep:tower",
+    "dep:tracing",
+    "dep:alloy-json-rpc",
+    "dep:opentelemetry-http",
+    "dep:opentelemetry",
+    "dep:tracing-opentelemetry",
+]
+reqwest-default-tls = ["reqwest?/default-tls"]
+reqwest-native-tls = ["reqwest?/native-tls"]
+reqwest-rustls-tls = ["reqwest?/rustls"]
+
+[dependencies]
+alloy-json-rpc = { path = "../json-rpc", optional = true, default-features = false }
+alloy-transport = { path = "../transport", default-features = false }
+itertools = { version = ">=0.13, <=0.14", default-features = false }
+serde_json = { version = "^1.0", features = ["alloc"], optional = true, default-features = false }
+tower = { version = "^0.5", features = ["util"], optional = true }
+tracing = { version = "^0.1", optional = true }
+url = { version = "^2.5" }
+
+[target.'cfg(not(all(target_os = "wasi", target_env = "p1")))'.dependencies]
+reqwest = { version = "^0.13", features = ["json"], optional = true, default-features = false }
+
+[target.'cfg(not(target_family = "wasm"))'.dependencies]
+alloy-rpc-types-engine = { path = "../rpc-types-engine", optional = true, default-features = false }
+http-body-util = { version = "^0.1", optional = true }
+hyper = { version = "^1.2", optional = true, default-features = false }
+hyper-tls = { version = "^0.6.0", optional = true }
+hyper-util = { version = "^0.1", features = ["full"], optional = true }
+jsonwebtoken = { version = "^10.3.0", optional = true }
+opentelemetry = { version = "^0.31.0", optional = true }
+opentelemetry-http = { version = "^0.31.0", optional = true }
+tracing-opentelemetry = { version = "^0.32.0", optional = true }

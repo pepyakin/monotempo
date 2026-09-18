@@ -1,0 +1,55 @@
+# GENERATED FILE - DO NOT EDIT. Regenerate with `python3 bazel/generate.py`.
+#
+# Bazel-only derivation of `reth/crates/era-utils/Cargo.toml`: the same
+# package as `cargo metadata` describes it in the reth workspace, with
+# workspace inheritance resolved. Cargo builds are unaffected.
+
+[package]
+name = "reth-era-utils"
+version = "2.5.2"
+edition = "2024"
+rust-version = "1.95"
+build = false
+autolib = false
+autobins = false
+autoexamples = false
+autotests = false
+autobenches = false
+
+[lib]
+name = "reth_era_utils"
+path = "src/lib.rs"
+
+[[test]]
+name = "it"
+path = "tests/it/main.rs"
+
+[dependencies]
+alloy-consensus = { version = "^2.4.2", default-features = false }
+alloy-primitives = { version = "^1.6.1", features = ["map-foldhash"], default-features = false }
+alloy-rlp = { version = "^0.3.16", features = ["core-net"], default-features = false }
+eyre = { version = "^0.6" }
+futures-util = { version = "^0.3", default-features = false }
+reth-codecs = { version = "^0.7.0", default-features = false }
+reth-db-api = { path = "../storage/db-api" }
+reth-era = { path = "../era" }
+reth-era-downloader = { path = "../era-downloader" }
+reth-etl = { path = "../etl" }
+reth-fs-util = { path = "../fs-util" }
+reth-primitives-traits = { version = "^0.7.1", default-features = false }
+reth-provider = { path = "../storage/provider" }
+reth-stages-types = { path = "../stages/types", default-features = false }
+reth-storage-api = { path = "../storage/storage-api", default-features = false }
+tokio = { version = "^1.52.3", features = ["fs", "io-util", "macros", "rt-multi-thread"], default-features = false }
+tracing = { version = "^0.1.0", features = ["attributes"], default-features = false }
+
+[dev-dependencies]
+bytes = { version = "^1.11.1", default-features = false }
+reqwest = { version = "^0.13", features = ["rustls", "stream"], default-features = false }
+reth-db-common = { path = "../storage/db-common" }
+reth-ethereum-primitives = { path = "../ethereum/primitives", default-features = false }
+reth-provider = { path = "../storage/provider", features = ["test-utils"] }
+reth-prune-types = { path = "../prune/types", default-features = false }
+reth-static-file-types = { path = "../static-file/types", default-features = false }
+tempfile = { version = "^3.20" }
+tokio-util = { version = "^0.7.4", features = ["codec"] }

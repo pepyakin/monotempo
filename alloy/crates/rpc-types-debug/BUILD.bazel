@@ -17,11 +17,11 @@ crate_library(
     crate_features = FEATURES,
     declared_features = DECLARED_FEATURES,
     deps = [
-        "@alloy_crates//:alloy-primitives",
-        "@alloy_crates//:alloy-rlp",
-        "@alloy_crates//:derive_more",
-        "@alloy_crates//:serde",
-        "@alloy_crates//:serde_with",
+        "@crates//:alloy-primitives",
+        "@crates//:alloy-rlp",
+        "@crates//:derive_more",
+        "@crates//:serde",
+        "@crates//:serde_with",
     ],
 )
 
@@ -32,6 +32,6 @@ crate_unit_test(
     crate_features = FEATURES,
     declared_features = DECLARED_FEATURES,
     deps = [
-        "@alloy_crates//:serde_json",
+        "@crates//:serde_json",
     ],
 )

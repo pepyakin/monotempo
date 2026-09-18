@@ -19,9 +19,9 @@ crate_binary(
     workspace_lints = False,
     deps = [
         "//reth/crates/ethereum/reth:reth_ethereum",
-        "@reth_crates//:eyre",
-        "@reth_crates//:futures",
-        "@reth_crates//:tokio",
+        "@crates//:eyre",
+        "@crates//:futures",
+        "@crates//:tokio",
     ],
 )
 

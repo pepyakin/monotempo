@@ -17,6 +17,7 @@ crate_library(
     crate_features = FEATURES,
     declared_features = DECLARED_FEATURES,
     deps = [
+        "//alloy/crates/rpc-types-engine:alloy_rpc_types_engine",
         "//reth/crates/consensus/consensus:reth_consensus",
         "//reth/crates/engine/primitives:reth_engine_primitives",
         "//reth/crates/evm/evm:reth_evm",
@@ -32,8 +33,7 @@ crate_library(
         "//reth/crates/tasks:reth_tasks",
         "//reth/crates/tokio-util:reth_tokio_util",
         "//reth/crates/transaction-pool:reth_transaction_pool",
-        "@reth_crates//:alloy-rpc-types-engine",
-        "@reth_crates//:eyre",
+        "@crates//:eyre",
     ],
 )
 

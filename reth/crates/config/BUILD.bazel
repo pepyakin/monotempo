@@ -26,11 +26,11 @@ crate_library(
         "//reth/crates/prune/types:reth_prune_types",
         "//reth/crates/stages/types:reth_stages_types",
         "//reth/crates/static-file/types:reth_static_file_types",
-        "@reth_crates//:eyre",
-        "@reth_crates//:humantime-serde",
-        "@reth_crates//:serde",
-        "@reth_crates//:toml",
-        "@reth_crates//:url",
+        "@crates//:eyre",
+        "@crates//:humantime-serde",
+        "@crates//:serde",
+        "@crates//:toml-0.9.12+spec-1.1.0",
+        "@crates//:url",
     ],
 )
 
@@ -41,7 +41,7 @@ crate_unit_test(
     crate_features = FEATURES,
     declared_features = DECLARED_FEATURES,
     deps = [
-        "@reth_crates//:alloy-primitives",
-        "@reth_crates//:tempfile",
+        "@crates//:alloy-primitives",
+        "@crates//:tempfile",
     ],
 )

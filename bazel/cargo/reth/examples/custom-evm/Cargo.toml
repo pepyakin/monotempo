@@ -1,0 +1,29 @@
+# GENERATED FILE - DO NOT EDIT. Regenerate with `python3 bazel/generate.py`.
+#
+# Bazel-only derivation of `reth/examples/custom-evm/Cargo.toml`: the same
+# package as `cargo metadata` describes it in the reth workspace, with
+# workspace inheritance resolved. Cargo builds are unaffected.
+
+[package]
+name = "example-custom-evm"
+version = "0.0.0"
+edition = "2024"
+build = false
+autolib = false
+autobins = false
+autoexamples = false
+autotests = false
+autobenches = false
+
+[[bin]]
+name = "example-custom-evm"
+path = "src/main.rs"
+
+[dependencies]
+alloy-evm = { version = "^0.39.0", default-features = false }
+alloy-genesis = { version = "^2.4.2", default-features = false }
+alloy-primitives = { version = "^1.6.1", features = ["map-foldhash"], default-features = false }
+eyre = { version = "^0.6" }
+reth-ethereum = { path = "../../crates/ethereum/reth", features = ["test-utils", "node", "evm", "pool"] }
+reth-tracing = { path = "../../crates/tracing" }
+tokio = { version = "^1.52.3", default-features = false }

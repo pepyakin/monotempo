@@ -1,0 +1,45 @@
+# GENERATED FILE - DO NOT EDIT. Regenerate with `python3 bazel/generate.py`.
+#
+# Bazel-only derivation of `reth/crates/engine/util/Cargo.toml`: the same
+# package as `cargo metadata` describes it in the reth workspace, with
+# workspace inheritance resolved. Cargo builds are unaffected.
+
+[package]
+name = "reth-engine-util"
+version = "2.5.2"
+edition = "2024"
+rust-version = "1.95"
+build = false
+autolib = false
+autobins = false
+autoexamples = false
+autotests = false
+autobenches = false
+
+[lib]
+name = "reth_engine_util"
+path = "src/lib.rs"
+
+[dependencies]
+alloy-consensus = { version = "^2.4.2", default-features = false }
+alloy-primitives = { version = "^1.6.1", features = ["map-foldhash"], default-features = false }
+alloy-rpc-types-engine = { version = "^2.4.2", default-features = false }
+eyre = { version = "^0.6" }
+futures = { version = "^0.3" }
+itertools = { version = "^0.14", default-features = false }
+pin-project = { version = "^1.1.12" }
+reth-chainspec = { path = "../../chainspec", default-features = false }
+reth-engine-primitives = { path = "../primitives", features = ["std"], default-features = false }
+reth-engine-tree = { path = "../tree" }
+reth-errors = { path = "../../errors" }
+reth-evm = { path = "../../evm/evm", default-features = false }
+reth-fs-util = { path = "../../fs-util" }
+reth-payload-primitives = { path = "../../payload/primitives" }
+reth-primitives-traits = { version = "^0.7.1", default-features = false }
+reth-revm = { path = "../../revm", default-features = false }
+reth-storage-api = { path = "../../storage/storage-api", default-features = false }
+serde = { version = "^1.0", default-features = false }
+serde_json = { version = "^1.0", features = ["alloc"], default-features = false }
+tokio = { version = "^1.52.3", default-features = false }
+tokio-util = { version = "^0.7.4", features = ["codec"] }
+tracing = { version = "^0.1.0", features = ["attributes"], default-features = false }

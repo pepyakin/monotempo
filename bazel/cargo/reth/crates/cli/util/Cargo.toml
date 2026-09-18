@@ -1,0 +1,54 @@
+# GENERATED FILE - DO NOT EDIT. Regenerate with `python3 bazel/generate.py`.
+#
+# Bazel-only derivation of `reth/crates/cli/util/Cargo.toml`: the same
+# package as `cargo metadata` describes it in the reth workspace, with
+# workspace inheritance resolved. Cargo builds are unaffected.
+
+[package]
+name = "reth-cli-util"
+version = "2.5.2"
+edition = "2024"
+rust-version = "1.95"
+build = false
+autolib = false
+autobins = false
+autoexamples = false
+autotests = false
+autobenches = false
+
+[lib]
+name = "reth_cli_util"
+path = "src/lib.rs"
+
+[features]
+jemalloc = [
+    "dep:tikv-jemallocator",
+    "dep:tikv-jemalloc-sys",
+    "tikv-jemallocator?/override_allocator_on_supported_platforms",
+]
+jemalloc-prof = ["jemalloc", "tikv-jemallocator?/profiling"]
+tracy-allocator = ["dep:tracy-client", "dep:reth-tracing"]
+snmalloc = ["dep:snmalloc-rs"]
+snmalloc-native = ["snmalloc", "snmalloc-rs/native-cpu"]
+
+[dependencies]
+alloy-eips = { version = "^2.4.2", default-features = false }
+alloy-primitives = { version = "^1.6.1", features = ["map-foldhash"], default-features = false }
+cfg-if = { version = "^1.0" }
+eyre = { version = "^0.6" }
+rand_08 = { package = "rand", version = "^0.8" }
+reth-fs-util = { path = "../../fs-util" }
+reth-tracing = { path = "../../tracing", optional = true }
+secp256k1 = { version = "^0.30", features = ["global-context", "recovery", "rand"], default-features = false }
+serde = { version = "^1.0", default-features = false }
+thiserror = { version = "^2.0.0", default-features = false }
+tracy-client = { version = "^0.18.0", features = ["demangle"], optional = true }
+
+[dev-dependencies]
+rand = { version = "^0.9" }
+
+[target.'cfg(unix)'.dependencies]
+libc = { version = "^0.2" }
+snmalloc-rs = { version = "^0.3.7", features = ["build_cc"], optional = true }
+tikv-jemalloc-sys = { version = "^0.6", optional = true }
+tikv-jemallocator = { version = "^0.6", optional = true }

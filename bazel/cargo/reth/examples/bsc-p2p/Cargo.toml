@@ -1,0 +1,75 @@
+# GENERATED FILE - DO NOT EDIT. Regenerate with `python3 bazel/generate.py`.
+#
+# Bazel-only derivation of `reth/examples/bsc-p2p/Cargo.toml`: the same
+# package as `cargo metadata` describes it in the reth workspace, with
+# workspace inheritance resolved. Cargo builds are unaffected.
+
+[package]
+name = "example-bsc-p2p"
+version = "0.0.0"
+edition = "2024"
+build = false
+autolib = false
+autobins = false
+autoexamples = false
+autotests = false
+autobenches = false
+
+[lib]
+name = "example_bsc_p2p"
+path = "src/lib.rs"
+
+[[bin]]
+name = "example-bsc-p2p"
+path = "src/main.rs"
+
+[[test]]
+name = "it"
+path = "tests/it/main.rs"
+
+[features]
+serde = [
+    "dep:serde",
+    "alloy-primitives/serde",
+    "reth-eth-wire/serde",
+    "reth-eth-wire-types/serde",
+    "reth-ethereum-forks/serde",
+    "reth-primitives-traits/serde",
+    "secp256k1/serde",
+    "bytes/serde",
+    "reth-network/serde",
+    "reth-network-api/serde",
+    "reth-ethereum-primitives/serde",
+]
+
+[dependencies]
+alloy-primitives = { version = "^1.6.1", features = ["map-foldhash"], default-features = false }
+alloy-rlp = { version = "^0.3.16", features = ["core-net"], default-features = false }
+alloy-rpc-types = { version = "^2.4.2", features = ["eth", "engine"], default-features = false }
+bytes = { version = "^1.11.1", default-features = false }
+futures = { version = "^0.3" }
+reth-chainspec = { path = "../../crates/chainspec", default-features = false }
+reth-discv4 = { path = "../../crates/net/discv4", features = ["test-utils"] }
+reth-engine-primitives = { path = "../../crates/engine/primitives", default-features = false }
+reth-eth-wire = { path = "../../crates/net/eth-wire" }
+reth-eth-wire-types = { path = "../../crates/net/eth-wire-types" }
+reth-ethereum-forks = { path = "../../crates/ethereum/hardforks", features = ["serde"], default-features = false }
+reth-network = { path = "../../crates/net/network", features = ["test-utils"] }
+reth-network-api = { path = "../../crates/net/network-api" }
+reth-network-peers = { path = "../../crates/net/peers", default-features = false }
+reth-payload-primitives = { path = "../../crates/payload/primitives" }
+reth-primitives-traits = { version = "^0.7.1", default-features = false }
+reth-provider = { path = "../../crates/storage/provider", features = ["test-utils"] }
+reth-tasks = { path = "../../crates/tasks" }
+reth-tracing = { path = "../../crates/tracing" }
+secp256k1 = { version = "^0.30", features = ["global-context", "recovery", "global-context", "std", "recovery"], default-features = false }
+serde = { version = "^1.0", features = ["derive"], optional = true, default-features = false }
+serde_json = { version = "^1.0", features = ["alloc"], default-features = false }
+thiserror = { version = "^2.0.0", default-features = false }
+tokio = { version = "^1.52.3", default-features = false }
+tokio-stream = { version = "^0.1.11" }
+tracing = { version = "^0.1.0", features = ["attributes"], default-features = false }
+
+[dev-dependencies]
+reth-ethereum-primitives = { path = "../../crates/ethereum/primitives", default-features = false }
+reth-node-ethereum = { path = "../../crates/ethereum/node" }
