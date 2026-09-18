@@ -1,0 +1,43 @@
+# Bazel configuration for reth. See bazel/README.md.
+
+# Keep MODULE.bazel.lock in sync automatically; CI checks it in with --lockfile_mode=error.
+common --lockfile_mode=update
+
+# Hermeticity: actions do not inherit the client environment (PATH etc.) and
+# only see declared inputs.
+build --incompatible_strict_action_env
+build --sandbox_default_allow_network=false
+
+# Emit rmeta first so dependants can start compiling before codegen finishes
+# (mirrors cargo's pipelined compilation).
+build --@rules_rust//rust/settings:pipelined_compilation=True
+
+# Compact, cargo-like diagnostics.
+build --@rules_rust//rust/settings:error_format=human
+
+# `-C codegen-units=4` and, more importantly, have each rustc action reserve
+# 4 CPUs in Bazel's local scheduler. Without it Bazel runs one rustc per core;
+# reth's test binaries need 2-3 GiB each to link, and 16 of them at once
+# exhausted a 32 GiB machine. Lower/raise in user.bazelrc for other machines.
+build --@rules_rust//rust/settings:codegen_units=4
+
+# Test output: only failures are printed, like nextest.
+test --test_output=errors
+test --test_summary=terse
+
+# Release build, roughly the `release` cargo profile (opt-level 3, thin LTO,
+# no debug info).
+build:release --compilation_mode=opt
+build:release --@rules_rust//rust/settings:lto=thin
+
+# CI: fail if MODULE.bazel.lock or Cargo.Bazel.lock would change.
+common:ci --lockfile_mode=error
+build:ci --show_timestamps
+build:ci --announce_rc
+build:ci --color=yes
+build:ci --curses=no
+build:ci --keep_going
+test:ci --test_output=errors
+
+# Local overrides (disk cache, remote cache credentials, ...). Not committed.
+try-import %workspace%/user.bazelrc

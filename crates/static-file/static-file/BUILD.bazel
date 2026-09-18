@@ -1,0 +1,45 @@
+# GENERATED FILE - DO NOT EDIT.
+#
+# Regenerate with `python3 scripts/bazel/generate.py` after changing Cargo.toml.
+
+load("//bazel:rust.bzl", "reth_cargo_toml_env_vars", "reth_library", "reth_unit_test")
+
+FEATURES = []
+
+DECLARED_FEATURES = []
+
+reth_cargo_toml_env_vars()
+
+reth_library(
+    name = "reth_static_file",
+    crate_features = FEATURES,
+    declared_features = DECLARED_FEATURES,
+    deps = [
+        "//crates/prune/types:reth_prune_types",
+        "//crates/stages/types:reth_stages_types",
+        "//crates/static-file/types:reth_static_file_types",
+        "//crates/storage/db-api:reth_db_api",
+        "//crates/storage/errors:reth_storage_errors",
+        "//crates/storage/provider:reth_provider",
+        "//crates/tokio-util:reth_tokio_util",
+        "@crates//:alloy-primitives",
+        "@crates//:parking_lot",
+        "@crates//:rayon",
+        "@crates//:reth-codecs",
+        "@crates//:reth-primitives-traits",
+        "@crates//:tracing",
+    ],
+)
+
+reth_unit_test(
+    name = "reth_static_file_test",
+    crate = ":reth_static_file",
+    crate_features = FEATURES,
+    declared_features = DECLARED_FEATURES,
+    deps = [
+        "//crates/stages/stages:reth_stages",
+        "//testing/testing-utils:reth_testing_utils",
+        "@crates//:assert_matches",
+        "@crates//:tempfile",
+    ],
+)

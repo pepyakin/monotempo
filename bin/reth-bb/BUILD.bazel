@@ -1,0 +1,88 @@
+# GENERATED FILE - DO NOT EDIT.
+#
+# Regenerate with `python3 scripts/bazel/generate.py` after changing Cargo.toml.
+
+load("//bazel:rust.bzl", "reth_binary", "reth_cargo_toml_env_vars", "reth_unit_test")
+
+FEATURES = [
+    "asm-keccak",
+    "default",
+    "jemalloc",
+    "js-tracer",
+    "keccak-cache-global",
+    "min-trace-logs",
+    "otlp",
+    "otlp-logs",
+]
+
+DECLARED_FEATURES = [
+    "asm-keccak",
+    "default",
+    "jemalloc",
+    "js-tracer",
+    "keccak-cache-global",
+    "min-debug-logs",
+    "min-trace-logs",
+    "otlp",
+    "otlp-logs",
+]
+
+reth_cargo_toml_env_vars()
+
+reth_binary(
+    name = "reth-bb",
+    crate_features = FEATURES,
+    declared_features = DECLARED_FEATURES,
+    deps = [
+        "//crates/chain-state:reth_chain_state",
+        "//crates/chainspec:reth_chainspec",
+        "//crates/cli/util:reth_cli_util",
+        "//crates/consensus/consensus:reth_consensus",
+        "//crates/engine/primitives:reth_engine_primitives",
+        "//crates/engine/tree:reth_engine_tree",
+        "//crates/errors:reth_errors",
+        "//crates/ethereum/cli:reth_ethereum_cli",
+        "//crates/ethereum/consensus:reth_ethereum_consensus",
+        "//crates/ethereum/evm:reth_evm_ethereum",
+        "//crates/ethereum/hardforks:reth_ethereum_forks",
+        "//crates/ethereum/node:reth_node_ethereum",
+        "//crates/ethereum/primitives:reth_ethereum_primitives",
+        "//crates/evm/evm:reth_evm",
+        "//crates/node/api:reth_node_api",
+        "//crates/node/builder:reth_node_builder",
+        "//crates/node/core:reth_node_core",
+        "//crates/payload/primitives:reth_payload_primitives",
+        "//crates/revm:reth_revm",
+        "//crates/rpc/rpc-api:reth_rpc_api",
+        "//crates/rpc/rpc-engine-api:reth_rpc_engine_api",
+        "//crates/storage/errors:reth_storage_errors",
+        "//crates/storage/provider:reth_provider",
+        "@crates//:alloy-consensus",
+        "@crates//:alloy-eips",
+        "@crates//:alloy-evm",
+        "@crates//:alloy-hardforks",
+        "@crates//:alloy-primitives",
+        "@crates//:alloy-rlp",
+        "@crates//:alloy-rpc-types",
+        "@crates//:clap",
+        "@crates//:crossbeam-channel",
+        "@crates//:derive_more",
+        "@crates//:eyre",
+        "@crates//:jsonrpsee",
+        "@crates//:metrics",
+        "@crates//:reth-primitives-traits",
+        "@crates//:revm",
+        "@crates//:tokio",
+        "@crates//:tracing",
+    ],
+    proc_macro_deps = [
+        "@crates//:async-trait",
+    ],
+)
+
+reth_unit_test(
+    name = "reth_bb_test",
+    crate = ":reth-bb",
+    crate_features = FEATURES,
+    declared_features = DECLARED_FEATURES,
+)

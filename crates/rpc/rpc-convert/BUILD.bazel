@@ -1,0 +1,48 @@
+# GENERATED FILE - DO NOT EDIT.
+#
+# Regenerate with `python3 scripts/bazel/generate.py` after changing Cargo.toml.
+
+load("//bazel:rust.bzl", "reth_cargo_toml_env_vars", "reth_library", "reth_unit_test")
+
+FEATURES = [
+    "default",
+]
+
+DECLARED_FEATURES = [
+    "default",
+]
+
+reth_cargo_toml_env_vars()
+
+reth_library(
+    name = "reth_rpc_convert",
+    crate_features = FEATURES,
+    declared_features = DECLARED_FEATURES,
+    deps = [
+        "//crates/evm/evm:reth_evm",
+        "@crates//:alloy-consensus",
+        "@crates//:alloy-evm",
+        "@crates//:alloy-json-rpc",
+        "@crates//:alloy-network",
+        "@crates//:alloy-primitives",
+        "@crates//:alloy-rpc-types-eth",
+        "@crates//:dyn-clone",
+        "@crates//:jsonrpsee-types",
+        "@crates//:reth-primitives-traits",
+        "@crates//:reth-rpc-traits",
+        "@crates//:thiserror",
+    ],
+    proc_macro_deps = [
+        "@crates//:auto_impl",
+    ],
+)
+
+reth_unit_test(
+    name = "reth_rpc_convert_test",
+    crate = ":reth_rpc_convert",
+    crate_features = FEATURES,
+    declared_features = DECLARED_FEATURES,
+    deps = [
+        "@crates//:serde_json",
+    ],
+)

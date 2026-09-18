@@ -1,0 +1,101 @@
+# GENERATED FILE - DO NOT EDIT.
+#
+# Regenerate with `python3 scripts/bazel/generate.py` after changing Cargo.toml.
+
+load("//bazel:rust.bzl", "reth_cargo_toml_env_vars", "reth_integration_test", "reth_library", "reth_unit_test")
+
+FEATURES = [
+    "default",
+    "metrics",
+    "std",
+    "test-utils",
+]
+
+DECLARED_FEATURES = [
+    "arbitrary",
+    "default",
+    "metrics",
+    "std",
+    "test-utils",
+]
+
+reth_cargo_toml_env_vars()
+
+reth_library(
+    name = "reth_trie_sparse",
+    crate_features = FEATURES,
+    declared_features = DECLARED_FEATURES,
+    deps = [
+        "//crates/evm/execution-errors:reth_execution_errors",
+        "//crates/metrics:reth_metrics",
+        "//crates/trie/common:reth_trie_common",
+        "@crates//:alloy-primitives",
+        "@crates//:alloy-trie",
+        "@crates//:either",
+        "@crates//:metrics",
+        "@crates//:rayon",
+        "@crates//:reth-primitives-traits",
+        "@crates//:slotmap",
+        "@crates//:smallvec",
+        "@crates//:strum",
+        "@crates//:tracing",
+    ],
+)
+
+reth_unit_test(
+    name = "reth_trie_sparse_test",
+    crate = ":reth_trie_sparse",
+    crate_features = FEATURES,
+    declared_features = DECLARED_FEATURES,
+    deps = [
+        "//crates/tracing:reth_tracing",
+        "//crates/trie/trie:reth_trie",
+        "@crates//:alloy-rlp",
+        "@crates//:arbitrary",
+        "@crates//:itertools",
+        "@crates//:pretty_assertions",
+        "@crates//:proptest",
+        "@crates//:proptest-arbitrary-interop",
+        "@crates//:rand-0.9.4",
+        "@crates//:rand_08-0.8.6",
+    ],
+    aliases = {
+        "@crates//:rand_08-0.8.6": "rand_08",
+    },
+)
+
+reth_integration_test(
+    name = "reth_trie_sparse_suite_test",
+    crate_root = "tests/suite/main.rs",
+    crate_features = FEATURES,
+    declared_features = DECLARED_FEATURES,
+    deps = [
+        "//crates/evm/execution-errors:reth_execution_errors",
+        "//crates/metrics:reth_metrics",
+        "//crates/tracing:reth_tracing",
+        "//crates/trie/common:reth_trie_common",
+        "//crates/trie/trie:reth_trie",
+        ":reth_trie_sparse",
+        "@crates//:alloy-primitives",
+        "@crates//:alloy-rlp",
+        "@crates//:alloy-trie",
+        "@crates//:arbitrary",
+        "@crates//:either",
+        "@crates//:itertools",
+        "@crates//:metrics",
+        "@crates//:pretty_assertions",
+        "@crates//:proptest",
+        "@crates//:proptest-arbitrary-interop",
+        "@crates//:rand-0.9.4",
+        "@crates//:rand_08-0.8.6",
+        "@crates//:rayon",
+        "@crates//:reth-primitives-traits",
+        "@crates//:slotmap",
+        "@crates//:smallvec",
+        "@crates//:strum",
+        "@crates//:tracing",
+    ],
+    aliases = {
+        "@crates//:rand_08-0.8.6": "rand_08",
+    },
+)

@@ -1,0 +1,110 @@
+# GENERATED FILE - DO NOT EDIT.
+#
+# Regenerate with `python3 scripts/bazel/generate.py` after changing Cargo.toml.
+
+load("//bazel:rust.bzl", "reth_cargo_toml_env_vars", "reth_integration_test", "reth_library", "reth_unit_test")
+
+FEATURES = [
+    "default",
+    "read-tx-timeouts",
+    "return-borrowed",
+]
+
+DECLARED_FEATURES = [
+    "default",
+    "read-tx-timeouts",
+    "return-borrowed",
+]
+
+reth_cargo_toml_env_vars()
+
+reth_library(
+    name = "reth_libmdbx",
+    crate_features = FEATURES,
+    declared_features = DECLARED_FEATURES,
+    deps = [
+        "//crates/storage/libmdbx-rs/mdbx-sys:reth_mdbx_sys",
+        "@crates//:bitflags",
+        "@crates//:byteorder",
+        "@crates//:crossbeam-queue",
+        "@crates//:dashmap",
+        "@crates//:derive_more",
+        "@crates//:parking_lot",
+        "@crates//:smallvec",
+        "@crates//:thiserror",
+        "@crates//:tracing",
+    ],
+)
+
+reth_unit_test(
+    name = "reth_libmdbx_test",
+    crate = ":reth_libmdbx",
+    crate_features = FEATURES,
+    declared_features = DECLARED_FEATURES,
+    deps = [
+        "@crates//:tempfile",
+    ],
+)
+
+reth_integration_test(
+    name = "reth_libmdbx_cursor_test",
+    crate_root = "tests/cursor.rs",
+    crate_features = FEATURES,
+    declared_features = DECLARED_FEATURES,
+    deps = [
+        "//crates/storage/libmdbx-rs/mdbx-sys:reth_mdbx_sys",
+        ":reth_libmdbx",
+        "@crates//:bitflags",
+        "@crates//:byteorder",
+        "@crates//:crossbeam-queue",
+        "@crates//:dashmap",
+        "@crates//:derive_more",
+        "@crates//:parking_lot",
+        "@crates//:smallvec",
+        "@crates//:tempfile",
+        "@crates//:thiserror",
+        "@crates//:tracing",
+    ],
+)
+
+reth_integration_test(
+    name = "reth_libmdbx_environment_test",
+    crate_root = "tests/environment.rs",
+    crate_features = FEATURES,
+    declared_features = DECLARED_FEATURES,
+    deps = [
+        "//crates/storage/libmdbx-rs/mdbx-sys:reth_mdbx_sys",
+        ":reth_libmdbx",
+        "@crates//:bitflags",
+        "@crates//:byteorder",
+        "@crates//:crossbeam-queue",
+        "@crates//:dashmap",
+        "@crates//:derive_more",
+        "@crates//:parking_lot",
+        "@crates//:smallvec",
+        "@crates//:tempfile",
+        "@crates//:thiserror",
+        "@crates//:tracing",
+    ],
+)
+
+reth_integration_test(
+    name = "reth_libmdbx_transaction_test",
+    crate_root = "tests/transaction.rs",
+    crate_features = FEATURES,
+    declared_features = DECLARED_FEATURES,
+    deps = [
+        "//crates/storage/libmdbx-rs/mdbx-sys:reth_mdbx_sys",
+        ":reth_libmdbx",
+        "@crates//:bitflags",
+        "@crates//:byteorder",
+        "@crates//:crossbeam-queue",
+        "@crates//:dashmap",
+        "@crates//:derive_more",
+        "@crates//:parking_lot",
+        "@crates//:smallvec",
+        "@crates//:tempfile",
+        "@crates//:thiserror",
+        "@crates//:tracing",
+    ],
+)

@@ -1,0 +1,47 @@
+# GENERATED FILE - DO NOT EDIT.
+#
+# Regenerate with `python3 scripts/bazel/generate.py` after changing Cargo.toml.
+
+load("//bazel:rust.bzl", "reth_cargo_toml_env_vars", "reth_library", "reth_unit_test")
+
+FEATURES = [
+    "test-utils",
+]
+
+DECLARED_FEATURES = [
+    "test-utils",
+]
+
+reth_cargo_toml_env_vars()
+
+reth_library(
+    name = "reth_payload_builder",
+    crate_features = FEATURES,
+    declared_features = DECLARED_FEATURES,
+    deps = [
+        "//crates/chain-state:reth_chain_state",
+        "//crates/engine/execution-cache:reth_execution_cache",
+        "//crates/ethereum/engine-primitives:reth_ethereum_engine_primitives",
+        "//crates/metrics:reth_metrics",
+        "//crates/payload/builder-primitives:reth_payload_builder_primitives",
+        "//crates/payload/primitives:reth_payload_primitives",
+        "//crates/trie/parallel:reth_trie_parallel",
+        "@crates//:alloy-consensus",
+        "@crates//:alloy-primitives",
+        "@crates//:alloy-rpc-types",
+        "@crates//:derive_more",
+        "@crates//:futures-util",
+        "@crates//:metrics",
+        "@crates//:reth-primitives-traits",
+        "@crates//:tokio",
+        "@crates//:tokio-stream",
+        "@crates//:tracing",
+    ],
+)
+
+reth_unit_test(
+    name = "reth_payload_builder_test",
+    crate = ":reth_payload_builder",
+    crate_features = FEATURES,
+    declared_features = DECLARED_FEATURES,
+)

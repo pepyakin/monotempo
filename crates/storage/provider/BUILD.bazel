@@ -1,0 +1,88 @@
+# GENERATED FILE - DO NOT EDIT.
+#
+# Regenerate with `python3 scripts/bazel/generate.py` after changing Cargo.toml.
+
+load("//bazel:rust.bzl", "reth_cargo_toml_env_vars", "reth_library", "reth_unit_test")
+
+FEATURES = [
+    "jemalloc",
+    "reth-ethereum-engine-primitives",
+    "test-utils",
+]
+
+DECLARED_FEATURES = [
+    "jemalloc",
+    "reth-ethereum-engine-primitives",
+    "test-utils",
+]
+
+reth_cargo_toml_env_vars()
+
+reth_library(
+    name = "reth_provider",
+    crate_features = FEATURES,
+    declared_features = DECLARED_FEATURES,
+    deps = [
+        "//crates/chain-state:reth_chain_state",
+        "//crates/chainspec:reth_chainspec",
+        "//crates/errors:reth_errors",
+        "//crates/ethereum/engine-primitives:reth_ethereum_engine_primitives",
+        "//crates/ethereum/primitives:reth_ethereum_primitives",
+        "//crates/evm/execution-types:reth_execution_types",
+        "//crates/fs-util:reth_fs_util",
+        "//crates/metrics:reth_metrics",
+        "//crates/node/types:reth_node_types",
+        "//crates/prune/types:reth_prune_types",
+        "//crates/stages/types:reth_stages_types",
+        "//crates/static-file/types:reth_static_file_types",
+        "//crates/storage/db-api:reth_db_api",
+        "//crates/storage/db:reth_db",
+        "//crates/storage/errors:reth_storage_errors",
+        "//crates/storage/nippy-jar:reth_nippy_jar",
+        "//crates/storage/storage-api:reth_storage_api",
+        "//crates/storage/storage-overlay:reth_storage_overlay",
+        "//crates/tasks:reth_tasks",
+        "//crates/tokio-util:reth_tokio_util",
+        "//crates/trie/db:reth_trie_db",
+        "//crates/trie/trie:reth_trie",
+        "@crates//:alloy-consensus",
+        "@crates//:alloy-eip7928",
+        "@crates//:alloy-eips",
+        "@crates//:alloy-genesis",
+        "@crates//:alloy-primitives",
+        "@crates//:alloy-rpc-types-engine",
+        "@crates//:eyre",
+        "@crates//:itertools",
+        "@crates//:metrics",
+        "@crates//:notify",
+        "@crates//:parking_lot",
+        "@crates//:rayon",
+        "@crates//:reth-codecs",
+        "@crates//:reth-primitives-traits",
+        "@crates//:revm",
+        "@crates//:rocksdb",
+        "@crates//:smallvec",
+        "@crates//:strum",
+        "@crates//:tokio",
+        "@crates//:tracing",
+    ] + select({
+        "@platforms//os:linux": ["@crates//:libc"],
+        "@platforms//os:macos": ["@crates//:libc"],
+        "//conditions:default": [],
+    }),
+)
+
+reth_unit_test(
+    name = "reth_provider_test",
+    crate = ":reth_provider",
+    crate_features = FEATURES,
+    declared_features = DECLARED_FEATURES,
+    deps = [
+        "//crates/tracing:reth_tracing",
+        "//testing/testing-utils:reth_testing_utils",
+        "@crates//:assert_matches",
+        "@crates//:rand-0.9.4",
+        "@crates//:tempfile",
+        "@crates//:tokio-stream",
+    ],
+)

@@ -1,0 +1,60 @@
+# GENERATED FILE - DO NOT EDIT.
+#
+# Regenerate with `python3 scripts/bazel/generate.py` after changing Cargo.toml.
+
+load("//bazel:rust.bzl", "reth_cargo_toml_env_vars", "reth_library", "reth_unit_test")
+
+FEATURES = [
+    "default",
+    "metrics",
+    "reth-metrics",
+    "test-utils",
+]
+
+DECLARED_FEATURES = [
+    "default",
+    "metrics",
+    "reth-metrics",
+    "test-utils",
+    "trie-debug",
+]
+
+reth_cargo_toml_env_vars()
+
+reth_library(
+    name = "reth_trie_parallel",
+    crate_features = FEATURES,
+    declared_features = DECLARED_FEATURES,
+    deps = [
+        "//crates/evm/execution-errors:reth_execution_errors",
+        "//crates/metrics:reth_metrics",
+        "//crates/storage/errors:reth_storage_errors",
+        "//crates/storage/provider:reth_provider",
+        "//crates/tasks:reth_tasks",
+        "//crates/trie/trie:reth_trie",
+        "@crates//:alloy-evm",
+        "@crates//:alloy-primitives",
+        "@crates//:alloy-rlp",
+        "@crates//:crossbeam-channel",
+        "@crates//:crossbeam-utils",
+        "@crates//:metrics",
+        "@crates//:reth-primitives-traits",
+        "@crates//:revm",
+        "@crates//:thiserror",
+        "@crates//:tracing",
+    ],
+)
+
+reth_unit_test(
+    name = "reth_trie_parallel_test",
+    crate = ":reth_trie_parallel",
+    crate_features = FEATURES,
+    declared_features = DECLARED_FEATURES,
+    deps = [
+        "//crates/chainspec:reth_chainspec",
+        "//crates/ethereum/primitives:reth_ethereum_primitives",
+        "//crates/storage/storage-overlay:reth_storage_overlay",
+        "@crates//:rand-0.9.4",
+        "@crates//:tokio",
+    ],
+)

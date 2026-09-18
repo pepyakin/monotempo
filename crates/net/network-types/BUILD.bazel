@@ -1,0 +1,39 @@
+# GENERATED FILE - DO NOT EDIT.
+#
+# Regenerate with `python3 scripts/bazel/generate.py` after changing Cargo.toml.
+
+load("//bazel:rust.bzl", "reth_cargo_toml_env_vars", "reth_library", "reth_unit_test")
+
+FEATURES = [
+    "serde",
+    "test-utils",
+]
+
+DECLARED_FEATURES = [
+    "serde",
+    "test-utils",
+]
+
+reth_cargo_toml_env_vars()
+
+reth_library(
+    name = "reth_network_types",
+    crate_features = FEATURES,
+    declared_features = DECLARED_FEATURES,
+    deps = [
+        "//crates/net/banlist:reth_net_banlist",
+        "//crates/net/peers:reth_network_peers",
+        "@crates//:alloy-eip2124",
+        "@crates//:humantime-serde",
+        "@crates//:serde",
+        "@crates//:serde_json",
+        "@crates//:tracing",
+    ],
+)
+
+reth_unit_test(
+    name = "reth_network_types_test",
+    crate = ":reth_network_types",
+    crate_features = FEATURES,
+    declared_features = DECLARED_FEATURES,
+)

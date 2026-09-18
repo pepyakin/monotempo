@@ -1,0 +1,78 @@
+# GENERATED FILE - DO NOT EDIT.
+#
+# Regenerate with `python3 scripts/bazel/generate.py` after changing Cargo.toml.
+
+load("//bazel:rust.bzl", "reth_cargo_toml_env_vars", "reth_library", "reth_unit_test")
+
+FEATURES = [
+    "metrics",
+    "parking_lot",
+    "reth-metrics",
+    "serde",
+    "test-utils",
+    "triehash",
+]
+
+DECLARED_FEATURES = [
+    "metrics",
+    "parking_lot",
+    "reth-metrics",
+    "serde",
+    "serde-bincode-compat",
+    "test-utils",
+    "triehash",
+]
+
+exports_files([
+    "testdata/proof-genesis.json",
+])
+
+reth_cargo_toml_env_vars()
+
+reth_library(
+    name = "reth_trie",
+    crate_features = FEATURES,
+    declared_features = DECLARED_FEATURES,
+    deps = [
+        "//crates/evm/execution-errors:reth_execution_errors",
+        "//crates/metrics:reth_metrics",
+        "//crates/stages/types:reth_stages_types",
+        "//crates/storage/errors:reth_storage_errors",
+        "//crates/trie/common:reth_trie_common",
+        "//crates/trie/sparse:reth_trie_sparse",
+        "@crates//:alloy-consensus",
+        "@crates//:alloy-eips",
+        "@crates//:alloy-primitives",
+        "@crates//:alloy-rlp",
+        "@crates//:alloy-trie",
+        "@crates//:itertools",
+        "@crates//:metrics",
+        "@crates//:parking_lot",
+        "@crates//:reth-primitives-traits",
+        "@crates//:revm",
+        "@crates//:tracing",
+        "@crates//:triehash",
+    ],
+    proc_macro_deps = [
+        "@crates//:auto_impl",
+    ],
+)
+
+reth_unit_test(
+    name = "reth_trie_test",
+    crate = ":reth_trie",
+    crate_features = FEATURES,
+    declared_features = DECLARED_FEATURES,
+    deps = [
+        "//crates/tracing:reth_tracing",
+        "@crates//:assert_matches",
+        "@crates//:criterion",
+        "@crates//:pretty_assertions",
+        "@crates//:proptest",
+        "@crates//:proptest-arbitrary-interop",
+        "@crates//:rand-0.9.4",
+    ],
+    aliases = {
+        "@crates//:criterion": "criterion",
+    },
+)

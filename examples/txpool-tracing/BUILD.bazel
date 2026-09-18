@@ -1,0 +1,35 @@
+# GENERATED FILE - DO NOT EDIT.
+#
+# Regenerate with `python3 scripts/bazel/generate.py` after changing Cargo.toml.
+
+load("//bazel:rust.bzl", "reth_binary", "reth_cargo_toml_env_vars", "reth_unit_test")
+
+FEATURES = []
+
+DECLARED_FEATURES = []
+
+reth_cargo_toml_env_vars()
+
+reth_binary(
+    name = "example-txpool-tracing",
+    crate_features = FEATURES,
+    declared_features = DECLARED_FEATURES,
+    workspace_lints = False,
+    deps = [
+        "//crates/ethereum/reth:reth_ethereum",
+        "@crates//:alloy-network",
+        "@crates//:alloy-primitives",
+        "@crates//:alloy-rpc-types-trace",
+        "@crates//:clap",
+        "@crates//:eyre",
+        "@crates//:futures-util",
+    ],
+)
+
+reth_unit_test(
+    name = "example_txpool_tracing_test",
+    crate = ":example-txpool-tracing",
+    crate_features = FEATURES,
+    declared_features = DECLARED_FEATURES,
+    workspace_lints = False,
+)

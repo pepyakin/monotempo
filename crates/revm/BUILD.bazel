@@ -1,0 +1,62 @@
+# GENERATED FILE - DO NOT EDIT.
+#
+# Regenerate with `python3 scripts/bazel/generate.py` after changing Cargo.toml.
+
+load("//bazel:rust.bzl", "reth_cargo_toml_env_vars", "reth_library", "reth_unit_test")
+
+FEATURES = [
+    "default",
+    "optional-balance-check",
+    "optional-no-base-fee",
+    "portable",
+    "serde",
+    "std",
+    "test-utils",
+    "witness",
+]
+
+DECLARED_FEATURES = [
+    "default",
+    "gmp",
+    "memory_limit",
+    "optional-balance-check",
+    "optional-block-gas-limit",
+    "optional-checks",
+    "optional-eip3541",
+    "optional-eip3607",
+    "optional-no-base-fee",
+    "portable",
+    "serde",
+    "std",
+    "test-utils",
+    "witness",
+]
+
+reth_cargo_toml_env_vars()
+
+reth_library(
+    name = "reth_revm",
+    crate_features = FEATURES,
+    declared_features = DECLARED_FEATURES,
+    deps = [
+        "//crates/storage/errors:reth_storage_errors",
+        "//crates/storage/storage-api:reth_storage_api",
+        "//crates/trie/trie:reth_trie",
+        "@crates//:alloy-primitives",
+        "@crates//:alloy-rlp",
+        "@crates//:alloy-rpc-types-debug",
+        "@crates//:reth-primitives-traits",
+        "@crates//:revm",
+    ],
+)
+
+reth_unit_test(
+    name = "reth_revm_test",
+    crate = ":reth_revm",
+    crate_features = FEATURES,
+    declared_features = DECLARED_FEATURES,
+    deps = [
+        "//crates/ethereum/hardforks:reth_ethereum_forks",
+        "@crates//:alloy-consensus",
+    ],
+)

@@ -1,0 +1,58 @@
+# GENERATED FILE - DO NOT EDIT.
+#
+# Regenerate with `python3 scripts/bazel/generate.py` after changing Cargo.toml.
+
+load("//bazel:rust.bzl", "reth_cargo_toml_env_vars", "reth_library", "reth_unit_test")
+
+FEATURES = [
+    "jemalloc",
+]
+
+DECLARED_FEATURES = [
+    "jemalloc",
+    "jemalloc-prof",
+    "jemalloc-symbols",
+]
+
+reth_cargo_toml_env_vars()
+
+reth_library(
+    name = "reth_node_metrics",
+    crate_features = FEATURES,
+    declared_features = DECLARED_FEATURES,
+    deps = [
+        "//crates/metrics:reth_metrics",
+        "//crates/tasks:reth_tasks",
+        "@crates//:bytes",
+        "@crates//:eyre",
+        "@crates//:http",
+        "@crates//:http-body-util",
+        "@crates//:jsonrpsee-server",
+        "@crates//:metrics",
+        "@crates//:metrics-exporter-prometheus",
+        "@crates//:metrics-process",
+        "@crates//:metrics-util",
+        "@crates//:parking_lot",
+        "@crates//:reqwest",
+        "@crates//:tokio",
+        "@crates//:tower",
+        "@crates//:tracing",
+    ] + select({
+        "@platforms//os:linux": ["@crates//:procfs"],
+        "//conditions:default": [],
+    }) + select({
+        "@platforms//os:linux": ["@crates//:tikv-jemalloc-ctl"],
+        "@platforms//os:macos": ["@crates//:tikv-jemalloc-ctl"],
+        "//conditions:default": [],
+    }),
+)
+
+reth_unit_test(
+    name = "reth_node_metrics_test",
+    crate = ":reth_node_metrics",
+    crate_features = FEATURES,
+    declared_features = DECLARED_FEATURES,
+    deps = [
+        "@crates//:socket2",
+    ],
+)

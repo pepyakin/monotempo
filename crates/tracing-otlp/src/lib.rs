@@ -412,11 +412,11 @@ mod tests {
 
     #[test]
     fn rejects_partial_credentials() {
-        assert!(OtlpConfig::new(
-            "reth",
-            "https://user@example.com/v1/traces".parse().unwrap(),
-            OtlpProtocol::Http,
-            None,
+        // Checked on the header builder rather than through `OtlpConfig::new`, which
+        // skips credential validation once another test in this process has set
+        // `OTEL_EXPORTER_OTLP_TRACES_HEADERS`.
+        assert!(otlp_auth_header_from_endpoint(
+            &"https://user@example.com/v1/traces".parse().unwrap()
         )
         .is_err());
     }

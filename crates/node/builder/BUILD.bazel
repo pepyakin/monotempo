@@ -1,0 +1,104 @@
+# GENERATED FILE - DO NOT EDIT.
+#
+# Regenerate with `python3 scripts/bazel/generate.py` after changing Cargo.toml.
+
+load("//bazel:rust.bzl", "reth_cargo_toml_env_vars", "reth_library", "reth_unit_test")
+
+FEATURES = [
+    "default",
+    "js-tracer",
+    "test-utils",
+]
+
+DECLARED_FEATURES = [
+    "default",
+    "js-tracer",
+    "test-utils",
+    "trie-debug",
+]
+
+reth_cargo_toml_env_vars()
+
+reth_library(
+    name = "reth_node_builder",
+    crate_features = FEATURES,
+    declared_features = DECLARED_FEATURES,
+    deps = [
+        "//crates/chain-state:reth_chain_state",
+        "//crates/chainspec:reth_chainspec",
+        "//crates/config:reth_config",
+        "//crates/consensus/consensus:reth_consensus",
+        "//crates/consensus/debug-client:reth_consensus_debug_client",
+        "//crates/engine/invalid-block-hooks:reth_invalid_block_hooks",
+        "//crates/engine/local:reth_engine_local",
+        "//crates/engine/primitives:reth_engine_primitives",
+        "//crates/engine/tree:reth_engine_tree",
+        "//crates/engine/util:reth_engine_util",
+        "//crates/evm/evm:reth_evm",
+        "//crates/exex/exex:reth_exex",
+        "//crates/fs-util:reth_fs_util",
+        "//crates/net/downloaders:reth_downloaders",
+        "//crates/net/network-api:reth_network_api",
+        "//crates/net/network:reth_network",
+        "//crates/net/p2p:reth_network_p2p",
+        "//crates/node/api:reth_node_api",
+        "//crates/node/core:reth_node_core",
+        "//crates/node/ethstats:reth_node_ethstats",
+        "//crates/node/events:reth_node_events",
+        "//crates/node/metrics:reth_node_metrics",
+        "//crates/payload/basic:reth_basic_payload_builder",
+        "//crates/payload/builder:reth_payload_builder",
+        "//crates/prune/prune:reth_prune",
+        "//crates/rpc/rpc-api:reth_rpc_api",
+        "//crates/rpc/rpc-builder:reth_rpc_builder",
+        "//crates/rpc/rpc-engine-api:reth_rpc_engine_api",
+        "//crates/rpc/rpc-eth-types:reth_rpc_eth_types",
+        "//crates/rpc/rpc-layer:reth_rpc_layer",
+        "//crates/rpc/rpc:reth_rpc",
+        "//crates/stages/stages:reth_stages",
+        "//crates/static-file/static-file:reth_static_file",
+        "//crates/storage/db-api:reth_db_api",
+        "//crates/storage/db-common:reth_db_common",
+        "//crates/storage/db:reth_db",
+        "//crates/storage/provider:reth_provider",
+        "//crates/storage/storage-overlay:reth_storage_overlay",
+        "//crates/tasks:reth_tasks",
+        "//crates/tokio-util:reth_tokio_util",
+        "//crates/tracing:reth_tracing",
+        "//crates/transaction-pool:reth_transaction_pool",
+        "@crates//:alloy-consensus",
+        "@crates//:alloy-eips",
+        "@crates//:alloy-primitives",
+        "@crates//:alloy-provider",
+        "@crates//:alloy-rpc-types",
+        "@crates//:alloy-rpc-types-engine",
+        "@crates//:eyre",
+        "@crates//:fdlimit",
+        "@crates//:futures",
+        "@crates//:jsonrpsee",
+        "@crates//:parking_lot",
+        "@crates//:rayon",
+        "@crates//:reth-primitives-traits",
+        "@crates//:secp256k1",
+        "@crates//:serde_json",
+        "@crates//:tokio",
+        "@crates//:tokio-stream",
+        "@crates//:tracing",
+    ],
+    proc_macro_deps = [
+        "@crates//:aquamarine",
+    ],
+)
+
+reth_unit_test(
+    name = "reth_node_builder_test",
+    crate = ":reth_node_builder",
+    crate_features = FEATURES,
+    declared_features = DECLARED_FEATURES,
+    deps = [
+        "//crates/ethereum/engine-primitives:reth_ethereum_engine_primitives",
+        "//crates/ethereum/evm:reth_evm_ethereum",
+        "//crates/ethereum/node:reth_node_ethereum",
+        "@crates//:tempfile",
+    ],
+)

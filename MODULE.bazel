@@ -1,0 +1,129 @@
+"""Bazel module definition for reth.
+
+Rust crates are still described by their `Cargo.toml` files; Bazel consumes
+those through crate_universe (external crates) and through the generated
+`BUILD.bazel` files (workspace crates). See `bazel/README.md`.
+"""
+
+module(
+    name = "reth",
+    version = "2.5.2",
+)
+
+bazel_dep(name = "rules_rust", version = "0.74.0")
+bazel_dep(name = "rules_cc", version = "0.2.17")
+bazel_dep(name = "platforms", version = "1.1.0")
+bazel_dep(name = "bazel_skylib", version = "1.8.2")
+bazel_dep(name = "toolchains_llvm", version = "1.9.0")
+
+###############################################################################
+# Hermetic C/C++ toolchain.
+#
+# `cc` build scripts (libmdbx, keccak-asm, secp256k1, ...) and the final link
+# step run through this toolchain instead of whatever compiler the host has.
+# The same distribution provides `libclang` for the bindgen invocation in
+# `reth-mdbx-sys`'s build script.
+###############################################################################
+
+LLVM_VERSION = "20.1.7"
+
+llvm = use_extension("@toolchains_llvm//toolchain/extensions:llvm.bzl", "llvm")
+llvm.toolchain(
+    name = "llvm_toolchain",
+    llvm_version = LLVM_VERSION,
+)
+use_repo(llvm, "llvm_toolchain", "llvm_toolchain_llvm")
+
+# clang's resource directory (builtin headers such as `stddef.h`). The prebuilt
+# libclang cannot locate it on its own, so every bindgen invocation is told
+# where it is; see `BINDGEN_EXTRA_CLANG_ARGS` below and in scripts/bazel/generate.py.
+CLANG_BUILTIN_HEADERS = "@llvm_toolchain_llvm//:lib/clang/%s/include" % LLVM_VERSION.split(".")[0]
+
+register_toolchains("@llvm_toolchain//:all")
+
+###############################################################################
+# Rust toolchain.
+#
+# The version is pinned to the workspace `rust-version` (MSRV) so that a Bazel
+# build never depends on the host's rustup state.
+###############################################################################
+
+RUST_VERSION = "1.95.0"
+
+RUST_EDITION = "2024"
+
+rust = use_extension("@rules_rust//rust:extensions.bzl", "rust")
+rust.toolchain(
+    edition = RUST_EDITION,
+    versions = [RUST_VERSION],
+)
+use_repo(rust, "rust_toolchains")
+
+register_toolchains("@rust_toolchains//:all")
+
+###############################################################################
+# External crates.
+#
+# crate_universe reads the Cargo workspace and `Cargo.lock` and renders one
+# Bazel repository per external crate. It is pointed at the shadow workspace in
+# `bazel/cargo/` (symlinks into the real one, with `bin/reth`'s manifest
+# replaced by a copy that drops the non-hermetic `jit`/`gmp` default features;
+# see `scripts/bazel/generate.py`) because Cargo unifies features across the
+# whole workspace and crate_universe cannot subtract a feature afterwards.
+#
+# The rendered result is pinned in `Cargo.Bazel.lock`; regenerate it with
+#
+#     CARGO_BAZEL_REPIN=1 bazel mod deps
+#
+# after running the generator whenever a `Cargo.toml` or `Cargo.lock` changes.
+###############################################################################
+
+crate = use_extension("@rules_rust//crate_universe:extensions.bzl", "crate")
+crate.from_cargo(
+    name = "crates",
+    cargo_config = "//:.cargo/config.toml",
+    cargo_lockfile = "//:Cargo.lock",
+    lockfile = "//:Cargo.Bazel.lock",
+    manifests = [
+        "//bazel/cargo:Cargo.toml",
+        "//bazel/cargo:bin/reth/Cargo.toml",
+    ],
+    supported_platform_triples = [
+        "aarch64-apple-darwin",
+        "aarch64-unknown-linux-gnu",
+        "x86_64-apple-darwin",
+        "x86_64-unknown-linux-gnu",
+    ],
+)
+
+# The jemalloc build script runs jemalloc's `configure`; it needs a shell and
+# the usual POSIX tools, so give it the default (strict) action environment.
+crate.annotation(
+    build_script_use_default_shell_env = "on",
+    crate = "tikv-jemalloc-sys",
+)
+
+# RocksDB's build script runs bindgen over the C API headers with libclang from
+# the hermetic LLVM toolchain (the same setup as `reth-mdbx-sys`), then compiles
+# RocksDB itself (~500 C++ files) with `cc`. The vendored snappy ships a
+# BUILD.bazel that would hide its sources from the crate; see the patch.
+crate.annotation(
+    build_script_data = [
+        "@llvm_toolchain_llvm//:libclang",
+        CLANG_BUILTIN_HEADERS,
+    ],
+    build_script_env = {
+        "BINDGEN_EXTRA_CLANG_ARGS": "-resource-dir=$(execpath %s)/.." % CLANG_BUILTIN_HEADERS,
+        "LIBCLANG_PATH": "$(execpath @llvm_toolchain_llvm//:libclang)",
+        # rules_rust runs build scripts with NUM_JOBS=1. Compiling RocksDB
+        # serially takes ~8 minutes and sits on the critical path of every
+        # `reth` build, so let `cc` fan out; the action is alone at the tail of
+        # the build anyway.
+        "NUM_JOBS": "8",
+    },
+    crate = "librocksdb-sys",
+    label_injections = {"@llvm_toolchain_llvm": "@llvm_toolchain_llvm"},
+    patch_args = ["-p1"],
+    patches = ["//bazel/patches:librocksdb-sys-snappy-build-file.patch"],
+)
+use_repo(crate, "crates")

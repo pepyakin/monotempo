@@ -1,0 +1,15 @@
+# Stand-in manifest for `test-fuzz` under Bazel.
+#
+# Functions instrumented with `#[test_fuzz]` record their arguments as a fuzzing
+# corpus on every test run, and find the corpus directory by running
+# `cargo metadata` on `$TEST_FUZZ_MANIFEST_PATH`. Pointing that at the real
+# workspace would need every member manifest in the sandbox; this stub is a
+# self-contained package instead, so the corpus lands in a throwaway `target/`
+# next to it inside the test sandbox.
+[package]
+name = "reth-bazel-test-fuzz-stub"
+version = "0.0.0"
+edition = "2021"
+publish = false
+
+[workspace]

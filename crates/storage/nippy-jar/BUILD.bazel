@@ -1,0 +1,47 @@
+# GENERATED FILE - DO NOT EDIT.
+#
+# Regenerate with `python3 scripts/bazel/generate.py` after changing Cargo.toml.
+
+load("//bazel:rust.bzl", "reth_cargo_toml_env_vars", "reth_library", "reth_unit_test")
+
+FEATURES = [
+    "default",
+    "test-utils",
+]
+
+DECLARED_FEATURES = [
+    "default",
+    "test-utils",
+]
+
+reth_cargo_toml_env_vars()
+
+reth_library(
+    name = "reth_nippy_jar",
+    crate_features = FEATURES,
+    declared_features = DECLARED_FEATURES,
+    deps = [
+        "//crates/fs-util:reth_fs_util",
+        "@crates//:anyhow",
+        "@crates//:bincode",
+        "@crates//:derive_more",
+        "@crates//:lz4_flex",
+        "@crates//:memmap2",
+        "@crates//:serde",
+        "@crates//:smallvec",
+        "@crates//:thiserror",
+        "@crates//:tracing",
+        "@crates//:zstd",
+    ],
+)
+
+reth_unit_test(
+    name = "reth_nippy_jar_test",
+    crate = ":reth_nippy_jar",
+    crate_features = FEATURES,
+    declared_features = DECLARED_FEATURES,
+    deps = [
+        "@crates//:rand-0.9.4",
+        "@crates//:tempfile",
+    ],
+)

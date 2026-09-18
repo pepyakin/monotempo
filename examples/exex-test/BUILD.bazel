@@ -1,0 +1,38 @@
+# GENERATED FILE - DO NOT EDIT.
+#
+# Regenerate with `python3 scripts/bazel/generate.py` after changing Cargo.toml.
+
+load("//bazel:rust.bzl", "reth_binary", "reth_cargo_toml_env_vars", "reth_unit_test")
+
+FEATURES = []
+
+DECLARED_FEATURES = []
+
+reth_cargo_toml_env_vars()
+
+reth_binary(
+    name = "example-exex-test",
+    crate_features = FEATURES,
+    declared_features = DECLARED_FEATURES,
+    workspace_lints = False,
+    deps = [
+        "//crates/e2e-test-utils:reth_e2e_test_utils",
+        "//crates/ethereum/reth:reth_ethereum",
+        "@crates//:eyre",
+        "@crates//:futures-util",
+        "@crates//:serde_json",
+        "@crates//:tokio",
+    ],
+    compile_data = [
+        "//crates/e2e-test-utils:src/testsuite/assets/genesis.json",
+    ],
+)
+
+reth_unit_test(
+    name = "example_exex_test_test",
+    crate = ":example-exex-test",
+    crate_features = FEATURES,
+    declared_features = DECLARED_FEATURES,
+    workspace_lints = False,
+    process_per_test = True,
+)

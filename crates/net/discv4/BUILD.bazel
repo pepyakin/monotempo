@@ -1,0 +1,63 @@
+# GENERATED FILE - DO NOT EDIT.
+#
+# Regenerate with `python3 scripts/bazel/generate.py` after changing Cargo.toml.
+
+load("//bazel:rust.bzl", "reth_cargo_toml_env_vars", "reth_library", "reth_unit_test")
+
+FEATURES = [
+    "default",
+    "serde",
+    "test-utils",
+]
+
+DECLARED_FEATURES = [
+    "default",
+    "serde",
+    "test-utils",
+]
+
+reth_cargo_toml_env_vars()
+
+reth_library(
+    name = "reth_discv4",
+    crate_features = FEATURES,
+    declared_features = DECLARED_FEATURES,
+    deps = [
+        "//crates/ethereum/hardforks:reth_ethereum_forks",
+        "//crates/net/banlist:reth_net_banlist",
+        "//crates/net/nat:reth_net_nat",
+        "//crates/net/peers:reth_network_peers",
+        "@crates//:alloy-primitives",
+        "@crates//:alloy-rlp",
+        "@crates//:discv5",
+        "@crates//:enr",
+        "@crates//:itertools",
+        "@crates//:parking_lot",
+        "@crates//:rand_08-0.8.6",
+        "@crates//:schnellru",
+        "@crates//:secp256k1",
+        "@crates//:serde",
+        "@crates//:thiserror",
+        "@crates//:tokio",
+        "@crates//:tokio-stream",
+        "@crates//:tracing",
+    ],
+    aliases = {
+        "@crates//:rand_08-0.8.6": "rand_08",
+    },
+)
+
+reth_unit_test(
+    name = "reth_discv4_test",
+    crate = ":reth_discv4",
+    crate_features = FEATURES,
+    declared_features = DECLARED_FEATURES,
+    deps = [
+        "//crates/tracing:reth_tracing",
+        "@crates//:assert_matches",
+        "@crates//:criterion",
+    ],
+    aliases = {
+        "@crates//:criterion": "criterion",
+    },
+)

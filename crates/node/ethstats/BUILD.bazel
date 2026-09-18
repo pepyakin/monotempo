@@ -1,0 +1,43 @@
+# GENERATED FILE - DO NOT EDIT.
+#
+# Regenerate with `python3 scripts/bazel/generate.py` after changing Cargo.toml.
+
+load("//bazel:rust.bzl", "reth_cargo_toml_env_vars", "reth_library", "reth_unit_test")
+
+FEATURES = []
+
+DECLARED_FEATURES = []
+
+reth_cargo_toml_env_vars()
+
+reth_library(
+    name = "reth_node_ethstats",
+    crate_features = FEATURES,
+    declared_features = DECLARED_FEATURES,
+    deps = [
+        "//crates/chain-state:reth_chain_state",
+        "//crates/net/network-api:reth_network_api",
+        "//crates/storage/storage-api:reth_storage_api",
+        "//crates/transaction-pool:reth_transaction_pool",
+        "@crates//:alloy-consensus",
+        "@crates//:alloy-primitives",
+        "@crates//:chrono",
+        "@crates//:futures-util",
+        "@crates//:reth-primitives-traits",
+        "@crates//:serde",
+        "@crates//:serde_json",
+        "@crates//:thiserror",
+        "@crates//:tokio",
+        "@crates//:tokio-stream",
+        "@crates//:tokio-tungstenite",
+        "@crates//:tracing",
+        "@crates//:url",
+    ],
+)
+
+reth_unit_test(
+    name = "reth_node_ethstats_test",
+    crate = ":reth_node_ethstats",
+    crate_features = FEATURES,
+    declared_features = DECLARED_FEATURES,
+)

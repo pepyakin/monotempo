@@ -1,0 +1,39 @@
+# Builds and tests with Bazel. See bazel/README.md.
+
+name: bazel
+
+on:
+  pull_request:
+  merge_group:
+  push:
+    branches: [main]
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.head_ref || github.run_id }}
+  cancel-in-progress: true
+
+permissions: {}
+
+jobs:
+  bazel:
+    name: build and test
+    runs-on: ${{ github.repository == 'paradigmxyz/reth' && 'depot-ubuntu-latest-16' || 'ubuntu-latest' }}
+    permissions:
+      contents: read
+    timeout-minutes: 120
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+      - uses: dtolnay/rust-toolchain@stable
+      - uses: bazel-contrib/setup-bazel@0.15.0
+        with:
+          bazelisk-cache: true
+          disk-cache: ${{ github.workflow }}
+          repository-cache: true
+      - name: Generated files are up to date
+        run: python3 scripts/bazel/generate.py --check
+      - name: Build
+        run: bazel build --config=ci //...
+      - name: Test
+        run: bazel test --config=ci //...
