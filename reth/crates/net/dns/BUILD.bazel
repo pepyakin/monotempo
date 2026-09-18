@@ -1,0 +1,54 @@
+# GENERATED FILE - DO NOT EDIT.
+#
+# Regenerate with `python3 scripts/bazel/generate.py` after changing Cargo.toml.
+
+load("//bazel:rust.bzl", "reth_cargo_toml_env_vars", "reth_library", "reth_unit_test")
+
+FEATURES = [
+    "serde",
+]
+
+DECLARED_FEATURES = [
+    "serde",
+]
+
+reth_cargo_toml_env_vars()
+
+reth_library(
+    name = "reth_dns_discovery",
+    crate_features = FEATURES,
+    declared_features = DECLARED_FEATURES,
+    deps = [
+        "//crates/ethereum/hardforks:reth_ethereum_forks",
+        "//crates/net/peers:reth_network_peers",
+        "//crates/tokio-util:reth_tokio_util",
+        "@crates//:alloy-primitives",
+        "@crates//:dashmap",
+        "@crates//:data-encoding",
+        "@crates//:enr",
+        "@crates//:hickory-resolver",
+        "@crates//:linked_hash_set",
+        "@crates//:schnellru",
+        "@crates//:secp256k1",
+        "@crates//:serde",
+        "@crates//:serde_with",
+        "@crates//:thiserror",
+        "@crates//:tokio",
+        "@crates//:tokio-stream",
+        "@crates//:tracing",
+    ],
+)
+
+reth_unit_test(
+    name = "reth_dns_discovery_test",
+    crate = ":reth_dns_discovery",
+    crate_features = FEATURES,
+    declared_features = DECLARED_FEATURES,
+    deps = [
+        "//crates/chainspec:reth_chainspec",
+        "//crates/tracing:reth_tracing",
+        "@crates//:alloy-chains",
+        "@crates//:alloy-rlp",
+        "@crates//:rand-0.9.4",
+    ],
+)

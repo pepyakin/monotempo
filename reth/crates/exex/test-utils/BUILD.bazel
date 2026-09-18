@@ -1,0 +1,51 @@
+# GENERATED FILE - DO NOT EDIT.
+#
+# Regenerate with `python3 scripts/bazel/generate.py` after changing Cargo.toml.
+
+load("//bazel:rust.bzl", "reth_cargo_toml_env_vars", "reth_library", "reth_unit_test")
+
+FEATURES = []
+
+DECLARED_FEATURES = []
+
+reth_cargo_toml_env_vars()
+
+reth_library(
+    name = "reth_exex_test_utils",
+    crate_features = FEATURES,
+    declared_features = DECLARED_FEATURES,
+    deps = [
+        "//crates/chainspec:reth_chainspec",
+        "//crates/config:reth_config",
+        "//crates/consensus/consensus:reth_consensus",
+        "//crates/ethereum/evm:reth_evm_ethereum",
+        "//crates/ethereum/node:reth_node_ethereum",
+        "//crates/ethereum/primitives:reth_ethereum_primitives",
+        "//crates/evm/execution-types:reth_execution_types",
+        "//crates/exex/exex:reth_exex",
+        "//crates/net/network:reth_network",
+        "//crates/node/api:reth_node_api",
+        "//crates/node/builder:reth_node_builder",
+        "//crates/node/core:reth_node_core",
+        "//crates/payload/builder:reth_payload_builder",
+        "//crates/storage/db-common:reth_db_common",
+        "//crates/storage/db:reth_db",
+        "//crates/storage/provider:reth_provider",
+        "//crates/tasks:reth_tasks",
+        "//crates/transaction-pool:reth_transaction_pool",
+        "@crates//:alloy-eips",
+        "@crates//:eyre",
+        "@crates//:futures-util",
+        "@crates//:reth-primitives-traits",
+        "@crates//:tempfile",
+        "@crates//:thiserror",
+        "@crates//:tokio",
+    ],
+)
+
+reth_unit_test(
+    name = "reth_exex_test_utils_test",
+    crate = ":reth_exex_test_utils",
+    crate_features = FEATURES,
+    declared_features = DECLARED_FEATURES,
+)

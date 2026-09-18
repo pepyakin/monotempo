@@ -1,0 +1,149 @@
+# GENERATED FILE - DO NOT EDIT.
+#
+# Regenerate with `python3 scripts/bazel/generate.py` after changing Cargo.toml.
+
+load("//bazel:rust.bzl", "reth_cargo_toml_env_vars", "reth_integration_test", "reth_library", "reth_unit_test")
+
+FEATURES = [
+    "paste",
+    "rand",
+    "serde",
+    "test-utils",
+]
+
+DECLARED_FEATURES = [
+    "arbitrary",
+    "paste",
+    "proptest",
+    "proptest-arbitrary-interop",
+    "rand",
+    "serde",
+    "test-utils",
+]
+
+reth_cargo_toml_env_vars()
+
+reth_library(
+    name = "reth_transaction_pool",
+    crate_features = FEATURES,
+    declared_features = DECLARED_FEATURES,
+    deps = [
+        "//crates/chain-state:reth_chain_state",
+        "//crates/chainspec:reth_chainspec",
+        "//crates/ethereum/evm:reth_evm_ethereum",
+        "//crates/ethereum/primitives:reth_ethereum_primitives",
+        "//crates/evm/evm:reth_evm",
+        "//crates/evm/execution-types:reth_execution_types",
+        "//crates/fs-util:reth_fs_util",
+        "//crates/metrics:reth_metrics",
+        "//crates/net/eth-wire-types:reth_eth_wire_types",
+        "//crates/storage/storage-api:reth_storage_api",
+        "//crates/tasks:reth_tasks",
+        "@crates//:alloy-consensus",
+        "@crates//:alloy-eips",
+        "@crates//:alloy-primitives",
+        "@crates//:alloy-rlp",
+        "@crates//:bitflags",
+        "@crates//:futures-util",
+        "@crates//:imbl",
+        "@crates//:metrics",
+        "@crates//:parking_lot",
+        "@crates//:pin-project",
+        "@crates//:rand-0.9.4",
+        "@crates//:reth-primitives-traits",
+        "@crates//:revm",
+        "@crates//:rustc-hash",
+        "@crates//:schnellru",
+        "@crates//:serde",
+        "@crates//:serde_json",
+        "@crates//:smallvec",
+        "@crates//:thiserror",
+        "@crates//:tokio",
+        "@crates//:tokio-stream",
+        "@crates//:tracing",
+    ],
+    proc_macro_deps = [
+        "@crates//:aquamarine",
+        "@crates//:auto_impl",
+        "@crates//:paste",
+    ],
+)
+
+reth_unit_test(
+    name = "reth_transaction_pool_test",
+    crate = ":reth_transaction_pool",
+    crate_features = FEATURES,
+    declared_features = DECLARED_FEATURES,
+    deps = [
+        "//crates/storage/provider:reth_provider",
+        "//crates/tracing:reth_tracing",
+        "@crates//:assert_matches",
+        "@crates//:criterion",
+        "@crates//:futures",
+        "@crates//:proptest",
+        "@crates//:proptest-arbitrary-interop",
+        "@crates//:tempfile",
+    ],
+    aliases = {
+        "@crates//:criterion": "criterion",
+    },
+)
+
+reth_integration_test(
+    name = "reth_transaction_pool_it_test",
+    crate_root = "tests/it/main.rs",
+    crate_features = FEATURES,
+    declared_features = DECLARED_FEATURES,
+    deps = [
+        "//crates/chain-state:reth_chain_state",
+        "//crates/chainspec:reth_chainspec",
+        "//crates/ethereum/evm:reth_evm_ethereum",
+        "//crates/ethereum/primitives:reth_ethereum_primitives",
+        "//crates/evm/evm:reth_evm",
+        "//crates/evm/execution-types:reth_execution_types",
+        "//crates/fs-util:reth_fs_util",
+        "//crates/metrics:reth_metrics",
+        "//crates/net/eth-wire-types:reth_eth_wire_types",
+        "//crates/storage/provider:reth_provider",
+        "//crates/storage/storage-api:reth_storage_api",
+        "//crates/tasks:reth_tasks",
+        "//crates/tracing:reth_tracing",
+        ":reth_transaction_pool",
+        "@crates//:alloy-consensus",
+        "@crates//:alloy-eips",
+        "@crates//:alloy-primitives",
+        "@crates//:alloy-rlp",
+        "@crates//:assert_matches",
+        "@crates//:bitflags",
+        "@crates//:criterion",
+        "@crates//:futures",
+        "@crates//:futures-util",
+        "@crates//:imbl",
+        "@crates//:metrics",
+        "@crates//:parking_lot",
+        "@crates//:pin-project",
+        "@crates//:proptest",
+        "@crates//:proptest-arbitrary-interop",
+        "@crates//:rand-0.9.4",
+        "@crates//:reth-primitives-traits",
+        "@crates//:revm",
+        "@crates//:rustc-hash",
+        "@crates//:schnellru",
+        "@crates//:serde",
+        "@crates//:serde_json",
+        "@crates//:smallvec",
+        "@crates//:tempfile",
+        "@crates//:thiserror",
+        "@crates//:tokio",
+        "@crates//:tokio-stream",
+        "@crates//:tracing",
+    ],
+    proc_macro_deps = [
+        "@crates//:aquamarine",
+        "@crates//:auto_impl",
+        "@crates//:paste",
+    ],
+    aliases = {
+        "@crates//:criterion": "criterion",
+    },
+)

@@ -1,0 +1,135 @@
+# GENERATED FILE - DO NOT EDIT.
+#
+# Regenerate with `python3 scripts/bazel/generate.py` after changing Cargo.toml.
+
+load("//bazel:rust.bzl", "reth_binary", "reth_cargo_toml_env_vars", "reth_integration_test", "reth_library", "reth_unit_test")
+
+FEATURES = []
+
+DECLARED_FEATURES = [
+    "serde",
+]
+
+reth_cargo_toml_env_vars()
+
+reth_library(
+    name = "example_bsc_p2p",
+    crate_features = FEATURES,
+    declared_features = DECLARED_FEATURES,
+    workspace_lints = False,
+    deps = [
+        "//crates/chainspec:reth_chainspec",
+        "//crates/engine/primitives:reth_engine_primitives",
+        "//crates/ethereum/hardforks:reth_ethereum_forks",
+        "//crates/net/discv4:reth_discv4",
+        "//crates/net/eth-wire-types:reth_eth_wire_types",
+        "//crates/net/eth-wire:reth_eth_wire",
+        "//crates/net/network-api:reth_network_api",
+        "//crates/net/network:reth_network",
+        "//crates/net/peers:reth_network_peers",
+        "//crates/payload/primitives:reth_payload_primitives",
+        "//crates/storage/provider:reth_provider",
+        "//crates/tasks:reth_tasks",
+        "//crates/tracing:reth_tracing",
+        "@crates//:alloy-primitives",
+        "@crates//:alloy-rlp",
+        "@crates//:alloy-rpc-types",
+        "@crates//:bytes",
+        "@crates//:futures",
+        "@crates//:reth-primitives-traits",
+        "@crates//:secp256k1",
+        "@crates//:serde_json",
+        "@crates//:thiserror",
+        "@crates//:tokio",
+        "@crates//:tokio-stream",
+        "@crates//:tracing",
+    ],
+)
+
+reth_binary(
+    name = "example-bsc-p2p",
+    crate_features = FEATURES,
+    declared_features = DECLARED_FEATURES,
+    workspace_lints = False,
+    deps = [
+        "//crates/chainspec:reth_chainspec",
+        "//crates/engine/primitives:reth_engine_primitives",
+        "//crates/ethereum/hardforks:reth_ethereum_forks",
+        "//crates/net/discv4:reth_discv4",
+        "//crates/net/eth-wire-types:reth_eth_wire_types",
+        "//crates/net/eth-wire:reth_eth_wire",
+        "//crates/net/network-api:reth_network_api",
+        "//crates/net/network:reth_network",
+        "//crates/net/peers:reth_network_peers",
+        "//crates/payload/primitives:reth_payload_primitives",
+        "//crates/storage/provider:reth_provider",
+        "//crates/tasks:reth_tasks",
+        "//crates/tracing:reth_tracing",
+        ":example_bsc_p2p",
+        "@crates//:alloy-primitives",
+        "@crates//:alloy-rlp",
+        "@crates//:alloy-rpc-types",
+        "@crates//:bytes",
+        "@crates//:futures",
+        "@crates//:reth-primitives-traits",
+        "@crates//:secp256k1",
+        "@crates//:serde_json",
+        "@crates//:thiserror",
+        "@crates//:tokio",
+        "@crates//:tokio-stream",
+        "@crates//:tracing",
+    ],
+)
+
+reth_unit_test(
+    name = "example_bsc_p2p_test",
+    crate = ":example_bsc_p2p",
+    crate_features = FEATURES,
+    declared_features = DECLARED_FEATURES,
+    workspace_lints = False,
+    deps = [
+        "//crates/ethereum/node:reth_node_ethereum",
+        "//crates/ethereum/primitives:reth_ethereum_primitives",
+    ],
+)
+
+reth_integration_test(
+    name = "example_bsc_p2p_it_test",
+    crate_root = "tests/it/main.rs",
+    crate_features = FEATURES,
+    declared_features = DECLARED_FEATURES,
+    workspace_lints = False,
+    deps = [
+        "//crates/chainspec:reth_chainspec",
+        "//crates/engine/primitives:reth_engine_primitives",
+        "//crates/ethereum/hardforks:reth_ethereum_forks",
+        "//crates/ethereum/node:reth_node_ethereum",
+        "//crates/ethereum/primitives:reth_ethereum_primitives",
+        "//crates/net/discv4:reth_discv4",
+        "//crates/net/eth-wire-types:reth_eth_wire_types",
+        "//crates/net/eth-wire:reth_eth_wire",
+        "//crates/net/network-api:reth_network_api",
+        "//crates/net/network:reth_network",
+        "//crates/net/peers:reth_network_peers",
+        "//crates/payload/primitives:reth_payload_primitives",
+        "//crates/storage/provider:reth_provider",
+        "//crates/tasks:reth_tasks",
+        "//crates/tracing:reth_tracing",
+        ":example_bsc_p2p",
+        "@crates//:alloy-primitives",
+        "@crates//:alloy-rlp",
+        "@crates//:alloy-rpc-types",
+        "@crates//:bytes",
+        "@crates//:futures",
+        "@crates//:reth-primitives-traits",
+        "@crates//:secp256k1",
+        "@crates//:serde_json",
+        "@crates//:thiserror",
+        "@crates//:tokio",
+        "@crates//:tokio-stream",
+        "@crates//:tracing",
+    ],
+    data = [
+        ":example-bsc-p2p",
+    ],
+)

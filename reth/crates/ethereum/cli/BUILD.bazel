@@ -1,0 +1,70 @@
+# GENERATED FILE - DO NOT EDIT.
+#
+# Regenerate with `python3 scripts/bazel/generate.py` after changing Cargo.toml.
+
+load("//bazel:rust.bzl", "reth_cargo_toml_env_vars", "reth_library", "reth_unit_test")
+
+FEATURES = [
+    "asm-keccak",
+    "jemalloc",
+    "min-trace-logs",
+    "otlp",
+    "otlp-logs",
+]
+
+DECLARED_FEATURES = [
+    "asm-keccak",
+    "dev",
+    "gmp",
+    "jemalloc",
+    "jemalloc-prof",
+    "jemalloc-symbols",
+    "jit",
+    "min-debug-logs",
+    "min-error-logs",
+    "min-info-logs",
+    "min-trace-logs",
+    "min-warn-logs",
+    "otlp",
+    "otlp-logs",
+    "snmalloc",
+    "snmalloc-native",
+    "tracy",
+    "tracy-allocator",
+]
+
+reth_cargo_toml_env_vars()
+
+reth_library(
+    name = "reth_ethereum_cli",
+    crate_features = FEATURES,
+    declared_features = DECLARED_FEATURES,
+    deps = [
+        "//crates/chainspec:reth_chainspec",
+        "//crates/cli/cli:reth_cli",
+        "//crates/cli/commands:reth_cli_commands",
+        "//crates/cli/runner:reth_cli_runner",
+        "//crates/ethereum/node:reth_node_ethereum",
+        "//crates/node/api:reth_node_api",
+        "//crates/node/builder:reth_node_builder",
+        "//crates/node/core:reth_node_core",
+        "//crates/node/metrics:reth_node_metrics",
+        "//crates/rpc/rpc-server-types:reth_rpc_server_types",
+        "//crates/storage/db:reth_db",
+        "//crates/tasks:reth_tasks",
+        "//crates/tracing:reth_tracing",
+        "@crates//:clap",
+        "@crates//:eyre",
+        "@crates//:tracing",
+    ],
+)
+
+reth_unit_test(
+    name = "reth_ethereum_cli_test",
+    crate = ":reth_ethereum_cli",
+    crate_features = FEATURES,
+    declared_features = DECLARED_FEATURES,
+    deps = [
+        "@crates//:tempfile",
+    ],
+)

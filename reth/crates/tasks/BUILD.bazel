@@ -1,0 +1,50 @@
+# GENERATED FILE - DO NOT EDIT.
+#
+# Regenerate with `python3 scripts/bazel/generate.py` after changing Cargo.toml.
+
+load("//bazel:rust.bzl", "reth_cargo_toml_env_vars", "reth_library", "reth_unit_test")
+
+FEATURES = [
+    "pin-project",
+    "rayon",
+    "test-utils",
+]
+
+DECLARED_FEATURES = [
+    "pin-project",
+    "rayon",
+    "test-utils",
+]
+
+reth_cargo_toml_env_vars()
+
+reth_library(
+    name = "reth_tasks",
+    crate_features = FEATURES,
+    declared_features = DECLARED_FEATURES,
+    deps = [
+        "//crates/metrics:reth_metrics",
+        "@crates//:crossbeam-utils",
+        "@crates//:dashmap",
+        "@crates//:futures-util",
+        "@crates//:metrics",
+        "@crates//:parking_lot",
+        "@crates//:pin-project",
+        "@crates//:rayon",
+        "@crates//:thiserror",
+        "@crates//:thread-priority",
+        "@crates//:tokio",
+        "@crates//:tracing",
+        "@crates//:tracing-futures",
+    ] + select({
+        "@platforms//os:linux": ["@crates//:libc"],
+        "//conditions:default": [],
+    }),
+)
+
+reth_unit_test(
+    name = "reth_tasks_test",
+    crate = ":reth_tasks",
+    crate_features = FEATURES,
+    declared_features = DECLARED_FEATURES,
+)

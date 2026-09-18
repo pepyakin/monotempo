@@ -1,0 +1,76 @@
+# GENERATED FILE - DO NOT EDIT.
+#
+# Regenerate with `python3 scripts/bazel/generate.py` after changing Cargo.toml.
+
+load("//bazel:rust.bzl", "reth_cargo_toml_env_vars", "reth_library", "reth_unit_test")
+
+FEATURES = [
+    "arbitrary",
+    "default",
+    "disable-lock",
+    "mdbx",
+    "parking_lot",
+    "reth-metrics",
+    "test-utils",
+]
+
+DECLARED_FEATURES = [
+    "arbitrary",
+    "default",
+    "disable-lock",
+    "mdbx",
+    "parking_lot",
+    "reth-metrics",
+    "test-utils",
+]
+
+reth_cargo_toml_env_vars()
+
+reth_library(
+    name = "reth_db",
+    crate_features = FEATURES,
+    declared_features = DECLARED_FEATURES,
+    deps = [
+        "//crates/fs-util:reth_fs_util",
+        "//crates/metrics:reth_metrics",
+        "//crates/static-file/types:reth_static_file_types",
+        "//crates/storage/db-api:reth_db_api",
+        "//crates/storage/errors:reth_storage_errors",
+        "//crates/storage/libmdbx-rs:reth_libmdbx",
+        "//crates/storage/nippy-jar:reth_nippy_jar",
+        "//crates/tracing:reth_tracing",
+        "@crates//:alloy-primitives",
+        "@crates//:derive_more",
+        "@crates//:eyre",
+        "@crates//:metrics",
+        "@crates//:page_size",
+        "@crates//:parking_lot",
+        "@crates//:reth-primitives-traits",
+        "@crates//:rustc-hash",
+        "@crates//:strum",
+        "@crates//:sysinfo",
+        "@crates//:tempfile",
+        "@crates//:thiserror",
+        "@crates//:tracing",
+    ] + select({
+        "@platforms//os:linux": ["@crates//:libc"],
+        "@platforms//os:macos": ["@crates//:libc"],
+        "//conditions:default": [],
+    }),
+)
+
+reth_unit_test(
+    name = "reth_db_test",
+    crate = ":reth_db",
+    crate_features = FEATURES,
+    declared_features = DECLARED_FEATURES,
+    deps = [
+        "//crates/prune/types:reth_prune_types",
+        "@crates//:alloy-consensus",
+        "@crates//:arbitrary",
+        "@crates//:assert_matches",
+        "@crates//:proptest",
+        "@crates//:serde",
+        "@crates//:serde_json",
+    ],
+)

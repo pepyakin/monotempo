@@ -1,0 +1,60 @@
+# GENERATED FILE - DO NOT EDIT.
+#
+# Regenerate with `python3 scripts/bazel/generate.py` after changing Cargo.toml.
+
+load("//bazel:rust.bzl", "reth_cargo_toml_env_vars", "reth_library", "reth_unit_test")
+
+FEATURES = [
+    "default",
+    "metrics",
+    "std",
+    "test-utils",
+]
+
+DECLARED_FEATURES = [
+    "default",
+    "metrics",
+    "std",
+    "test-utils",
+]
+
+reth_cargo_toml_env_vars()
+
+reth_library(
+    name = "reth_evm",
+    crate_features = FEATURES,
+    declared_features = DECLARED_FEATURES,
+    deps = [
+        "//crates/evm/execution-errors:reth_execution_errors",
+        "//crates/evm/execution-types:reth_execution_types",
+        "//crates/metrics:reth_metrics",
+        "//crates/storage/errors:reth_storage_errors",
+        "//crates/storage/storage-api:reth_storage_api",
+        "//crates/trie/common:reth_trie_common",
+        "@crates//:alloy-consensus",
+        "@crates//:alloy-eip7928",
+        "@crates//:alloy-eips",
+        "@crates//:alloy-evm",
+        "@crates//:alloy-primitives",
+        "@crates//:derive_more",
+        "@crates//:fixed-cache",
+        "@crates//:futures-util",
+        "@crates//:metrics",
+        "@crates//:rayon",
+        "@crates//:reth-primitives-traits",
+        "@crates//:revm",
+    ],
+    proc_macro_deps = [
+        "@crates//:auto_impl",
+    ],
+)
+
+reth_unit_test(
+    name = "reth_evm_test",
+    crate = ":reth_evm",
+    crate_features = FEATURES,
+    declared_features = DECLARED_FEATURES,
+    deps = [
+        "//crates/ethereum/primitives:reth_ethereum_primitives",
+    ],
+)

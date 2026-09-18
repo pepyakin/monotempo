@@ -1,0 +1,53 @@
+# GENERATED FILE - DO NOT EDIT.
+#
+# Regenerate with `python3 scripts/bazel/generate.py` after changing Cargo.toml.
+
+load("//bazel:rust.bzl", "reth_cargo_toml_env_vars", "reth_library", "reth_unit_test")
+
+FEATURES = []
+
+DECLARED_FEATURES = []
+
+reth_cargo_toml_env_vars()
+
+reth_library(
+    name = "reth_invalid_block_hooks",
+    crate_features = FEATURES,
+    declared_features = DECLARED_FEATURES,
+    deps = [
+        "//crates/engine/primitives:reth_engine_primitives",
+        "//crates/evm/evm:reth_evm",
+        "//crates/revm:reth_revm",
+        "//crates/rpc/rpc-api:reth_rpc_api",
+        "//crates/storage/provider:reth_provider",
+        "//crates/tracing:reth_tracing",
+        "//crates/trie/trie:reth_trie",
+        "@crates//:alloy-consensus",
+        "@crates//:alloy-primitives",
+        "@crates//:alloy-rlp",
+        "@crates//:alloy-rpc-types-debug",
+        "@crates//:eyre",
+        "@crates//:futures",
+        "@crates//:jsonrpsee",
+        "@crates//:pretty_assertions",
+        "@crates//:reth-primitives-traits",
+        "@crates//:revm",
+        "@crates//:serde",
+        "@crates//:serde_json",
+    ],
+)
+
+reth_unit_test(
+    name = "reth_invalid_block_hooks_test",
+    crate = ":reth_invalid_block_hooks",
+    crate_features = FEATURES,
+    declared_features = DECLARED_FEATURES,
+    deps = [
+        "//crates/chainspec:reth_chainspec",
+        "//crates/ethereum/evm:reth_evm_ethereum",
+        "//crates/ethereum/primitives:reth_ethereum_primitives",
+        "//testing/testing-utils:reth_testing_utils",
+        "@crates//:alloy-eips",
+        "@crates//:tempfile",
+    ],
+)

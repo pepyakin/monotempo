@@ -1,0 +1,42 @@
+# GENERATED FILE - DO NOT EDIT.
+#
+# Regenerate with `python3 scripts/bazel/generate.py` after changing Cargo.toml.
+
+load("//bazel:rust.bzl", "reth_cargo_toml_env_vars", "reth_library", "reth_unit_test")
+
+FEATURES = []
+
+DECLARED_FEATURES = []
+
+reth_cargo_toml_env_vars()
+
+reth_library(
+    name = "reth_rpc_layer",
+    crate_features = FEATURES,
+    declared_features = DECLARED_FEATURES,
+    deps = [
+        "@crates//:alloy-rpc-types-engine",
+        "@crates//:http",
+        "@crates//:http-body-util",
+        "@crates//:jsonrpsee-http-client",
+        "@crates//:pin-project",
+        "@crates//:tokio",
+        "@crates//:tower",
+        "@crates//:tower-http",
+        "@crates//:tracing",
+    ],
+)
+
+reth_unit_test(
+    name = "reth_rpc_layer_test",
+    crate = ":reth_rpc_layer",
+    crate_features = FEATURES,
+    declared_features = DECLARED_FEATURES,
+    deps = [
+        "@crates//:brotli",
+        "@crates//:flate2",
+        "@crates//:jsonrpsee",
+        "@crates//:reqwest",
+        "@crates//:zstd",
+    ],
+)

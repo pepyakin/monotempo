@@ -1,0 +1,28 @@
+name: Lint GitHub Actions workflows
+on:
+  pull_request:
+    paths:
+    - '.github/**'
+  merge_group:
+  push:
+    paths:
+    - '.github/**'
+
+permissions: {}
+
+jobs:
+  actionlint:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+      - name: Download actionlint
+        id: get_actionlint
+        run: bash <(curl https://raw.githubusercontent.com/rhysd/actionlint/main/scripts/download-actionlint.bash)
+        shell: bash
+      - name: Check workflow files
+        run: SHELLCHECK_OPTS="-S error" ${{ steps.get_actionlint.outputs.executable }} -color
+        shell: bash

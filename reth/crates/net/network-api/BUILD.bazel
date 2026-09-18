@@ -1,0 +1,50 @@
+# GENERATED FILE - DO NOT EDIT.
+#
+# Regenerate with `python3 scripts/bazel/generate.py` after changing Cargo.toml.
+
+load("//bazel:rust.bzl", "reth_cargo_toml_env_vars", "reth_library", "reth_unit_test")
+
+FEATURES = [
+    "serde",
+]
+
+DECLARED_FEATURES = [
+    "serde",
+]
+
+reth_cargo_toml_env_vars()
+
+reth_library(
+    name = "reth_network_api",
+    crate_features = FEATURES,
+    declared_features = DECLARED_FEATURES,
+    deps = [
+        "//crates/ethereum/hardforks:reth_ethereum_forks",
+        "//crates/net/eth-wire-types:reth_eth_wire_types",
+        "//crates/net/network-types:reth_network_types",
+        "//crates/net/p2p:reth_network_p2p",
+        "//crates/net/peers:reth_network_peers",
+        "//crates/tokio-util:reth_tokio_util",
+        "@crates//:alloy-consensus",
+        "@crates//:alloy-primitives",
+        "@crates//:alloy-rpc-types-admin",
+        "@crates//:alloy-rpc-types-eth",
+        "@crates//:derive_more",
+        "@crates//:enr",
+        "@crates//:futures",
+        "@crates//:serde",
+        "@crates//:thiserror",
+        "@crates//:tokio",
+        "@crates//:tokio-stream",
+    ],
+    proc_macro_deps = [
+        "@crates//:auto_impl",
+    ],
+)
+
+reth_unit_test(
+    name = "reth_network_api_test",
+    crate = ":reth_network_api",
+    crate_features = FEATURES,
+    declared_features = DECLARED_FEATURES,
+)

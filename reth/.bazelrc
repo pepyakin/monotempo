@@ -1,0 +1,65 @@
+# Bazel configuration for reth. See bazel/README.md.
+
+# Keep MODULE.bazel.lock in sync automatically; CI checks it in with --lockfile_mode=error.
+common --lockfile_mode=update
+
+# Hermeticity: actions do not inherit the client environment (PATH etc.) and
+# only see declared inputs.
+build --incompatible_strict_action_env
+build --sandbox_default_allow_network=false
+
+# Emit rmeta first so dependants can start compiling before codegen finishes
+# (mirrors cargo's pipelined compilation).
+build --@rules_rust//rust/settings:pipelined_compilation=True
+
+# Compact, cargo-like diagnostics.
+build --@rules_rust//rust/settings:error_format=human
+
+# `-C codegen-units=4` and, more importantly, have each rustc action reserve
+# 4 CPUs in Bazel's local scheduler. Without it Bazel runs one rustc per core;
+# reth's test binaries need 2-3 GiB each to link, and 16 of them at once
+# exhausted a 32 GiB machine. Lower/raise in user.bazelrc for other machines.
+build --@rules_rust//rust/settings:codegen_units=4
+
+# Test output: only failures are printed, like nextest.
+test --test_output=errors
+test --test_summary=terse
+
+# Dev inner loop (Linux only, opt-in, not for CI): rustc incremental
+# compilation for workspace crates. See "Incremental rustc" in bazel/README.md;
+# the cache directory is machine specific and is added in user.bazelrc.
+#
+# rules_rust bakes the action's cwd into `--remap-path-prefix` and
+# `CARGO_MANIFEST_DIR`, and rustc invalidates its whole incremental cache when
+# those change. Bazel's default sandbox gives every action a new numbered
+# directory, so the cache never hits. The hermetic Linux sandbox pivot_roots
+# instead and every action sees the same cwd (`/execroot/_main`). It mounts
+# nothing from the host by default, hence the mount pairs for the shell,
+# glibc/crt objects (the LLVM toolchain has no sysroot) and /etc.
+build:dev --experimental_use_hermetic_linux_sandbox
+build:dev --sandbox_add_mount_pair=/bin
+build:dev --sandbox_add_mount_pair=/etc
+build:dev --sandbox_add_mount_pair=/lib
+build:dev --sandbox_add_mount_pair=/lib64
+build:dev --sandbox_add_mount_pair=/usr
+# `//@<flag>` applies the flag to main-repo crates only, so external crates keep
+# their cache entries when switching --config=dev on or off. 256 is rustc's own
+# codegen-units default for incremental builds (more, smaller units to reuse).
+build:dev --@rules_rust//rust/settings:per_crate_rustc_flag=//crates/@-Ccodegen-units=256
+
+# Release build, roughly the `release` cargo profile (opt-level 3, thin LTO,
+# no debug info).
+build:release --compilation_mode=opt
+build:release --@rules_rust//rust/settings:lto=thin
+
+# CI: fail if MODULE.bazel.lock or Cargo.Bazel.lock would change.
+common:ci --lockfile_mode=error
+build:ci --show_timestamps
+build:ci --announce_rc
+build:ci --color=yes
+build:ci --curses=no
+build:ci --keep_going
+test:ci --test_output=errors
+
+# Local overrides (disk cache, remote cache credentials, ...). Not committed.
+try-import %workspace%/user.bazelrc

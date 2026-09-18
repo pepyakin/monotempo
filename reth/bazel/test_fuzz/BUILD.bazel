@@ -1,0 +1,8 @@
+# Stand-in cargo package for tests instrumented with `test-fuzz`; see Cargo.toml.
+exports_files(
+    [
+        "Cargo.toml",
+        "src/lib.rs",
+    ],
+    visibility = ["//visibility:public"],
+)

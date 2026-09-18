@@ -1,0 +1,97 @@
+# Runs integration tests.
+
+name: integration
+
+on:
+  pull_request:
+  merge_group:
+  push:
+    branches: [main]
+  schedule:
+    # Run once a day at 3:00 UTC
+    - cron: "0 3 * * *"
+
+env:
+  CARGO_TERM_COLOR: always
+  SEED: rustethereumethereumrust
+  RUSTC_WRAPPER: "sccache"
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.head_ref || github.run_id }}
+  cancel-in-progress: true
+
+permissions: {}
+
+jobs:
+  test:
+    name: test / ${{ matrix.network }}
+    if: github.event_name != 'schedule'
+    runs-on: ${{ github.repository == 'paradigmxyz/reth' && 'depot-ubuntu-latest-4' || 'ubuntu-latest' }}
+    permissions:
+      contents: read
+    env:
+      RUST_BACKTRACE: 1
+    strategy:
+      matrix:
+        network: ["ethereum"]
+    timeout-minutes: 60
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+      - uses: rui314/setup-mold@7e4f20ad28a2e8ca6fd0892ccf72e2abb706b9c3 # v1
+      - run: .github/scripts/install_llvm.sh ubuntu
+      - uses: dtolnay/rust-toolchain@stable
+      - name: Install Geth
+        run: .github/scripts/install_geth.sh
+      - uses: taiki-e/install-action@d438492cf8a250514fa2d34b30bc3c0dc37c65ff # v2.87.8
+        with:
+          tool: nextest
+      - uses: mozilla-actions/sccache-action@fc920bf0ec8de6ee65d409111f7ec508035751ba # v0.0.11
+      - uses: Swatinem/rust-cache@6323deb102c322ba6fcbdcafc7e3dddab59af2b6 # v2.9.2
+        with:
+          prefix-key: v1-rust-integration-targets
+          cache-bin: false
+          cache-on-failure: true
+      - name: Run tests
+        run: |
+          cargo nextest run \
+            --no-fail-fast \
+            --locked --features "asm-keccak" \
+            --workspace --exclude ef-tests \
+            -E "kind(test) and not binary(e2e_testsuite)"
+
+  integration-success:
+    name: integration success
+    runs-on: ubuntu-latest
+    if: always() && github.event_name != 'schedule'
+    needs: [test]
+    timeout-minutes: 30
+    steps:
+      - name: Decide whether the needed jobs succeeded or failed
+        uses: re-actors/alls-green@b5b5b37504aa4183270bd3d855c52a67f212be35 # release/v1
+        with:
+          jobs: ${{ toJSON(needs) }}
+
+  era-files:
+    name: era/era1/ere file integration tests once a day
+    if: github.event_name == 'schedule' && github.repository == 'paradigmxyz/reth'
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+      - uses: rui314/setup-mold@7e4f20ad28a2e8ca6fd0892ccf72e2abb706b9c3 # v1
+      - run: .github/scripts/install_llvm.sh ubuntu
+      - uses: dtolnay/rust-toolchain@stable
+      - uses: taiki-e/install-action@d438492cf8a250514fa2d34b30bc3c0dc37c65ff # v2.87.8
+        with:
+          tool: nextest
+      - uses: mozilla-actions/sccache-action@fc920bf0ec8de6ee65d409111f7ec508035751ba # v0.0.11
+      - uses: Swatinem/rust-cache@6323deb102c322ba6fcbdcafc7e3dddab59af2b6 # v2.9.2
+        with:
+          cache-on-failure: true
+      - name: run era/era1/ere files integration tests
+        run: cargo nextest run --no-fail-fast --release --package reth-era --test it -- --ignored

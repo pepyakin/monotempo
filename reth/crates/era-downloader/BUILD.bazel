@@ -1,0 +1,62 @@
+# GENERATED FILE - DO NOT EDIT.
+#
+# Regenerate with `python3 scripts/bazel/generate.py` after changing Cargo.toml.
+
+load("//bazel:rust.bzl", "reth_cargo_toml_env_vars", "reth_integration_test", "reth_library", "reth_unit_test")
+
+FEATURES = []
+
+DECLARED_FEATURES = []
+
+reth_cargo_toml_env_vars()
+
+reth_library(
+    name = "reth_era_downloader",
+    crate_features = FEATURES,
+    declared_features = DECLARED_FEATURES,
+    deps = [
+        "//crates/era:reth_era",
+        "//crates/fs-util:reth_fs_util",
+        "@crates//:alloy-primitives",
+        "@crates//:bytes",
+        "@crates//:eyre",
+        "@crates//:futures-util",
+        "@crates//:reqwest",
+        "@crates//:sha2",
+        "@crates//:tokio",
+    ],
+)
+
+reth_unit_test(
+    name = "reth_era_downloader_test",
+    crate = ":reth_era_downloader",
+    crate_features = FEATURES,
+    declared_features = DECLARED_FEATURES,
+    deps = [
+        "@crates//:futures",
+        "@crates//:tempfile",
+        "@crates//:test-case",
+    ],
+)
+
+reth_integration_test(
+    name = "reth_era_downloader_it_test",
+    crate_root = "tests/it/main.rs",
+    crate_features = FEATURES,
+    declared_features = DECLARED_FEATURES,
+    deps = [
+        "//crates/era:reth_era",
+        "//crates/fs-util:reth_fs_util",
+        ":reth_era_downloader",
+        "@crates//:alloy-primitives",
+        "@crates//:bytes",
+        "@crates//:eyre",
+        "@crates//:futures",
+        "@crates//:futures-util",
+        "@crates//:reqwest",
+        "@crates//:sha2",
+        "@crates//:tempfile",
+        "@crates//:test-case",
+        "@crates//:tokio",
+    ],
+)

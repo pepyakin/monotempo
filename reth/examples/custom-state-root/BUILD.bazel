@@ -1,0 +1,42 @@
+# GENERATED FILE - DO NOT EDIT.
+#
+# Regenerate with `python3 scripts/bazel/generate.py` after changing Cargo.toml.
+
+load("//bazel:rust.bzl", "reth_binary", "reth_cargo_toml_env_vars", "reth_unit_test")
+
+FEATURES = []
+
+DECLARED_FEATURES = []
+
+reth_cargo_toml_env_vars()
+
+reth_binary(
+    name = "example-custom-state-root",
+    crate_features = FEATURES,
+    declared_features = DECLARED_FEATURES,
+    workspace_lints = False,
+    deps = [
+        "//crates/engine/tree:reth_engine_tree",
+        "//crates/ethereum/reth:reth_ethereum",
+        "//crates/evm/evm:reth_evm",
+        "//crates/storage/provider:reth_provider",
+        "//crates/storage/storage-overlay:reth_storage_overlay",
+        "//crates/trie/trie:reth_trie",
+        "@crates//:alloy-genesis",
+        "@crates//:alloy-network",
+        "@crates//:alloy-primitives",
+        "@crates//:alloy-rpc-types-engine",
+        "@crates//:eyre",
+        "@crates//:reth-primitives-traits",
+        "@crates//:serde_json",
+        "@crates//:tokio",
+    ],
+)
+
+reth_unit_test(
+    name = "example_custom_state_root_test",
+    crate = ":example-custom-state-root",
+    crate_features = FEATURES,
+    declared_features = DECLARED_FEATURES,
+    workspace_lints = False,
+)

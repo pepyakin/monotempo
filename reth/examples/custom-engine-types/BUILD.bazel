@@ -1,0 +1,40 @@
+# GENERATED FILE - DO NOT EDIT.
+#
+# Regenerate with `python3 scripts/bazel/generate.py` after changing Cargo.toml.
+
+load("//bazel:rust.bzl", "reth_binary", "reth_cargo_toml_env_vars", "reth_unit_test")
+
+FEATURES = []
+
+DECLARED_FEATURES = []
+
+reth_cargo_toml_env_vars()
+
+reth_binary(
+    name = "example-custom-engine-types",
+    crate_features = FEATURES,
+    declared_features = DECLARED_FEATURES,
+    workspace_lints = False,
+    deps = [
+        "//crates/ethereum/payload:reth_ethereum_payload_builder",
+        "//crates/ethereum/reth:reth_ethereum",
+        "//crates/payload/basic:reth_basic_payload_builder",
+        "//crates/payload/builder:reth_payload_builder",
+        "//crates/tracing:reth_tracing",
+        "@crates//:alloy-genesis",
+        "@crates//:alloy-primitives",
+        "@crates//:alloy-rpc-types",
+        "@crates//:eyre",
+        "@crates//:serde",
+        "@crates//:thiserror",
+        "@crates//:tokio",
+    ],
+)
+
+reth_unit_test(
+    name = "example_custom_engine_types_test",
+    crate = ":example-custom-engine-types",
+    crate_features = FEATURES,
+    declared_features = DECLARED_FEATURES,
+    workspace_lints = False,
+)

@@ -1,0 +1,46 @@
+# GENERATED FILE - DO NOT EDIT.
+#
+# Regenerate with `python3 scripts/bazel/generate.py` after changing Cargo.toml.
+
+load("//bazel:rust.bzl", "reth_cargo_toml_env_vars", "reth_library", "reth_unit_test")
+
+FEATURES = []
+
+DECLARED_FEATURES = []
+
+reth_cargo_toml_env_vars()
+
+reth_library(
+    name = "reth_consensus_debug_client",
+    crate_features = FEATURES,
+    declared_features = DECLARED_FEATURES,
+    deps = [
+        "//crates/node/api:reth_node_api",
+        "//crates/tracing:reth_tracing",
+        "@crates//:alloy-consensus",
+        "@crates//:alloy-eips",
+        "@crates//:alloy-json-rpc",
+        "@crates//:alloy-primitives",
+        "@crates//:alloy-provider",
+        "@crates//:alloy-rpc-types-engine",
+        "@crates//:alloy-transport",
+        "@crates//:derive_more",
+        "@crates//:eyre",
+        "@crates//:futures",
+        "@crates//:reqwest",
+        "@crates//:ringbuffer",
+        "@crates//:serde",
+        "@crates//:serde_json",
+        "@crates//:tokio",
+    ],
+    proc_macro_deps = [
+        "@crates//:auto_impl",
+    ],
+)
+
+reth_unit_test(
+    name = "reth_consensus_debug_client_test",
+    crate = ":reth_consensus_debug_client",
+    crate_features = FEATURES,
+    declared_features = DECLARED_FEATURES,
+)

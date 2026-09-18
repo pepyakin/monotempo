@@ -1,0 +1,38 @@
+# GENERATED FILE - DO NOT EDIT.
+#
+# Regenerate with `python3 scripts/bazel/generate.py` after changing Cargo.toml.
+
+load("//bazel:rust.bzl", "reth_cargo_toml_env_vars", "reth_library", "reth_unit_test")
+
+FEATURES = [
+    "default",
+    "std",
+]
+
+DECLARED_FEATURES = [
+    "default",
+    "std",
+]
+
+reth_cargo_toml_env_vars()
+
+reth_library(
+    name = "reth_execution_errors",
+    crate_features = FEATURES,
+    declared_features = DECLARED_FEATURES,
+    deps = [
+        "//crates/storage/errors:reth_storage_errors",
+        "@crates//:alloy-evm",
+        "@crates//:alloy-primitives",
+        "@crates//:alloy-rlp",
+        "@crates//:nybbles",
+        "@crates//:thiserror",
+    ],
+)
+
+reth_unit_test(
+    name = "reth_execution_errors_test",
+    crate = ":reth_execution_errors",
+    crate_features = FEATURES,
+    declared_features = DECLARED_FEATURES,
+)

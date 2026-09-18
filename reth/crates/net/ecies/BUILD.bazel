@@ -1,0 +1,49 @@
+# GENERATED FILE - DO NOT EDIT.
+#
+# Regenerate with `python3 scripts/bazel/generate.py` after changing Cargo.toml.
+
+load("//bazel:rust.bzl", "reth_cargo_toml_env_vars", "reth_library", "reth_unit_test")
+
+FEATURES = []
+
+DECLARED_FEATURES = []
+
+reth_cargo_toml_env_vars()
+
+reth_library(
+    name = "reth_ecies",
+    crate_features = FEATURES,
+    declared_features = DECLARED_FEATURES,
+    deps = [
+        "//crates/net/peers:reth_network_peers",
+        "@crates//:aes",
+        "@crates//:alloy-primitives",
+        "@crates//:alloy-rlp",
+        "@crates//:byteorder",
+        "@crates//:cipher",
+        "@crates//:concat-kdf",
+        "@crates//:ctr",
+        "@crates//:digest",
+        "@crates//:futures",
+        "@crates//:hmac",
+        "@crates//:pin-project",
+        "@crates//:rand_08-0.8.6",
+        "@crates//:secp256k1",
+        "@crates//:sha2",
+        "@crates//:thiserror",
+        "@crates//:tokio",
+        "@crates//:tokio-stream",
+        "@crates//:tokio-util",
+        "@crates//:tracing",
+    ],
+    aliases = {
+        "@crates//:rand_08-0.8.6": "rand_08",
+    },
+)
+
+reth_unit_test(
+    name = "reth_ecies_test",
+    crate = ":reth_ecies",
+    crate_features = FEATURES,
+    declared_features = DECLARED_FEATURES,
+)

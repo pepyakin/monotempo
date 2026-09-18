@@ -1,0 +1,6 @@
+# Prestate fixtures that crate tests `include_str!` (see EXTRA_COMPILE_DATA
+# in scripts/bazel/generate.py).
+exports_files(
+    glob(["*.json"]),
+    visibility = ["//visibility:public"],
+)

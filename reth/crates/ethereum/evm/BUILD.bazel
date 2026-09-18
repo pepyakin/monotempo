@@ -1,0 +1,80 @@
+# GENERATED FILE - DO NOT EDIT.
+#
+# Regenerate with `python3 scripts/bazel/generate.py` after changing Cargo.toml.
+
+load("//bazel:rust.bzl", "reth_cargo_toml_env_vars", "reth_integration_test", "reth_library", "reth_unit_test")
+
+FEATURES = [
+    "default",
+    "std",
+    "test-utils",
+]
+
+DECLARED_FEATURES = [
+    "default",
+    "gmp",
+    "jit",
+    "std",
+    "test-utils",
+]
+
+reth_cargo_toml_env_vars()
+
+reth_library(
+    name = "reth_evm_ethereum",
+    crate_features = FEATURES,
+    declared_features = DECLARED_FEATURES,
+    deps = [
+        "//crates/chainspec:reth_chainspec",
+        "//crates/ethereum/hardforks:reth_ethereum_forks",
+        "//crates/ethereum/primitives:reth_ethereum_primitives",
+        "//crates/evm/evm:reth_evm",
+        "//crates/evm/execution-types:reth_execution_types",
+        "//crates/storage/errors:reth_storage_errors",
+        "@crates//:alloy-consensus",
+        "@crates//:alloy-eips",
+        "@crates//:alloy-evm",
+        "@crates//:alloy-primitives",
+        "@crates//:alloy-rpc-types-engine",
+        "@crates//:reth-primitives-traits",
+        "@crates//:revm",
+    ],
+)
+
+reth_unit_test(
+    name = "reth_evm_ethereum_test",
+    crate = ":reth_evm_ethereum",
+    crate_features = FEATURES,
+    declared_features = DECLARED_FEATURES,
+    deps = [
+        "//testing/testing-utils:reth_testing_utils",
+        "@crates//:alloy-genesis",
+        "@crates//:secp256k1",
+    ],
+)
+
+reth_integration_test(
+    name = "reth_evm_ethereum_execute_test",
+    crate_root = "tests/execute.rs",
+    crate_features = FEATURES,
+    declared_features = DECLARED_FEATURES,
+    deps = [
+        "//crates/chainspec:reth_chainspec",
+        "//crates/ethereum/hardforks:reth_ethereum_forks",
+        "//crates/ethereum/primitives:reth_ethereum_primitives",
+        "//crates/evm/evm:reth_evm",
+        "//crates/evm/execution-types:reth_execution_types",
+        "//crates/storage/errors:reth_storage_errors",
+        "//testing/testing-utils:reth_testing_utils",
+        ":reth_evm_ethereum",
+        "@crates//:alloy-consensus",
+        "@crates//:alloy-eips",
+        "@crates//:alloy-evm",
+        "@crates//:alloy-genesis",
+        "@crates//:alloy-primitives",
+        "@crates//:alloy-rpc-types-engine",
+        "@crates//:reth-primitives-traits",
+        "@crates//:revm",
+        "@crates//:secp256k1",
+    ],
+)
