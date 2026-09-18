@@ -41,6 +41,7 @@ from __future__ import annotations
 
 import argparse
 import hashlib
+import itertools
 import json
 import os
 import re
@@ -155,7 +156,7 @@ class Project:
 
     def label(self, package_path: str, target: str = "") -> str:
         """Workspace-absolute label of `target` in the project-relative `package_path`."""
-        pkg = f"{self.prefix}/{package_path}".strip("/")
+        pkg = "/".join(part for part in (self.prefix, package_path) if part and part != ".")
         return f"//{pkg}:{target}" if target else f"//{pkg}"
 
     @staticmethod
@@ -265,6 +266,18 @@ class Crate:
 def load_root_manifest(project: Project) -> dict:
     with open(project.root / "Cargo.toml", "rb") as f:
         return tomllib.load(f)
+
+
+def workspace_table(root: dict) -> dict:
+    """The `[workspace]` table of a project's root manifest.
+
+    A single-crate project (`revm-inspectors`) has no `[workspace]`; its
+    `[package]` and `[lints]` then play the role of `[workspace.package]` and
+    `[workspace.lints]` for what the generator derives from them.
+    """
+    if "workspace" in root:
+        return root["workspace"]
+    return {"package": root["package"], "lints": root.get("lints", {})}
 
 
 def cargo_metadata(manifest: Path, *, locked: bool) -> subprocess.CompletedProcess:
@@ -379,7 +392,31 @@ class DerivedManifest:
     children: set[str]
 
 
-def derive_manifest(member: Member, by_dir: dict[Path, Member]) -> DerivedManifest:
+def colliding_renames(members: list[Member]) -> set[tuple[str, str]]:
+    """`(package, rename)` pairs whose rename is another external package's extern name.
+
+    crate_universe names its hub aliases after the rename (`@crates//:criterion`
+    for `criterion = { package = "codspeed-criterion-compat" }`) and refuses to
+    render when two different packages claim the same alias name anywhere in
+    the workspace. Such dependencies go into the derived manifests under their
+    real package name; the BUILD files restore the rename with `aliases`.
+    """
+    packages_by_extern: dict[str, set[str]] = defaultdict(set)
+    for member in members:
+        for dep in member.pkg["dependencies"]:
+            if dep.get("path"):
+                continue  # workspace members get no hub alias
+            packages_by_extern[dep["rename"] or dep["name"]].add(dep["name"])
+    return {
+        (name, extern)
+        for extern, names in packages_by_extern.items()
+        if len(names) > 1
+        for name in names
+        if name != extern
+    }
+
+
+def derive_manifest(member: Member, by_dir: dict[Path, Member], unrenamed: set[tuple[str, str]]) -> DerivedManifest:
     """The member's manifest as Cargo sees it in its project, made self-contained.
 
     Package fields and dependency specs come from `cargo metadata` and thus
@@ -388,6 +425,7 @@ def derive_manifest(member: Member, by_dir: dict[Path, Member]) -> DerivedManife
     project's targets. `[features]` is copied from the real manifest because
     `cargo metadata` adds the implicit features of optional dependencies, and
     spelling those out would change how `dep/feature` entries behave.
+    Dependencies in `unrenamed` (see colliding_renames) lose their rename.
     """
     pkg, project = member.pkg, member.project
     children: set[str] = set()
@@ -465,7 +503,13 @@ def derive_manifest(member: Member, by_dir: dict[Path, Member]) -> DerivedManife
         if dep.get("registry"):
             sys.exit(f"{pkg['name']}: dependency {dep['name']} uses an alternative registry; unsupported")
         spec: dict = {}
-        if dep["rename"]:
+        rename = dep["rename"]
+        if (dep["name"], rename) in unrenamed:
+            referenced = [f for f in itertools.chain.from_iterable(features.values()) if f.split("/")[0].removeprefix("dep:").rstrip("?") == rename]
+            if referenced:
+                sys.exit(f"{pkg['name']}: cannot drop the rename {rename!r} of {dep['name']}: features refer to it as {referenced}")
+            rename = None
+        if rename:
             spec["package"] = dep["name"]
         if dep.get("path"):
             target_member = by_dir.get(Path(dep["path"]))
@@ -485,7 +529,7 @@ def derive_manifest(member: Member, by_dir: dict[Path, Member]) -> DerivedManife
         table = {None: "dependencies", "dev": "dev-dependencies", "build": "build-dependencies"}[dep["kind"]]
         if dep["target"]:
             table = f"target.'{dep['target']}'.{table}"
-        tables[table][dep["rename"] or dep["name"]] = spec
+        tables[table][rename or dep["name"]] = spec
     for table in sorted(tables, key=lambda t: (t.startswith("target."), t)):
         out.append(toml_table(table, tables[table]))
 
@@ -509,9 +553,12 @@ def render_shadow_root_manifest(projects: list[Project], roots: dict[str, dict],
                     sys.exit(f"[patch.{registry}] {name}: {project.name} disagrees with another project")
                 patches[registry][name] = spec
 
-    resolvers = {roots[p.name]["workspace"].get("resolver", "2") for p in projects}
-    if len(resolvers) != 1:
-        sys.exit(f"projects use different Cargo resolvers: {sorted(resolvers)}")
+    # Resolver 3 only changes how `rust-version` steers version selection, and
+    # the Bazel workspace never selects versions (its lock is seeded from the
+    # projects'); the highest resolver in use is right for every member.
+    resolvers = {workspace_table(roots[p.name]).get("resolver", "2") for p in projects}
+    if not resolvers <= {"2", "3"}:
+        sys.exit(f"unsupported Cargo resolver among projects: {sorted(resolvers)}")
 
     out = [
         f"# GENERATED FILE - DO NOT EDIT. Regenerate with `python3 {GENERATOR}`.\n",
@@ -523,7 +570,7 @@ def render_shadow_root_manifest(projects: list[Project], roots: dict[str, dict],
         "\n",
         toml_table(
             "workspace",
-            {"resolver": resolvers.pop(), "members": [m.shadow_dir.relative_to(SHADOW_ROOT).as_posix() for m in members]},
+            {"resolver": max(resolvers), "members": [m.shadow_dir.relative_to(SHADOW_ROOT).as_posix() for m in members]},
         ),
     ]
     for registry in sorted(patches):
@@ -555,11 +602,12 @@ class ShadowWorkspace:
 
 def shadow_workspace(projects: list[Project], roots: dict[str, dict], members: list[Member]) -> ShadowWorkspace:
     by_dir = {m.real_dir: m for m in members}
+    unrenamed = colliding_renames(members)
     manifests: dict[Path, str] = {}
     links: dict[Path, str] = {}
     digest = hashlib.sha256()
     for member in members:
-        derived = derive_manifest(member, by_dir)
+        derived = derive_manifest(member, by_dir, unrenamed)
         manifests[member.shadow_dir / "Cargo.toml"] = derived.text
         digest.update(member.shadow_dir.relative_to(SHADOW_ROOT).as_posix().encode() + b"\0")
         digest.update(derived.text.encode() + b"\0")
@@ -719,6 +767,11 @@ def build_crates(projects: list[Project], members: list[Member], meta: dict) -> 
                 pkg = packages[dep["pkg"]]
                 external_versions[pkg["name"]].add(pkg["version"])
 
+    # Renames the derived manifests dropped (see colliding_renames), by member:
+    # external package name -> extern crate name the sources expect.
+    unrenamed = colliding_renames(members)
+    dropped_renames: dict[str, dict[str, str]] = {}
+
     crates: dict[str, Crate] = {}
     for member_id in member_ids:
         pkg = packages[member_id]
@@ -726,6 +779,9 @@ def build_crates(projects: list[Project], members: list[Member], meta: dict) -> 
         member = by_shadow_dir.get(shadow_dir)
         if member is None:
             sys.exit(f"{pkg['name']}: workspace member {shadow_dir} was not derived from any project")
+        dropped_renames[member_id] = {
+            d["name"]: crate_name_to_ident(d["rename"]) for d in member.pkg["dependencies"] if (d["name"], d["rename"]) in unrenamed
+        }
         crate = Crate(
             project=member.project,
             name=pkg["name"],
@@ -733,7 +789,9 @@ def build_crates(projects: list[Project], members: list[Member], meta: dict) -> 
             package_path=member.package_path,
             features=sorted(nodes[member_id]["features"]),
             declared_features=sorted(pkg["features"]),
-            workspace_lints=bool(member.manifest.get("lints", {}).get("workspace", False)),
+            # A single-crate project's own `[lints]` are its project lints (see workspace_table).
+            workspace_lints=bool(member.manifest.get("lints", {}).get("workspace", False))
+            or (member.real_dir == member.project.root and "lints" in member.manifest),
             targets=[
                 Target(
                     kind=t["kind"][0],
@@ -780,7 +838,8 @@ def build_crates(projects: list[Project], members: list[Member], meta: dict) -> 
                 else:
                     dep_label = f"{CRATES_REPO}//:{alias_name}"
                 lib_name = crate_name_to_ident(lib["name"])
-            alias = dep["name"] if dep["name"] != lib_name else None
+            extern_name = dropped_renames[member_id].get(dep_pkg["name"], dep["name"])
+            alias = extern_name if extern_name != lib_name else None
             for dk in dep["dep_kinds"]:
                 if is_disabled_optional_dep(packages[member_id], dep["name"], dk["kind"], activated):
                     # `cargo metadata` lists an optional dependency whenever it is
@@ -1154,8 +1213,9 @@ def lint_levels(table: dict) -> list[tuple[str, str]]:
 
 def render_workspace_bzl(project: Project, root: dict) -> str:
     """`<project>/bazel/workspace.bzl`: values every crate inherits from the root manifest."""
-    pkg = root["workspace"]["package"]
-    lints = root["workspace"].get("lints", {})
+    workspace = workspace_table(root)
+    pkg = workspace["package"]
+    lints = workspace.get("lints", {})
     rust_lints = lints.get("rust", {})
     # cfgs rustc must not warn about: the ones cargo always declares plus
     # `unexpected_cfgs = { check-cfg = [...] }`. Features are declared per crate.
@@ -1176,7 +1236,8 @@ def render_workspace_bzl(project: Project, root: dict) -> str:
         "# What every crate of the project inherits; see //bazel:rust.bzl.\n",
         "WORKSPACE = struct(\n",
         f"    name = {starlark_str(project.name)},\n",
-        f"    manifest = {starlark_str(project.label('', 'Cargo.toml'))},\n",
+        # A single-crate project's root manifest is the crate's own; None then.
+        f"    manifest = {starlark_str(project.label('', 'Cargo.toml')) if 'workspace' in root else 'None'},\n",
         f"    lints = {starlark_str(project.label('bazel', 'lints'))},\n",
         f"    edition = {starlark_str(pkg['edition'])},\n",
         f"    version = {starlark_str(pkg['version'])},\n",

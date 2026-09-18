@@ -669,6 +669,7 @@ alloy-consensus = { path = "../alloy/crates/consensus" }
 alloy-consensus-any = { path = "../alloy/crates/consensus-any" }
 alloy-contract = { path = "../alloy/crates/contract" }
 alloy-eips = { path = "../alloy/crates/eips" }
+alloy-evm = { path = "../alloy-evm/crates/evm" }
 alloy-genesis = { path = "../alloy/crates/genesis" }
 alloy-json-rpc = { path = "../alloy/crates/json-rpc" }
 alloy-network = { path = "../alloy/crates/network" }
@@ -696,3 +697,9 @@ alloy-transport-http = { path = "../alloy/crates/transport-http" }
 alloy-transport-ipc = { path = "../alloy/crates/transport-ipc" }
 alloy-transport-ws = { path = "../alloy/crates/transport-ws" }
 alloy-tx-macros = { path = "../alloy/crates/tx-macros" }
+reth-codecs = { path = "../reth-core/crates/codecs" }
+reth-codecs-derive = { path = "../reth-core/crates/codecs-derive" }
+reth-primitives-traits = { path = "../reth-core/crates/primitives-traits" }
+reth-rpc-traits = { path = "../reth-core/crates/rpc-traits" }
+reth-zstd-compressors = { path = "../reth-core/crates/zstd-compressors" }
+revm-inspectors = { path = "../revm-inspectors" }

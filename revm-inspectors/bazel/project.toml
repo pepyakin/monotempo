@@ -1,0 +1,5 @@
+# Bazel configuration of the revm-inspectors project, read by //bazel:generate.py.
+#
+# Everything Bazel needs to know about revm-inspectors that cannot be derived
+# from its Cargo manifest. Nothing so far: the project is a single crate whose
+# sources, README and `testdata/` are picked up automatically.

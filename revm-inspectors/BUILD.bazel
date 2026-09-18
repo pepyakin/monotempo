@@ -1,0 +1,84 @@
+# GENERATED FILE - DO NOT EDIT.
+#
+# Regenerate with `python3 bazel/generate.py` after changing Cargo.toml.
+
+load("//bazel:rust.bzl", "crate_cargo_toml_env_vars", "crate_integration_test", "crate_library", "crate_unit_test")
+load("//revm-inspectors/bazel:workspace.bzl", "WORKSPACE")
+
+FEATURES = [
+    "anstyle",
+    "default",
+    "js-tracer",
+    "serde",
+    "std",
+]
+
+DECLARED_FEATURES = [
+    "anstyle",
+    "default",
+    "js-tracer",
+    "serde",
+    "std",
+]
+
+crate_cargo_toml_env_vars(WORKSPACE)
+
+crate_library(
+    name = "revm_inspectors",
+    workspace = WORKSPACE,
+    crate_features = FEATURES,
+    declared_features = DECLARED_FEATURES,
+    deps = [
+        "//alloy/crates/rpc-types-eth:alloy_rpc_types_eth",
+        "//alloy/crates/rpc-types-trace:alloy_rpc_types_trace",
+        "@crates//:alloy-primitives",
+        "@crates//:alloy-sol-types",
+        "@crates//:anstyle",
+        "@crates//:boa_engine",
+        "@crates//:boa_gc",
+        "@crates//:colorchoice",
+        "@crates//:revm",
+        "@crates//:serde",
+        "@crates//:serde_json",
+        "@crates//:thiserror",
+    ],
+)
+
+crate_unit_test(
+    name = "revm_inspectors_test",
+    workspace = WORKSPACE,
+    crate = ":revm_inspectors",
+    crate_features = FEATURES,
+    declared_features = DECLARED_FEATURES,
+    deps = [
+        "@crates//:alloy-hardforks-0.4.8",
+        "@crates//:criterion",
+        "@crates//:snapbox",
+    ],
+)
+
+crate_integration_test(
+    name = "revm_inspectors_it_test",
+    workspace = WORKSPACE,
+    crate_root = "tests/it/main.rs",
+    crate_features = FEATURES,
+    declared_features = DECLARED_FEATURES,
+    deps = [
+        "//alloy/crates/rpc-types-eth:alloy_rpc_types_eth",
+        "//alloy/crates/rpc-types-trace:alloy_rpc_types_trace",
+        ":revm_inspectors",
+        "@crates//:alloy-hardforks-0.4.8",
+        "@crates//:alloy-primitives",
+        "@crates//:alloy-sol-types",
+        "@crates//:anstyle",
+        "@crates//:boa_engine",
+        "@crates//:boa_gc",
+        "@crates//:colorchoice",
+        "@crates//:criterion",
+        "@crates//:revm",
+        "@crates//:serde",
+        "@crates//:serde_json",
+        "@crates//:snapbox",
+        "@crates//:thiserror",
+    ],
+)

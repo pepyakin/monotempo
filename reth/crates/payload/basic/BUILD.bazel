@@ -19,6 +19,7 @@ crate_library(
     deps = [
         "//alloy/crates/consensus:alloy_consensus",
         "//alloy/crates/eips:alloy_eips",
+        "//reth-core/crates/primitives-traits:reth_primitives_traits",
         "//reth/crates/chain-state:reth_chain_state",
         "//reth/crates/engine/execution-cache:reth_execution_cache",
         "//reth/crates/metrics:reth_metrics",
@@ -33,7 +34,6 @@ crate_library(
         "@crates//:futures-core",
         "@crates//:futures-util",
         "@crates//:metrics",
-        "@crates//:reth-primitives-traits",
         "@crates//:serde",
         "@crates//:tokio",
         "@crates//:tracing",

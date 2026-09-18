@@ -19,6 +19,8 @@ crate_library(
     deps = [
         "//alloy/crates/consensus:alloy_consensus",
         "//alloy/crates/genesis:alloy_genesis",
+        "//reth-core/crates/codecs:reth_codecs",
+        "//reth-core/crates/primitives-traits:reth_primitives_traits",
         "//reth/crates/chainspec:reth_chainspec",
         "//reth/crates/config:reth_config",
         "//reth/crates/etl:reth_etl",
@@ -34,8 +36,6 @@ crate_library(
         "@crates//:alloy-primitives",
         "@crates//:boyer-moore-magiclen",
         "@crates//:eyre",
-        "@crates//:reth-codecs",
-        "@crates//:reth-primitives-traits",
         "@crates//:serde",
         "@crates//:serde_json",
         "@crates//:thiserror",

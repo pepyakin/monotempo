@@ -39,11 +39,13 @@ script inputs, test tags) live in `<project>/bazel/project.toml`.
 Each project is its own Cargo workspace for `cargo`, but Bazel resolves all of
 them as one workspace (`bazel/cargo/`, generated, with its own committed
 `Cargo.lock`) and one crate_universe repository, `@crates`. reth depends on the
-in-tree alloy through `[patch.crates-io]` in `reth/Cargo.toml`; the generator
-turns that into `//alloy/...` dependencies in reth's `BUILD.bazel` files, and
-into `crate.annotation(deps = ...)` entries in the generated
-`bazel/cargo/member_deps.MODULE.bazel` for external crates that depend on
-in-tree crates (crate_universe drops those edges itself). Keep
+in-tree alloy, reth-core, alloy-evm and revm-inspectors through
+`[patch.crates-io]` in `reth/Cargo.toml` (and those three patch alloy the same
+way); the generator turns that into `//alloy/...` etc. dependencies in reth's
+`BUILD.bazel` files, and into `crate.annotation(deps = ...)` entries in the
+generated `bazel/cargo/member_deps.MODULE.bazel` for any external crate that
+depends on in-tree crates (crate_universe drops those edges itself; currently
+there are none). Keep
 the projects' lockfiles aligned on shared external crates: the generator fails
 when `bazel/cargo/Cargo.lock` would pin a version no project pins, and prints
 the `cargo update --precise` command that fixes it.

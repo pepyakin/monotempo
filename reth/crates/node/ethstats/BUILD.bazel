@@ -18,6 +18,7 @@ crate_library(
     declared_features = DECLARED_FEATURES,
     deps = [
         "//alloy/crates/consensus:alloy_consensus",
+        "//reth-core/crates/primitives-traits:reth_primitives_traits",
         "//reth/crates/chain-state:reth_chain_state",
         "//reth/crates/net/network-api:reth_network_api",
         "//reth/crates/storage/storage-api:reth_storage_api",
@@ -25,7 +26,6 @@ crate_library(
         "@crates//:alloy-primitives",
         "@crates//:chrono",
         "@crates//:futures-util",
-        "@crates//:reth-primitives-traits",
         "@crates//:serde",
         "@crates//:serde_json",
         "@crates//:thiserror",

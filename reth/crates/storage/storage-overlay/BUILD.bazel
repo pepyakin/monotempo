@@ -22,6 +22,7 @@ crate_library(
     declared_features = DECLARED_FEATURES,
     deps = [
         "//alloy/crates/eips:alloy_eips",
+        "//reth-core/crates/primitives-traits:reth_primitives_traits",
         "//reth/crates/chain-state:reth_chain_state",
         "//reth/crates/errors:reth_errors",
         "//reth/crates/ethereum/primitives:reth_ethereum_primitives",
@@ -39,7 +40,6 @@ crate_library(
         "@crates//:metrics",
         "@crates//:parking_lot",
         "@crates//:rayon",
-        "@crates//:reth-primitives-traits",
         "@crates//:revm",
         "@crates//:tracing",
     ],

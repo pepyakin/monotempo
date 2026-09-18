@@ -18,6 +18,7 @@ crate_library(
     declared_features = DECLARED_FEATURES,
     deps = [
         "//alloy/crates/eips:alloy_eips",
+        "//reth-core/crates/primitives-traits:reth_primitives_traits",
         "//reth/crates/net/downloaders:reth_downloaders",
         "//reth/crates/net/eth-wire-types:reth_eth_wire_types",
         "//reth/crates/net/p2p:reth_network_p2p",
@@ -29,7 +30,6 @@ crate_library(
         "//reth/crates/trie/common:reth_trie_common",
         "@crates//:alloy-eip7928",
         "@crates//:alloy-primitives",
-        "@crates//:reth-primitives-traits",
         "@crates//:revm",
         "@crates//:serde",
         "@crates//:serde_json",

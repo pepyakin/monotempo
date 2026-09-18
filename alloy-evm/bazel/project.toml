@@ -1,0 +1,5 @@
+# Bazel configuration of the alloy-evm project, read by //bazel:generate.py.
+#
+# Everything Bazel needs to know about alloy-evm that cannot be derived from
+# its Cargo manifests. Nothing so far: the project is a single crate whose
+# sources and README are picked up automatically.

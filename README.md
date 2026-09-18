@@ -13,13 +13,19 @@ change to one file only rebuilds (and retests) the crates that depend on it.
 | `reth/` | Ethereum execution client Tempo is built on | [paradigmxyz/reth](https://github.com/paradigmxyz/reth) | imported, builds and tests with Bazel |
 | `tempo/` | The Tempo node itself | [tempoxyz/tempo](https://github.com/tempoxyz/tempo) | not yet imported |
 | `alloy/` | Ethereum types, RPC and transports used by reth and tempo | [alloy-rs/alloy](https://github.com/alloy-rs/alloy) (Tempo's fork, with `signer-tempo`) | imported; reth builds against it (`[patch.crates-io]` in `reth/Cargo.toml`, `//alloy/...` targets under Bazel) |
+| `reth-core/` | `reth-primitives-traits`, `reth-codecs`, `reth-rpc-traits`, `reth-zstd-compressors`: reth's foundation crates, published separately | [paradigmxyz/reth-core](https://github.com/paradigmxyz/reth-core) | imported; reth builds against it |
+| `alloy-evm/` | EVM abstraction layer between alloy and revm | [alloy-rs/alloy-evm](https://github.com/alloy-rs/alloy-evm) | imported; reth builds against it |
+| `revm-inspectors/` | EVM tracing inspectors for the debug/trace RPC namespaces | [paradigmxyz/revm-inspectors](https://github.com/paradigmxyz/revm-inspectors) | imported; reth builds against it |
 | `revm/` or `evm2/` | The EVM used by reth | [bluealloy/revm](https://github.com/bluealloy/revm) (what reth and tempo use today) or [alloy-rs/evm2](https://github.com/alloy-rs/evm2) (its successor, in development) | not yet imported; which one is still open |
 
 Until a project is imported, reth consumes it as an external crate from
 crates.io through crate_universe, exactly as its `Cargo.lock` says. Importing a
 project means moving it under its directory here and pointing the dependants
 at it with `[patch.crates-io]` in their `Cargo.toml`, as reth does for alloy;
-the Bazel build follows the patch.
+the Bazel build follows the patch. `reth-core`, `alloy-evm` and
+`revm-inspectors` are in-tree because they are the crates that sit between
+reth and alloy: every external crate that depended on alloy came from one of
+them, so with them imported no external crate reaches into the tree.
 
 ## Quick start
 
@@ -72,9 +78,11 @@ repinning, incremental dev builds).
    at the same versions; the generator reports the mismatches it cannot
    build). If another project should use it in-tree, add
    `[patch.crates-io]` entries pointing at `../<project>/...` there.
-3. Add `<project>/bazel/project.toml` (may be empty apart from comments), run
-   `python3 bazel/generate.py` to generate the `BUILD.bazel` files and extend
-   the Bazel Cargo workspace, then `CARGO_BAZEL_REPIN=1 bazel mod deps`.
+3. Add `<project>/bazel/project.toml` (may be empty apart from comments) and,
+   unless the project is a single crate, a `<project>/BUILD.bazel` that
+   `exports_files` its root `Cargo.toml` and `Cargo.lock` (copy `alloy/`'s).
+   Run `python3 bazel/generate.py` to generate the `BUILD.bazel` files and
+   extend the Bazel Cargo workspace, then `CARGO_BAZEL_REPIN=1 bazel mod deps`.
 4. Add the project's Cargo `target/` directory to `.bazelignore` (the
    generator maintains the `bazel/cargo/` entries itself). If external crates
    of the project need annotations, add `<project>/<project>.MODULE.bazel`

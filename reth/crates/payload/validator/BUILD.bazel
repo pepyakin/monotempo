@@ -25,7 +25,7 @@ crate_library(
     deps = [
         "//alloy/crates/consensus:alloy_consensus",
         "//alloy/crates/rpc-types-engine:alloy_rpc_types_engine",
-        "@crates//:reth-primitives-traits",
+        "//reth-core/crates/primitives-traits:reth_primitives_traits",
     ],
 )
 

@@ -25,6 +25,8 @@ crate_library(
     deps = [
         "//alloy/crates/consensus:alloy_consensus",
         "//alloy/crates/eips:alloy_eips",
+        "//reth-core/crates/codecs:reth_codecs",
+        "//reth-core/crates/primitives-traits:reth_primitives_traits",
         "//reth/crates/ethereum/primitives:reth_ethereum_primitives",
         "//reth/crates/prune/types:reth_prune_types",
         "//reth/crates/stages/types:reth_stages_types",
@@ -39,8 +41,6 @@ crate_library(
         "@crates//:metrics",
         "@crates//:modular-bitfield",
         "@crates//:proptest",
-        "@crates//:reth-codecs",
-        "@crates//:reth-primitives-traits",
         "@crates//:roaring",
         "@crates//:serde",
     ],

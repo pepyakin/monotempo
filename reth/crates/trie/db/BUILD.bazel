@@ -24,6 +24,7 @@ crate_library(
     crate_features = FEATURES,
     declared_features = DECLARED_FEATURES,
     deps = [
+        "//reth-core/crates/primitives-traits:reth_primitives_traits",
         "//reth/crates/evm/execution-errors:reth_execution_errors",
         "//reth/crates/storage/db-api:reth_db_api",
         "//reth/crates/storage/errors:reth_storage_errors",
@@ -31,7 +32,6 @@ crate_library(
         "//reth/crates/trie/common:reth_trie_common",
         "//reth/crates/trie/trie:reth_trie",
         "@crates//:alloy-primitives",
-        "@crates//:reth-primitives-traits",
         "@crates//:tracing",
     ],
 )
@@ -66,6 +66,7 @@ crate_integration_test(
     declared_features = DECLARED_FEATURES,
     deps = [
         "//alloy/crates/consensus:alloy_consensus",
+        "//reth-core/crates/primitives-traits:reth_primitives_traits",
         "//reth/crates/chainspec:reth_chainspec",
         "//reth/crates/evm/execution-errors:reth_execution_errors",
         "//reth/crates/stages/types:reth_stages_types",
@@ -81,7 +82,6 @@ crate_integration_test(
         "@crates//:alloy-rlp",
         "@crates//:proptest",
         "@crates//:proptest-arbitrary-interop",
-        "@crates//:reth-primitives-traits",
         "@crates//:revm",
         "@crates//:serde_json",
         "@crates//:similar-asserts",
@@ -98,6 +98,7 @@ crate_integration_test(
     declared_features = DECLARED_FEATURES,
     deps = [
         "//alloy/crates/consensus:alloy_consensus",
+        "//reth-core/crates/primitives-traits:reth_primitives_traits",
         "//reth/crates/chainspec:reth_chainspec",
         "//reth/crates/evm/execution-errors:reth_execution_errors",
         "//reth/crates/stages/types:reth_stages_types",
@@ -113,7 +114,6 @@ crate_integration_test(
         "@crates//:alloy-rlp",
         "@crates//:proptest",
         "@crates//:proptest-arbitrary-interop",
-        "@crates//:reth-primitives-traits",
         "@crates//:revm",
         "@crates//:serde_json",
         "@crates//:similar-asserts",
@@ -130,6 +130,7 @@ crate_integration_test(
     declared_features = DECLARED_FEATURES,
     deps = [
         "//alloy/crates/consensus:alloy_consensus",
+        "//reth-core/crates/primitives-traits:reth_primitives_traits",
         "//reth/crates/chainspec:reth_chainspec",
         "//reth/crates/evm/execution-errors:reth_execution_errors",
         "//reth/crates/stages/types:reth_stages_types",
@@ -145,7 +146,6 @@ crate_integration_test(
         "@crates//:alloy-rlp",
         "@crates//:proptest",
         "@crates//:proptest-arbitrary-interop",
-        "@crates//:reth-primitives-traits",
         "@crates//:revm",
         "@crates//:serde_json",
         "@crates//:similar-asserts",
@@ -165,6 +165,7 @@ crate_integration_test(
     declared_features = DECLARED_FEATURES,
     deps = [
         "//alloy/crates/consensus:alloy_consensus",
+        "//reth-core/crates/primitives-traits:reth_primitives_traits",
         "//reth/crates/chainspec:reth_chainspec",
         "//reth/crates/evm/execution-errors:reth_execution_errors",
         "//reth/crates/stages/types:reth_stages_types",
@@ -180,7 +181,6 @@ crate_integration_test(
         "@crates//:alloy-rlp",
         "@crates//:proptest",
         "@crates//:proptest-arbitrary-interop",
-        "@crates//:reth-primitives-traits",
         "@crates//:revm",
         "@crates//:serde_json",
         "@crates//:similar-asserts",
@@ -197,6 +197,7 @@ crate_integration_test(
     declared_features = DECLARED_FEATURES,
     deps = [
         "//alloy/crates/consensus:alloy_consensus",
+        "//reth-core/crates/primitives-traits:reth_primitives_traits",
         "//reth/crates/chainspec:reth_chainspec",
         "//reth/crates/evm/execution-errors:reth_execution_errors",
         "//reth/crates/stages/types:reth_stages_types",
@@ -212,7 +213,6 @@ crate_integration_test(
         "@crates//:alloy-rlp",
         "@crates//:proptest",
         "@crates//:proptest-arbitrary-interop",
-        "@crates//:reth-primitives-traits",
         "@crates//:revm",
         "@crates//:serde_json",
         "@crates//:similar-asserts",
@@ -229,6 +229,7 @@ crate_integration_test(
     declared_features = DECLARED_FEATURES,
     deps = [
         "//alloy/crates/consensus:alloy_consensus",
+        "//reth-core/crates/primitives-traits:reth_primitives_traits",
         "//reth/crates/chainspec:reth_chainspec",
         "//reth/crates/evm/execution-errors:reth_execution_errors",
         "//reth/crates/stages/types:reth_stages_types",
@@ -244,7 +245,6 @@ crate_integration_test(
         "@crates//:alloy-rlp",
         "@crates//:proptest",
         "@crates//:proptest-arbitrary-interop",
-        "@crates//:reth-primitives-traits",
         "@crates//:revm",
         "@crates//:serde_json",
         "@crates//:similar-asserts",

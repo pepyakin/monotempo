@@ -29,9 +29,9 @@ crate_library(
     crate_features = FEATURES,
     declared_features = DECLARED_FEATURES,
     deps = [
+        "//reth-core/crates/primitives-traits:reth_primitives_traits",
         "@crates//:futures",
         "@crates//:metrics",
-        "@crates//:reth-primitives-traits",
         "@crates//:tokio",
         "@crates//:tokio-util",
     ] + select({

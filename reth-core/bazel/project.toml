@@ -1,0 +1,12 @@
+# Bazel configuration of the reth-core project, read by //bazel:generate.py.
+#
+# Everything Bazel needs to know about reth-core that cannot be derived from
+# its Cargo manifests. Labels are written out in full.
+
+# Extra compile-time inputs for targets that `include_*!` files from outside
+# the `src/`, `res/`, `assets/` and test-data directories that are globbed
+# automatically: {target = [labels]}, where target is an integration test's
+# name, or "crate" for the lib, binaries and unit tests.
+[compile_data]
+# `src/lib.rs` embeds the zstd dictionaries with `include_bytes!`.
+reth-zstd-compressors.crate = ["receipt_dictionary.bin", "transaction_dictionary.bin"]

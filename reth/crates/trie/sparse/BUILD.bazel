@@ -28,6 +28,7 @@ crate_library(
     crate_features = FEATURES,
     declared_features = DECLARED_FEATURES,
     deps = [
+        "//reth-core/crates/primitives-traits:reth_primitives_traits",
         "//reth/crates/evm/execution-errors:reth_execution_errors",
         "//reth/crates/metrics:reth_metrics",
         "//reth/crates/trie/common:reth_trie_common",
@@ -36,7 +37,6 @@ crate_library(
         "@crates//:either",
         "@crates//:metrics",
         "@crates//:rayon",
-        "@crates//:reth-primitives-traits",
         "@crates//:slotmap",
         "@crates//:smallvec",
         "@crates//:strum",
@@ -74,6 +74,7 @@ crate_integration_test(
     crate_features = FEATURES,
     declared_features = DECLARED_FEATURES,
     deps = [
+        "//reth-core/crates/primitives-traits:reth_primitives_traits",
         "//reth/crates/evm/execution-errors:reth_execution_errors",
         "//reth/crates/metrics:reth_metrics",
         "//reth/crates/tracing:reth_tracing",
@@ -93,7 +94,6 @@ crate_integration_test(
         "@crates//:rand-0.9.4",
         "@crates//:rand_08-0.8.6",
         "@crates//:rayon",
-        "@crates//:reth-primitives-traits",
         "@crates//:slotmap",
         "@crates//:smallvec",
         "@crates//:strum",

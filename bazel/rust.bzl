@@ -28,6 +28,8 @@ _TEST_DATA_DIRS = _COMPILE_DATA_DIRS + ["tests", "testdata", "test-data", "test_
 # find out what the crate calls its dependencies, and follows `workspace = true`
 # entries up to the workspace root.
 def _manifests(workspace):
+    if workspace.manifest == None:
+        return ["Cargo.toml"]  # single-crate project: the crate manifest is the root
     return ["Cargo.toml", workspace.manifest]
 
 # Threads per test process. libtest defaults to the core count, but every

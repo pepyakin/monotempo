@@ -19,6 +19,7 @@ crate_library(
     deps = [
         "//alloy/crates/consensus:alloy_consensus",
         "//alloy/crates/rpc-types-engine:alloy_rpc_types_engine",
+        "//reth-core/crates/primitives-traits:reth_primitives_traits",
         "//reth/crates/chainspec:reth_chainspec",
         "//reth/crates/engine/primitives:reth_engine_primitives",
         "//reth/crates/ethereum/engine-primitives:reth_ethereum_engine_primitives",
@@ -29,7 +30,6 @@ crate_library(
         "@crates//:alloy-primitives",
         "@crates//:eyre",
         "@crates//:futures-util",
-        "@crates//:reth-primitives-traits",
         "@crates//:tokio",
         "@crates//:tokio-stream",
         "@crates//:tracing",

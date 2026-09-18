@@ -18,6 +18,7 @@ crate_library(
     declared_features = DECLARED_FEATURES,
     deps = [
         "//alloy/crates/consensus:alloy_consensus",
+        "//reth-core/crates/primitives-traits:reth_primitives_traits",
         "//reth/crates/config:reth_config",
         "//reth/crates/errors:reth_errors",
         "//reth/crates/exex/types:reth_exex_types",
@@ -32,7 +33,6 @@ crate_library(
         "@crates//:alloy-primitives",
         "@crates//:itertools",
         "@crates//:metrics",
-        "@crates//:reth-primitives-traits",
         "@crates//:rustc-hash",
         "@crates//:thiserror",
         "@crates//:tokio",

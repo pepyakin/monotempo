@@ -1,5 +1,5 @@
 {
-  "checksum": "c086b0b7841017d883b542697716c74ed93d67780702feafca120c27a911293b",
+  "checksum": "ffa8233e2bb242fd7c87ea85e9a1ba4cec8af2d7fc209f6f319189cbeb0357db",
   "conditions": {
     "aarch64-apple-darwin": [
       "aarch64-apple-darwin"
@@ -139,6 +139,12 @@
       "x86_64-unknown-linux-gnu"
     ],
     "cfg(any(unix, target_os = \"wasi\"))": [
+      "aarch64-apple-darwin",
+      "aarch64-unknown-linux-gnu",
+      "x86_64-apple-darwin",
+      "x86_64-unknown-linux-gnu"
+    ],
+    "cfg(any(windows, unix))": [
       "aarch64-apple-darwin",
       "aarch64-unknown-linux-gnu",
       "x86_64-apple-darwin",
@@ -548,6 +554,16 @@
     },
     "aho-corasick 1.1.4": {
       "common_attrs": {
+        "crate_features": [
+          "perf-literal",
+          "std"
+        ],
+        "deps": [
+          {
+            "id": "memchr 2.8.0",
+            "target": "memchr"
+          }
+        ],
         "edition": "2021"
       },
       "library_target_name": "aho_corasick",
@@ -673,6 +689,51 @@
         }
       ],
       "version": "0.2.2"
+    },
+    "alloca 0.4.0": {
+      "build_script_attrs": {
+        "deps": [
+          {
+            "id": "cc 1.4.5",
+            "target": "cc"
+          }
+        ]
+      },
+      "common_attrs": {
+        "edition": "2021",
+        "extra_deps": [
+          ":build_script_build"
+        ]
+      },
+      "library_target_name": "alloca",
+      "license": "MIT",
+      "license_file": "LICENSE",
+      "license_ids": [
+        "MIT"
+      ],
+      "name": "alloca",
+      "package_url": "https://github.com/playXE/alloca-rs",
+      "repository": {
+        "Http": {
+          "sha256": "e5a7d05ea6aea7e9e64d25b9156ba2fee3fdd659e34e41063cd2fc7cd020d7f4",
+          "url": "https://static.crates.io/crates/alloca/0.4.0/download"
+        }
+      },
+      "targets": [
+        {
+          "Library": {
+            "crate_name": "alloca",
+            "crate_root": "src/lib.rs"
+          }
+        },
+        {
+          "BuildScript": {
+            "crate_name": "build_script_build",
+            "crate_root": "build.rs"
+          }
+        }
+      ],
+      "version": "0.4.0"
     },
     "allocator-api2 0.2.21": {
       "common_attrs": {
@@ -1642,6 +1703,7 @@
         "crate_features": [
           "asm-keccak",
           "call-util",
+          "default",
           "overrides",
           "rpc",
           "std"
@@ -1676,12 +1738,17 @@
             "target": "tracing"
           }
         ],
-        "edition": "2021",
-        "extra_deps": [
-          "@@//alloy/crates/consensus:alloy_consensus",
-          "@@//alloy/crates/eips:alloy_eips",
-          "@@//alloy/crates/rpc-types-eth:alloy_rpc_types_eth"
+        "deps_dev": [
+          {
+            "id": "serde_json 1.0.151",
+            "target": "serde_json"
+          },
+          {
+            "id": "test-case 3.3.1",
+            "target": "test_case"
+          }
         ],
+        "edition": "2021",
         "proc_macro_deps": [
           {
             "id": "auto_impl 1.3.0",
@@ -1690,19 +1757,8 @@
         ]
       },
       "library_target_name": "alloy_evm",
-      "license": "MIT OR Apache-2.0",
-      "license_ids": [
-        "Apache-2.0",
-        "MIT"
-      ],
       "name": "alloy-evm",
-      "package_url": "https://github.com/alloy-rs/alloy-evm",
-      "repository": {
-        "Http": {
-          "sha256": "7b6bd5f7e5ce9858bac99275e3f548c3b63bb3e5806da0142dc0b2f518d3ec4a",
-          "url": "https://static.crates.io/crates/alloy-evm/0.39.0/download"
-        }
-      },
+      "repository": null,
       "targets": [
         {
           "Library": {
@@ -4743,6 +4799,41 @@
       ],
       "version": "1.0.14"
     },
+    "anstyle-lossy 1.1.5": {
+      "common_attrs": {
+        "deps": [
+          {
+            "id": "anstyle 1.0.14",
+            "target": "anstyle"
+          }
+        ],
+        "edition": "2021"
+      },
+      "library_target_name": "anstyle_lossy",
+      "license": "MIT OR Apache-2.0",
+      "license_file": "LICENSE-APACHE",
+      "license_ids": [
+        "Apache-2.0",
+        "MIT"
+      ],
+      "name": "anstyle-lossy",
+      "package_url": "https://github.com/rust-cli/anstyle.git",
+      "repository": {
+        "Http": {
+          "sha256": "d9ca7d0f520afcd6d817970d0b2d5fd7c630c75e7783cae046b8b8a783c5befa",
+          "url": "https://static.crates.io/crates/anstyle-lossy/1.1.5/download"
+        }
+      },
+      "targets": [
+        {
+          "Library": {
+            "crate_name": "anstyle_lossy",
+            "crate_root": "src/lib.rs"
+          }
+        }
+      ],
+      "version": "1.1.5"
+    },
     "anstyle-parse 1.0.0": {
       "common_attrs": {
         "crate_features": [
@@ -4789,7 +4880,7 @@
           "selects": {
             "cfg(windows)": [
               {
-                "id": "windows-sys 0.60.2",
+                "id": "windows-sys 0.61.2",
                 "target": "windows_sys"
               }
             ]
@@ -4822,6 +4913,57 @@
       ],
       "version": "1.1.5"
     },
+    "anstyle-svg 1.1.1": {
+      "common_attrs": {
+        "deps": [
+          {
+            "id": "anstyle 1.0.14",
+            "target": "anstyle"
+          },
+          {
+            "id": "anstyle-lossy 1.1.5",
+            "target": "anstyle_lossy"
+          },
+          {
+            "id": "anstyle-parse 1.0.0",
+            "target": "anstyle_parse"
+          },
+          {
+            "id": "html-escape 0.2.15",
+            "target": "html_escape"
+          },
+          {
+            "id": "unicode-width 0.2.2",
+            "target": "unicode_width"
+          }
+        ],
+        "edition": "2021"
+      },
+      "library_target_name": "anstyle_svg",
+      "license": "MIT OR Apache-2.0",
+      "license_file": "LICENSE-APACHE",
+      "license_ids": [
+        "Apache-2.0",
+        "MIT"
+      ],
+      "name": "anstyle-svg",
+      "package_url": "https://github.com/rust-cli/anstyle.git",
+      "repository": {
+        "Http": {
+          "sha256": "ab68e0b71ea68eb6b399ffe1957f26330aeed91f5e578d442a1c2f3df69f6ec1",
+          "url": "https://static.crates.io/crates/anstyle-svg/1.1.1/download"
+        }
+      },
+      "targets": [
+        {
+          "Library": {
+            "crate_name": "anstyle_svg",
+            "crate_root": "src/lib.rs"
+          }
+        }
+      ],
+      "version": "1.1.1"
+    },
     "anstyle-wincon 3.0.11": {
       "common_attrs": {
         "deps": {
@@ -4838,7 +4980,7 @@
                 "target": "once_cell_polyfill"
               },
               {
-                "id": "windows-sys 0.60.2",
+                "id": "windows-sys 0.61.2",
                 "target": "windows_sys"
               }
             ]
@@ -13045,7 +13187,7 @@
           "selects": {
             "cfg(windows)": [
               {
-                "id": "windows-sys 0.48.0",
+                "id": "windows-sys 0.59.0",
                 "target": "windows_sys"
               }
             ]
@@ -14126,6 +14268,117 @@
       ],
       "version": "1.5.0"
     },
+    "criterion 0.8.2": {
+      "common_attrs": {
+        "crate_features": [
+          "cargo_bench_support",
+          "default",
+          "plotters",
+          "rayon"
+        ],
+        "deps": {
+          "common": [
+            {
+              "id": "anes 0.1.6",
+              "target": "anes"
+            },
+            {
+              "id": "cast 0.3.0",
+              "target": "cast"
+            },
+            {
+              "id": "ciborium 0.2.2",
+              "target": "ciborium"
+            },
+            {
+              "id": "clap 4.6.6",
+              "target": "clap"
+            },
+            {
+              "id": "criterion-plot 0.8.2",
+              "target": "criterion_plot"
+            },
+            {
+              "id": "itertools 0.13.0",
+              "target": "itertools"
+            },
+            {
+              "id": "num-traits 0.2.19",
+              "target": "num_traits"
+            },
+            {
+              "id": "oorandom 11.1.5",
+              "target": "oorandom"
+            },
+            {
+              "id": "page_size 0.6.0",
+              "target": "page_size"
+            },
+            {
+              "id": "plotters 0.3.7",
+              "target": "plotters"
+            },
+            {
+              "id": "rayon 1.12.0",
+              "target": "rayon"
+            },
+            {
+              "id": "regex 1.12.3",
+              "target": "regex"
+            },
+            {
+              "id": "serde 1.0.229",
+              "target": "serde"
+            },
+            {
+              "id": "serde_json 1.0.151",
+              "target": "serde_json"
+            },
+            {
+              "id": "tinytemplate 1.2.1",
+              "target": "tinytemplate"
+            },
+            {
+              "id": "walkdir 2.5.0",
+              "target": "walkdir"
+            }
+          ],
+          "selects": {
+            "cfg(any(windows, unix))": [
+              {
+                "id": "alloca 0.4.0",
+                "target": "alloca"
+              }
+            ]
+          }
+        },
+        "edition": "2021"
+      },
+      "library_target_name": "criterion",
+      "license": "Apache-2.0 OR MIT",
+      "license_file": "LICENSE-APACHE",
+      "license_ids": [
+        "Apache-2.0",
+        "MIT"
+      ],
+      "name": "criterion",
+      "package_url": "https://github.com/criterion-rs/criterion.rs",
+      "repository": {
+        "Http": {
+          "sha256": "950046b2aa2492f9a536f5f4f9a3de7b9e2476e575e05bd6c333371add4d98f3",
+          "url": "https://static.crates.io/crates/criterion/0.8.2/download"
+        }
+      },
+      "targets": [
+        {
+          "Library": {
+            "crate_name": "criterion",
+            "crate_root": "src/lib.rs"
+          }
+        }
+      ],
+      "version": "0.8.2"
+    },
     "criterion-plot 0.5.0": {
       "common_attrs": {
         "deps": [
@@ -14164,6 +14417,45 @@
         }
       ],
       "version": "0.5.0"
+    },
+    "criterion-plot 0.8.2": {
+      "common_attrs": {
+        "deps": [
+          {
+            "id": "cast 0.3.0",
+            "target": "cast"
+          },
+          {
+            "id": "itertools 0.13.0",
+            "target": "itertools"
+          }
+        ],
+        "edition": "2021"
+      },
+      "library_target_name": "criterion_plot",
+      "license": "Apache-2.0 OR MIT",
+      "license_file": "LICENSE-APACHE",
+      "license_ids": [
+        "Apache-2.0",
+        "MIT"
+      ],
+      "name": "criterion-plot",
+      "package_url": "https://github.com/criterion-rs/criterion.rs",
+      "repository": {
+        "Http": {
+          "sha256": "d8d80a2f4f5b554395e47b5d8305bc3d27813bacb73493eb1001e8f76dae29ea",
+          "url": "https://static.crates.io/crates/criterion-plot/0.8.2/download"
+        }
+      },
+      "targets": [
+        {
+          "Library": {
+            "crate_name": "criterion_plot",
+            "crate_root": "src/lib.rs"
+          }
+        }
+      ],
+      "version": "0.8.2"
     },
     "critical-section 1.2.0": {
       "common_attrs": {
@@ -17013,10 +17305,6 @@
             "target": "rayon"
           },
           {
-            "id": "reth-primitives-traits 0.7.1",
-            "target": "reth_primitives_traits"
-          },
-          {
             "id": "revm 43.0.2",
             "target": "revm"
           },
@@ -17613,7 +17901,7 @@
             ],
             "cfg(windows)": [
               {
-                "id": "windows-sys 0.52.0",
+                "id": "windows-sys 0.61.2",
                 "target": "windows_sys"
               }
             ]
@@ -18002,10 +18290,6 @@
             "target": "futures"
           },
           {
-            "id": "reth-primitives-traits 0.7.1",
-            "target": "reth_primitives_traits"
-          },
-          {
             "id": "secp256k1 0.30.0",
             "target": "secp256k1"
           },
@@ -18083,10 +18367,6 @@
     "example-custom-beacon-withdrawals 0.0.0": {
       "common_attrs": {
         "deps": [
-          {
-            "id": "alloy-evm 0.39.0",
-            "target": "alloy_evm"
-          },
           {
             "id": "alloy-sol-types 1.7.2",
             "target": "alloy_sol_types"
@@ -18169,10 +18449,6 @@
       "common_attrs": {
         "deps": [
           {
-            "id": "alloy-evm 0.39.0",
-            "target": "alloy_evm"
-          },
-          {
             "id": "alloy-primitives 1.7.2",
             "target": "alloy_primitives"
           },
@@ -18195,10 +18471,6 @@
     "example-custom-inspector 0.0.0": {
       "common_attrs": {
         "deps": [
-          {
-            "id": "alloy-evm 0.39.0",
-            "target": "alloy_evm"
-          },
           {
             "id": "alloy-primitives 1.7.2",
             "target": "alloy_primitives"
@@ -18329,10 +18601,6 @@
           {
             "id": "eyre 0.6.14",
             "target": "eyre"
-          },
-          {
-            "id": "reth-primitives-traits 0.7.1",
-            "target": "reth_primitives_traits"
           },
           {
             "id": "serde_json 1.0.151",
@@ -22453,6 +22721,38 @@
       ],
       "version": "0.13.0"
     },
+    "html-escape 0.2.15": {
+      "common_attrs": {
+        "crate_features": [
+          "default",
+          "std"
+        ],
+        "edition": "2021"
+      },
+      "library_target_name": "html_escape",
+      "license": "MIT",
+      "license_file": "LICENSE",
+      "license_ids": [
+        "MIT"
+      ],
+      "name": "html-escape",
+      "package_url": "https://github.com/magiclen/html-escape",
+      "repository": {
+        "Http": {
+          "sha256": "c9356095b4b41197bba32173600e1582792cda618f65d12f68e2e77d273413c5",
+          "url": "https://static.crates.io/crates/html-escape/0.2.15/download"
+        }
+      },
+      "targets": [
+        {
+          "Library": {
+            "crate_name": "html_escape",
+            "crate_root": "src/lib.rs"
+          }
+        }
+      ],
+      "version": "0.2.15"
+    },
     "http 0.2.12": {
       "common_attrs": {
         "deps": [
@@ -24896,7 +25196,7 @@
             ],
             "cfg(windows)": [
               {
-                "id": "windows-sys 0.52.0",
+                "id": "windows-sys 0.61.2",
                 "target": "windows_sys"
               }
             ]
@@ -25002,6 +25302,11 @@
     },
     "itertools 0.13.0": {
       "common_attrs": {
+        "crate_features": [
+          "default",
+          "use_alloc",
+          "use_std"
+        ],
         "deps": [
           {
             "id": "either 1.18.0",
@@ -29910,6 +30215,34 @@
       ],
       "version": "0.5.5"
     },
+    "normalize-line-endings 0.3.0": {
+      "common_attrs": {
+        "edition": "2015"
+      },
+      "library_target_name": "normalize_line_endings",
+      "license": "Apache-2.0",
+      "license_file": "LICENSE",
+      "license_ids": [
+        "Apache-2.0"
+      ],
+      "name": "normalize-line-endings",
+      "package_url": "https://github.com/derekdreery/normalize-line-endings",
+      "repository": {
+        "Http": {
+          "sha256": "61807f77802ff30975e01f4f071c8ba10c022052f98b3294119f3e615d13e5be",
+          "url": "https://static.crates.io/crates/normalize-line-endings/0.3.0/download"
+        }
+      },
+      "targets": [
+        {
+          "Library": {
+            "crate_name": "normalize_line_endings",
+            "crate_root": "src/lib.rs"
+          }
+        }
+      ],
+      "version": "0.3.0"
+    },
     "notify 8.2.0": {
       "common_attrs": {
         "crate_features": [
@@ -30100,7 +30433,7 @@
             "cfg(windows)": [
               {
                 "alias": "windows",
-                "id": "windows-sys 0.60.2",
+                "id": "windows-sys 0.61.2",
                 "target": "windows_sys"
               }
             ]
@@ -36427,10 +36760,33 @@
     "regex 1.12.3": {
       "common_attrs": {
         "crate_features": [
+          "default",
+          "perf",
+          "perf-backtrack",
+          "perf-cache",
+          "perf-dfa",
+          "perf-inline",
+          "perf-literal",
+          "perf-onepass",
           "std",
-          "unicode-perl"
+          "unicode",
+          "unicode-age",
+          "unicode-bool",
+          "unicode-case",
+          "unicode-gencat",
+          "unicode-perl",
+          "unicode-script",
+          "unicode-segment"
         ],
         "deps": [
+          {
+            "id": "aho-corasick 1.1.4",
+            "target": "aho_corasick"
+          },
+          {
+            "id": "memchr 2.8.0",
+            "target": "memchr"
+          },
           {
             "id": "regex-automata 0.4.14",
             "target": "regex_automata"
@@ -36472,16 +36828,38 @@
         "crate_features": [
           "alloc",
           "dfa-build",
+          "dfa-onepass",
           "dfa-search",
+          "hybrid",
           "meta",
+          "nfa-backtrack",
           "nfa-pikevm",
           "nfa-thompson",
+          "perf-inline",
+          "perf-literal",
+          "perf-literal-multisubstring",
+          "perf-literal-substring",
           "std",
           "syntax",
+          "unicode",
+          "unicode-age",
+          "unicode-bool",
+          "unicode-case",
+          "unicode-gencat",
           "unicode-perl",
+          "unicode-script",
+          "unicode-segment",
           "unicode-word-boundary"
         ],
         "deps": [
+          {
+            "id": "aho-corasick 1.1.4",
+            "target": "aho_corasick"
+          },
+          {
+            "id": "memchr 2.8.0",
+            "target": "memchr"
+          },
           {
             "id": "regex-syntax 0.8.10",
             "target": "regex_syntax"
@@ -36633,6 +37011,37 @@
         }
       ],
       "version": "0.10.5"
+    },
+    "relative-path 1.9.3": {
+      "common_attrs": {
+        "crate_features": [
+          "default"
+        ],
+        "edition": "2021"
+      },
+      "library_target_name": "relative_path",
+      "license": "MIT OR Apache-2.0",
+      "license_ids": [
+        "Apache-2.0",
+        "MIT"
+      ],
+      "name": "relative-path",
+      "package_url": "https://github.com/udoprog/relative-path",
+      "repository": {
+        "Http": {
+          "sha256": "ba39f3699c378cd8970968dcbff9c43159ea4cfbd88d43c00b22f2ef10a435d2",
+          "url": "https://static.crates.io/crates/relative-path/1.9.3/download"
+        }
+      },
+      "targets": [
+        {
+          "Library": {
+            "crate_name": "relative_path",
+            "crate_root": "src/lib.rs"
+          }
+        }
+      ],
+      "version": "1.9.3"
     },
     "reqwest 0.12.28": {
       "common_attrs": {
@@ -37048,10 +37457,6 @@
             "target": "clap"
           },
           {
-            "id": "reth-primitives-traits 0.7.1",
-            "target": "reth_primitives_traits"
-          },
-          {
             "id": "tracing 0.1.44",
             "target": "tracing"
           }
@@ -37143,10 +37548,6 @@
             "target": "metrics"
           },
           {
-            "id": "reth-primitives-traits 0.7.1",
-            "target": "reth_primitives_traits"
-          },
-          {
             "id": "serde 1.0.229",
             "target": "serde"
           },
@@ -37188,10 +37589,6 @@
         ],
         "deps": [
           {
-            "id": "alloy-evm 0.39.0",
-            "target": "alloy_evm"
-          },
-          {
             "id": "alloy-hardforks 0.4.8",
             "target": "alloy_hardforks"
           },
@@ -37226,10 +37623,6 @@
           {
             "id": "metrics 0.24.6",
             "target": "metrics"
-          },
-          {
-            "id": "reth-primitives-traits 0.7.1",
-            "target": "reth_primitives_traits"
           },
           {
             "id": "revm 43.0.2",
@@ -37292,10 +37685,6 @@
             "target": "rand"
           },
           {
-            "id": "reth-primitives-traits 0.7.1",
-            "target": "reth_primitives_traits"
-          },
-          {
             "id": "revm 43.0.2",
             "target": "revm"
           },
@@ -37345,10 +37734,6 @@
             "target": "alloy_chains"
           },
           {
-            "id": "alloy-evm 0.39.0",
-            "target": "alloy_evm"
-          },
-          {
             "id": "alloy-primitives 1.7.2",
             "target": "alloy_primitives"
           },
@@ -37359,10 +37744,6 @@
           {
             "id": "derive_more 2.1.1",
             "target": "derive_more"
-          },
-          {
-            "id": "reth-primitives-traits 0.7.1",
-            "target": "reth_primitives_traits"
           },
           {
             "id": "serde_json 1.0.151",
@@ -37513,14 +37894,6 @@
           {
             "id": "reqwest 0.13.4",
             "target": "reqwest"
-          },
-          {
-            "id": "reth-codecs 0.7.1",
-            "target": "reth_codecs"
-          },
-          {
-            "id": "reth-primitives-traits 0.7.1",
-            "target": "reth_primitives_traits"
           },
           {
             "id": "secp256k1 0.30.0",
@@ -37695,6 +38068,7 @@
         "crate_features": [
           "alloy",
           "arbitrary",
+          "default",
           "serde",
           "std",
           "test-utils"
@@ -37725,25 +38099,34 @@
             "target": "parity_scale_codec"
           },
           {
-            "id": "reth-zstd-compressors 0.7.1",
-            "target": "reth_zstd_compressors"
-          },
-          {
             "id": "serde 1.0.229",
             "target": "serde"
           }
         ],
-        "edition": "2024",
-        "extra_deps": [
-          "@@//alloy/crates/consensus:alloy_consensus",
-          "@@//alloy/crates/eips:alloy_eips",
-          "@@//alloy/crates/genesis:alloy_genesis"
-        ],
-        "proc_macro_deps": [
+        "deps_dev": [
           {
-            "id": "reth-codecs-derive 0.7.1",
-            "target": "reth_codecs_derive"
+            "id": "proptest 1.11.0",
+            "target": "proptest"
           },
+          {
+            "id": "proptest-arbitrary-interop 0.1.0",
+            "target": "proptest_arbitrary_interop"
+          },
+          {
+            "id": "rstest 0.26.1",
+            "target": "rstest"
+          },
+          {
+            "id": "serde_json 1.0.151",
+            "target": "serde_json"
+          },
+          {
+            "id": "test-fuzz 7.3.0",
+            "target": "test_fuzz"
+          }
+        ],
+        "edition": "2024",
+        "proc_macro_deps": [
           {
             "id": "visibility 0.1.1",
             "target": "visibility"
@@ -37751,19 +38134,8 @@
         ]
       },
       "library_target_name": "reth_codecs",
-      "license": "MIT OR Apache-2.0",
-      "license_ids": [
-        "Apache-2.0",
-        "MIT"
-      ],
       "name": "reth-codecs",
-      "package_url": "https://github.com/paradigmxyz/reth-core",
-      "repository": {
-        "Http": {
-          "sha256": "a6bac09d9d84a412ae151149ec870d6eb7770335c5eb63f209453d81deff8d39",
-          "url": "https://static.crates.io/crates/reth-codecs/0.7.1/download"
-        }
-      },
+      "repository": null,
       "targets": [
         {
           "Library": {
@@ -37790,22 +38162,17 @@
             "target": "syn"
           }
         ],
+        "deps_dev": [
+          {
+            "id": "similar-asserts 1.7.0",
+            "target": "similar_asserts"
+          }
+        ],
         "edition": "2024"
       },
       "library_target_name": "reth_codecs_derive",
-      "license": "MIT OR Apache-2.0",
-      "license_ids": [
-        "Apache-2.0",
-        "MIT"
-      ],
       "name": "reth-codecs-derive",
-      "package_url": "https://github.com/paradigmxyz/reth-core",
-      "repository": {
-        "Http": {
-          "sha256": "0101b1f474563c4c48c04fc2477199279a53d9c19b65301c6fd2131cf6e4a330",
-          "url": "https://static.crates.io/crates/reth-codecs-derive/0.7.1/download"
-        }
-      },
+      "repository": null,
       "targets": [
         {
           "ProcMacro": {
@@ -37885,10 +38252,6 @@
             "target": "alloy_primitives"
           },
           {
-            "id": "reth-primitives-traits 0.7.1",
-            "target": "reth_primitives_traits"
-          },
-          {
             "id": "thiserror 2.0.20",
             "target": "thiserror"
           }
@@ -37924,10 +38287,6 @@
           {
             "id": "alloy-primitives 1.7.2",
             "target": "alloy_primitives"
-          },
-          {
-            "id": "reth-primitives-traits 0.7.1",
-            "target": "reth_primitives_traits"
           }
         ],
         "deps_dev": [
@@ -38050,10 +38409,6 @@
               "target": "parking_lot"
             },
             {
-              "id": "reth-primitives-traits 0.7.1",
-              "target": "reth_primitives_traits"
-            },
-            {
               "id": "rustc-hash 2.1.3",
               "target": "rustc_hash"
             },
@@ -38164,14 +38519,6 @@
             "target": "proptest"
           },
           {
-            "id": "reth-codecs 0.7.1",
-            "target": "reth_codecs"
-          },
-          {
-            "id": "reth-primitives-traits 0.7.1",
-            "target": "reth_primitives_traits"
-          },
-          {
             "id": "roaring 0.11.5",
             "target": "roaring"
           },
@@ -38223,14 +38570,6 @@
           {
             "id": "eyre 0.6.14",
             "target": "eyre"
-          },
-          {
-            "id": "reth-codecs 0.7.1",
-            "target": "reth_codecs"
-          },
-          {
-            "id": "reth-primitives-traits 0.7.1",
-            "target": "reth_primitives_traits"
           },
           {
             "id": "serde 1.0.229",
@@ -38290,14 +38629,6 @@
           {
             "id": "modular-bitfield 0.13.1",
             "target": "modular_bitfield"
-          },
-          {
-            "id": "reth-codecs 0.7.1",
-            "target": "reth_codecs"
-          },
-          {
-            "id": "reth-primitives-traits 0.7.1",
-            "target": "reth_primitives_traits"
           },
           {
             "id": "serde 1.0.229",
@@ -38401,7 +38732,6 @@
             "target": "assert_matches"
           },
           {
-            "alias": "criterion",
             "id": "codspeed-criterion-compat 4.5.0",
             "target": "codspeed_criterion_compat"
           }
@@ -38638,10 +38968,6 @@
             "target": "rayon"
           },
           {
-            "id": "reth-primitives-traits 0.7.1",
-            "target": "reth_primitives_traits"
-          },
-          {
             "id": "tempfile 3.27.0",
             "target": "tempfile"
           },
@@ -38717,10 +39043,6 @@
           {
             "id": "jsonrpsee 0.26.0",
             "target": "jsonrpsee"
-          },
-          {
-            "id": "reth-primitives-traits 0.7.1",
-            "target": "reth_primitives_traits"
           },
           {
             "id": "revm 43.0.2",
@@ -38878,10 +39200,6 @@
             "target": "futures_util"
           },
           {
-            "id": "reth-primitives-traits 0.7.1",
-            "target": "reth_primitives_traits"
-          },
-          {
             "id": "tokio 1.53.1",
             "target": "tokio"
           },
@@ -38925,10 +39243,6 @@
           {
             "id": "futures 0.3.34",
             "target": "futures"
-          },
-          {
-            "id": "reth-primitives-traits 0.7.1",
-            "target": "reth_primitives_traits"
           },
           {
             "id": "serde 1.0.229",
@@ -38986,10 +39300,6 @@
             "target": "alloy_eip7928"
           },
           {
-            "id": "alloy-evm 0.39.0",
-            "target": "alloy_evm"
-          },
-          {
             "id": "alloy-primitives 1.7.2",
             "target": "alloy_primitives"
           },
@@ -39028,10 +39338,6 @@
           {
             "id": "rayon 1.12.0",
             "target": "rayon"
-          },
-          {
-            "id": "reth-primitives-traits 0.7.1",
-            "target": "reth_primitives_traits"
           },
           {
             "id": "revm 43.0.2",
@@ -39122,10 +39428,6 @@
           {
             "id": "pin-project 1.1.13",
             "target": "pin_project"
-          },
-          {
-            "id": "reth-primitives-traits 0.7.1",
-            "target": "reth_primitives_traits"
           },
           {
             "id": "serde 1.0.229",
@@ -39319,14 +39621,6 @@
             "target": "futures_util"
           },
           {
-            "id": "reth-codecs 0.7.1",
-            "target": "reth_codecs"
-          },
-          {
-            "id": "reth-primitives-traits 0.7.1",
-            "target": "reth_primitives_traits"
-          },
-          {
             "id": "tokio 1.53.1",
             "target": "tokio"
           },
@@ -39424,14 +39718,6 @@
           {
             "id": "pin-project 1.1.13",
             "target": "pin_project"
-          },
-          {
-            "id": "reth-codecs 0.7.1",
-            "target": "reth_codecs"
-          },
-          {
-            "id": "reth-primitives-traits 0.7.1",
-            "target": "reth_primitives_traits"
           },
           {
             "id": "serde 1.0.229",
@@ -39566,10 +39852,6 @@
             "target": "proptest_arbitrary_interop"
           },
           {
-            "id": "reth-primitives-traits 0.7.1",
-            "target": "reth_primitives_traits"
-          },
-          {
             "id": "serde 1.0.229",
             "target": "serde"
           },
@@ -39588,13 +39870,7 @@
             "target": "test_case"
           }
         ],
-        "edition": "2024",
-        "proc_macro_deps": [
-          {
-            "id": "reth-codecs-derive 0.7.1",
-            "target": "reth_codecs_derive"
-          }
-        ]
+        "edition": "2024"
       },
       "library_target_name": "reth_eth_wire_types",
       "name": "reth-eth-wire-types",
@@ -39630,16 +39906,6 @@
           "test-utils",
           "trie",
           "trie-db"
-        ],
-        "deps": [
-          {
-            "id": "reth-codecs 0.7.1",
-            "target": "reth_codecs"
-          },
-          {
-            "id": "reth-primitives-traits 0.7.1",
-            "target": "reth_primitives_traits"
-          }
         ],
         "edition": "2024"
       },
@@ -39712,10 +39978,6 @@
             "target": "alloy_primitives"
           },
           {
-            "id": "reth-primitives-traits 0.7.1",
-            "target": "reth_primitives_traits"
-          },
-          {
             "id": "tracing 0.1.44",
             "target": "tracing"
           }
@@ -39745,10 +40007,6 @@
           {
             "id": "alloy-primitives 1.7.2",
             "target": "alloy_primitives"
-          },
-          {
-            "id": "reth-primitives-traits 0.7.1",
-            "target": "reth_primitives_traits"
           },
           {
             "id": "serde 1.0.229",
@@ -39848,10 +40106,6 @@
             "target": "alloy_rlp"
           },
           {
-            "id": "reth-primitives-traits 0.7.1",
-            "target": "reth_primitives_traits"
-          },
-          {
             "id": "revm 43.0.2",
             "target": "revm"
           },
@@ -39888,14 +40142,6 @@
         ],
         "deps": [
           {
-            "id": "reth-codecs 0.7.1",
-            "target": "reth_codecs"
-          },
-          {
-            "id": "reth-primitives-traits 0.7.1",
-            "target": "reth_primitives_traits"
-          },
-          {
             "id": "serde 1.0.229",
             "target": "serde"
           }
@@ -39924,10 +40170,6 @@
           {
             "id": "rand 0.9.4",
             "target": "rand"
-          },
-          {
-            "id": "reth-zstd-compressors 0.7.1",
-            "target": "reth_zstd_compressors"
           },
           {
             "id": "serde_json 1.0.151",
@@ -40000,10 +40242,6 @@
             "target": "alloy_eip7928"
           },
           {
-            "id": "alloy-evm 0.39.0",
-            "target": "alloy_evm"
-          },
-          {
             "id": "alloy-primitives 1.7.2",
             "target": "alloy_primitives"
           },
@@ -40026,10 +40264,6 @@
           {
             "id": "rayon 1.12.0",
             "target": "rayon"
-          },
-          {
-            "id": "reth-primitives-traits 0.7.1",
-            "target": "reth_primitives_traits"
           },
           {
             "id": "revm 43.0.2",
@@ -40066,16 +40300,8 @@
         ],
         "deps": [
           {
-            "id": "alloy-evm 0.39.0",
-            "target": "alloy_evm"
-          },
-          {
             "id": "alloy-primitives 1.7.2",
             "target": "alloy_primitives"
-          },
-          {
-            "id": "reth-primitives-traits 0.7.1",
-            "target": "reth_primitives_traits"
           },
           {
             "id": "revm 43.0.2",
@@ -40126,10 +40352,6 @@
             "target": "parking_lot"
           },
           {
-            "id": "reth-primitives-traits 0.7.1",
-            "target": "reth_primitives_traits"
-          },
-          {
             "id": "tracing 0.1.44",
             "target": "tracing"
           }
@@ -40162,10 +40384,6 @@
           "std"
         ],
         "deps": [
-          {
-            "id": "alloy-evm 0.39.0",
-            "target": "alloy_evm"
-          },
           {
             "id": "alloy-primitives 1.7.2",
             "target": "alloy_primitives"
@@ -40210,10 +40428,6 @@
         ],
         "deps": [
           {
-            "id": "alloy-evm 0.39.0",
-            "target": "alloy_evm"
-          },
-          {
             "id": "alloy-primitives 1.7.2",
             "target": "alloy_primitives"
           },
@@ -40224,10 +40438,6 @@
           {
             "id": "derive_more 2.1.1",
             "target": "derive_more"
-          },
-          {
-            "id": "reth-primitives-traits 0.7.1",
-            "target": "reth_primitives_traits"
           },
           {
             "id": "revm 43.0.2",
@@ -40299,10 +40509,6 @@
             "target": "parking_lot"
           },
           {
-            "id": "reth-primitives-traits 0.7.1",
-            "target": "reth_primitives_traits"
-          },
-          {
             "id": "rmp-serde 1.3.1",
             "target": "rmp_serde"
           },
@@ -40364,10 +40570,6 @@
             "target": "futures_util"
           },
           {
-            "id": "reth-primitives-traits 0.7.1",
-            "target": "reth_primitives_traits"
-          },
-          {
             "id": "tempfile 3.27.0",
             "target": "tempfile"
           },
@@ -40407,10 +40609,6 @@
           {
             "id": "alloy-primitives 1.7.2",
             "target": "alloy_primitives"
-          },
-          {
-            "id": "reth-primitives-traits 0.7.1",
-            "target": "reth_primitives_traits"
           },
           {
             "id": "serde 1.0.229",
@@ -40507,10 +40705,6 @@
           {
             "id": "pretty_assertions 1.4.1",
             "target": "pretty_assertions"
-          },
-          {
-            "id": "reth-primitives-traits 0.7.1",
-            "target": "reth_primitives_traits"
           },
           {
             "id": "revm 43.0.2",
@@ -40751,10 +40945,6 @@
               "target": "metrics"
             },
             {
-              "id": "reth-primitives-traits 0.7.1",
-              "target": "reth_primitives_traits"
-            },
-            {
               "id": "tokio 1.53.1",
               "target": "tokio"
             },
@@ -40932,10 +41122,6 @@
             "target": "rayon"
           },
           {
-            "id": "reth-primitives-traits 0.7.1",
-            "target": "reth_primitives_traits"
-          },
-          {
             "id": "rustc-hash 2.1.3",
             "target": "rustc_hash"
           },
@@ -40990,7 +41176,6 @@
             "target": "alloy_trie"
           },
           {
-            "alias": "criterion",
             "id": "codspeed-criterion-compat 4.5.0",
             "target": "codspeed_criterion_compat"
           },
@@ -41116,10 +41301,6 @@
           {
             "id": "parking_lot 0.12.5",
             "target": "parking_lot"
-          },
-          {
-            "id": "reth-primitives-traits 0.7.1",
-            "target": "reth_primitives_traits"
           },
           {
             "id": "tokio 1.53.1",
@@ -41406,10 +41587,6 @@
             "target": "rayon"
           },
           {
-            "id": "reth-primitives-traits 0.7.1",
-            "target": "reth_primitives_traits"
-          },
-          {
             "id": "secp256k1 0.30.0",
             "target": "secp256k1"
           },
@@ -41517,10 +41694,6 @@
             "target": "rand"
           },
           {
-            "id": "reth-primitives-traits 0.7.1",
-            "target": "reth_primitives_traits"
-          },
-          {
             "id": "secp256k1 0.30.0",
             "target": "secp256k1"
           },
@@ -41622,10 +41795,6 @@
             "target": "jsonrpsee"
           },
           {
-            "id": "reth-primitives-traits 0.7.1",
-            "target": "reth_primitives_traits"
-          },
-          {
             "id": "revm 43.0.2",
             "target": "revm"
           },
@@ -41713,10 +41882,6 @@
             "target": "futures_util"
           },
           {
-            "id": "reth-primitives-traits 0.7.1",
-            "target": "reth_primitives_traits"
-          },
-          {
             "id": "serde 1.0.229",
             "target": "serde"
           },
@@ -41786,10 +41951,6 @@
           {
             "id": "pin-project 1.1.13",
             "target": "pin_project"
-          },
-          {
-            "id": "reth-primitives-traits 0.7.1",
-            "target": "reth_primitives_traits"
           },
           {
             "id": "tokio 1.53.1",
@@ -41919,12 +42080,6 @@
           "default",
           "std"
         ],
-        "deps": [
-          {
-            "id": "reth-primitives-traits 0.7.1",
-            "target": "reth_primitives_traits"
-          }
-        ],
         "edition": "2024"
       },
       "library_target_name": "reth_node_types",
@@ -41961,10 +42116,6 @@
           {
             "id": "metrics 0.24.6",
             "target": "metrics"
-          },
-          {
-            "id": "reth-primitives-traits 0.7.1",
-            "target": "reth_primitives_traits"
           },
           {
             "id": "tokio 1.53.1",
@@ -42049,10 +42200,6 @@
             "target": "either"
           },
           {
-            "id": "reth-primitives-traits 0.7.1",
-            "target": "reth_primitives_traits"
-          },
-          {
             "id": "serde 1.0.229",
             "target": "serde"
           },
@@ -42129,12 +42276,6 @@
           "default",
           "std"
         ],
-        "deps": [
-          {
-            "id": "reth-primitives-traits 0.7.1",
-            "target": "reth_primitives_traits"
-          }
-        ],
         "edition": "2024"
       },
       "library_target_name": "reth_payload_validator",
@@ -42156,6 +42297,7 @@
           "alloy-rpc-types-eth",
           "arbitrary",
           "dashmap",
+          "default",
           "eip7928",
           "quanta",
           "rayon",
@@ -42228,10 +42370,6 @@
             "target": "rayon"
           },
           {
-            "id": "reth-codecs 0.7.1",
-            "target": "reth_codecs"
-          },
-          {
             "id": "revm-bytecode 43.0.0",
             "target": "revm_bytecode"
           },
@@ -42244,6 +42382,10 @@
             "target": "revm_state"
           },
           {
+            "id": "secp256k1 0.30.0",
+            "target": "secp256k1"
+          },
+          {
             "id": "serde 1.0.229",
             "target": "serde"
           },
@@ -42252,28 +42394,26 @@
             "target": "thiserror"
           }
         ],
-        "edition": "2024",
-        "extra_deps": [
-          "@@//alloy/crates/consensus:alloy_consensus",
-          "@@//alloy/crates/eips:alloy_eips",
-          "@@//alloy/crates/genesis:alloy_genesis",
-          "@@//alloy/crates/rpc-types-eth:alloy_rpc_types_eth"
-        ]
+        "deps_dev": [
+          {
+            "alias": "rand_08",
+            "id": "rand 0.8.6",
+            "target": "rand"
+          },
+          {
+            "id": "rand 0.9.4",
+            "target": "rand"
+          },
+          {
+            "id": "serde_json 1.0.151",
+            "target": "serde_json"
+          }
+        ],
+        "edition": "2024"
       },
       "library_target_name": "reth_primitives_traits",
-      "license": "MIT OR Apache-2.0",
-      "license_ids": [
-        "Apache-2.0",
-        "MIT"
-      ],
       "name": "reth-primitives-traits",
-      "package_url": "https://github.com/paradigmxyz/reth-core",
-      "repository": {
-        "Http": {
-          "sha256": "18341fba74d004c7fad32f784488baaea9adebfde7a4f231a4d8d445aea70347",
-          "url": "https://static.crates.io/crates/reth-primitives-traits/0.7.1/download"
-        }
-      },
+      "repository": null,
       "targets": [
         {
           "Library": {
@@ -42324,14 +42464,6 @@
             {
               "id": "rayon 1.12.0",
               "target": "rayon"
-            },
-            {
-              "id": "reth-codecs 0.7.1",
-              "target": "reth_codecs"
-            },
-            {
-              "id": "reth-primitives-traits 0.7.1",
-              "target": "reth_primitives_traits"
             },
             {
               "id": "revm 43.0.2",
@@ -42416,10 +42548,6 @@
             "target": "metrics"
           },
           {
-            "id": "reth-primitives-traits 0.7.1",
-            "target": "reth_primitives_traits"
-          },
-          {
             "id": "rustc-hash 2.1.3",
             "target": "rustc_hash"
           },
@@ -42483,10 +42611,6 @@
           {
             "id": "modular-bitfield 0.13.1",
             "target": "modular_bitfield"
-          },
-          {
-            "id": "reth-codecs 0.7.1",
-            "target": "reth_codecs"
           },
           {
             "id": "serde 1.0.229",
@@ -42564,10 +42688,6 @@
             "target": "alloy_rlp"
           },
           {
-            "id": "reth-primitives-traits 0.7.1",
-            "target": "reth_primitives_traits"
-          },
-          {
             "id": "revm 43.0.2",
             "target": "revm"
           }
@@ -42600,10 +42720,6 @@
           {
             "id": "alloy-eip7928 0.4.10",
             "target": "alloy_eip7928"
-          },
-          {
-            "id": "alloy-evm 0.39.0",
-            "target": "alloy_evm"
           },
           {
             "id": "alloy-primitives 1.7.2",
@@ -42646,16 +42762,8 @@
             "target": "pin_project"
           },
           {
-            "id": "reth-primitives-traits 0.7.1",
-            "target": "reth_primitives_traits"
-          },
-          {
             "id": "revm 43.0.2",
             "target": "revm"
-          },
-          {
-            "id": "revm-inspectors 0.43.0",
-            "target": "revm_inspectors"
           },
           {
             "id": "serde 1.0.229",
@@ -42785,10 +42893,6 @@
             "target": "pin_project"
           },
           {
-            "id": "reth-primitives-traits 0.7.1",
-            "target": "reth_primitives_traits"
-          },
-          {
             "id": "serde 1.0.229",
             "target": "serde"
           },
@@ -42857,10 +42961,6 @@
         ],
         "deps": [
           {
-            "id": "alloy-evm 0.39.0",
-            "target": "alloy_evm"
-          },
-          {
             "id": "alloy-primitives 1.7.2",
             "target": "alloy_primitives"
           },
@@ -42871,14 +42971,6 @@
           {
             "id": "jsonrpsee-types 0.26.0",
             "target": "jsonrpsee_types"
-          },
-          {
-            "id": "reth-primitives-traits 0.7.1",
-            "target": "reth_primitives_traits"
-          },
-          {
-            "id": "reth-rpc-traits 0.7.0",
-            "target": "reth_rpc_traits"
           },
           {
             "id": "thiserror 2.0.20",
@@ -42979,10 +43071,6 @@
             "target": "metrics"
           },
           {
-            "id": "reth-primitives-traits 0.7.1",
-            "target": "reth_primitives_traits"
-          },
-          {
             "id": "serde 1.0.229",
             "target": "serde"
           },
@@ -43042,10 +43130,6 @@
             "target": "alloy_eip7928"
           },
           {
-            "id": "alloy-evm 0.39.0",
-            "target": "alloy_evm"
-          },
-          {
             "id": "alloy-primitives 1.7.2",
             "target": "alloy_primitives"
           },
@@ -43074,16 +43158,8 @@
             "target": "parking_lot"
           },
           {
-            "id": "reth-primitives-traits 0.7.1",
-            "target": "reth_primitives_traits"
-          },
-          {
             "id": "revm 43.0.2",
             "target": "revm"
-          },
-          {
-            "id": "revm-inspectors 0.43.0",
-            "target": "revm_inspectors"
           },
           {
             "id": "serde_json 1.0.151",
@@ -43138,10 +43214,6 @@
             "target": "alloy_eip7928"
           },
           {
-            "id": "alloy-evm 0.39.0",
-            "target": "alloy_evm"
-          },
-          {
             "id": "alloy-primitives 1.7.2",
             "target": "alloy_primitives"
           },
@@ -43182,16 +43254,8 @@
             "target": "reqwest"
           },
           {
-            "id": "reth-primitives-traits 0.7.1",
-            "target": "reth_primitives_traits"
-          },
-          {
             "id": "revm 43.0.2",
             "target": "revm"
-          },
-          {
-            "id": "revm-inspectors 0.43.0",
-            "target": "revm_inspectors"
           },
           {
             "id": "schnellru 0.2.4",
@@ -43355,44 +43419,27 @@
       ],
       "version": "2.5.2"
     },
-    "reth-rpc-traits 0.7.0": {
+    "reth-rpc-traits 0.7.1": {
       "common_attrs": {
+        "crate_features": [
+          "default",
+          "std"
+        ],
         "deps": [
           {
             "id": "alloy-primitives 1.7.2",
             "target": "alloy_primitives"
           },
           {
-            "id": "reth-primitives-traits 0.7.1",
-            "target": "reth_primitives_traits"
-          },
-          {
             "id": "thiserror 2.0.20",
             "target": "thiserror"
           }
         ],
-        "edition": "2024",
-        "extra_deps": [
-          "@@//alloy/crates/consensus:alloy_consensus",
-          "@@//alloy/crates/network:alloy_network",
-          "@@//alloy/crates/rpc-types-eth:alloy_rpc_types_eth",
-          "@@//alloy/crates/signer:alloy_signer"
-        ]
+        "edition": "2024"
       },
       "library_target_name": "reth_rpc_traits",
-      "license": "MIT OR Apache-2.0",
-      "license_ids": [
-        "Apache-2.0",
-        "MIT"
-      ],
       "name": "reth-rpc-traits",
-      "package_url": "https://github.com/paradigmxyz/reth-core",
-      "repository": {
-        "Http": {
-          "sha256": "f410d6bff1fd059ebaec2edeff1326f103f61162158411325d78158f94b2b4a9",
-          "url": "https://static.crates.io/crates/reth-rpc-traits/0.7.0/download"
-        }
-      },
+      "repository": null,
       "targets": [
         {
           "Library": {
@@ -43401,7 +43448,7 @@
           }
         }
       ],
-      "version": "0.7.0"
+      "version": "0.7.1"
     },
     "reth-snap-sync 2.5.2": {
       "common_attrs": {
@@ -43413,10 +43460,6 @@
           {
             "id": "alloy-primitives 1.7.2",
             "target": "alloy_primitives"
-          },
-          {
-            "id": "reth-primitives-traits 0.7.1",
-            "target": "reth_primitives_traits"
           },
           {
             "id": "revm 43.0.2",
@@ -43515,14 +43558,6 @@
             "target": "reqwest"
           },
           {
-            "id": "reth-codecs 0.7.1",
-            "target": "reth_codecs"
-          },
-          {
-            "id": "reth-primitives-traits 0.7.1",
-            "target": "reth_primitives_traits"
-          },
-          {
             "id": "tempfile 3.27.0",
             "target": "tempfile"
           },
@@ -43587,14 +43622,6 @@
           {
             "id": "metrics 0.24.6",
             "target": "metrics"
-          },
-          {
-            "id": "reth-codecs 0.7.1",
-            "target": "reth_codecs"
-          },
-          {
-            "id": "reth-primitives-traits 0.7.1",
-            "target": "reth_primitives_traits"
           },
           {
             "id": "thiserror 2.0.20",
@@ -43672,10 +43699,6 @@
             "target": "modular_bitfield"
           },
           {
-            "id": "reth-codecs 0.7.1",
-            "target": "reth_codecs"
-          },
-          {
             "id": "serde 1.0.229",
             "target": "serde"
           }
@@ -43723,14 +43746,6 @@
           {
             "id": "rayon 1.12.0",
             "target": "rayon"
-          },
-          {
-            "id": "reth-codecs 0.7.1",
-            "target": "reth_codecs"
-          },
-          {
-            "id": "reth-primitives-traits 0.7.1",
-            "target": "reth_primitives_traits"
           },
           {
             "id": "tracing 0.1.44",
@@ -43846,10 +43861,6 @@
             "target": "alloy_primitives"
           },
           {
-            "id": "reth-primitives-traits 0.7.1",
-            "target": "reth_primitives_traits"
-          },
-          {
             "id": "revm 43.0.2",
             "target": "revm"
           },
@@ -43909,14 +43920,6 @@
             "target": "derive_more"
           },
           {
-            "id": "reth-codecs 0.7.1",
-            "target": "reth_codecs"
-          },
-          {
-            "id": "reth-primitives-traits 0.7.1",
-            "target": "reth_primitives_traits"
-          },
-          {
             "id": "revm 43.0.2",
             "target": "revm"
           },
@@ -43963,10 +43966,6 @@
             "target": "rayon"
           },
           {
-            "id": "reth-primitives-traits 0.7.1",
-            "target": "reth_primitives_traits"
-          },
-          {
             "id": "revm 43.0.2",
             "target": "revm"
           },
@@ -44000,10 +43999,6 @@
           {
             "id": "dashmap 6.2.1",
             "target": "dashmap"
-          },
-          {
-            "id": "reth-primitives-traits 0.7.1",
-            "target": "reth_primitives_traits"
           },
           {
             "id": "revm 43.0.2",
@@ -44130,10 +44125,6 @@
           {
             "id": "rand 0.9.4",
             "target": "rand"
-          },
-          {
-            "id": "reth-primitives-traits 0.7.1",
-            "target": "reth_primitives_traits"
           },
           {
             "id": "secp256k1 0.30.0",
@@ -44394,10 +44385,6 @@
             "target": "rand"
           },
           {
-            "id": "reth-primitives-traits 0.7.1",
-            "target": "reth_primitives_traits"
-          },
-          {
             "id": "revm 43.0.2",
             "target": "revm"
           },
@@ -44444,7 +44431,6 @@
             "target": "assert_matches"
           },
           {
-            "alias": "criterion",
             "id": "codspeed-criterion-compat 4.5.0",
             "target": "codspeed_criterion_compat"
           },
@@ -44530,10 +44516,6 @@
             "target": "parking_lot"
           },
           {
-            "id": "reth-primitives-traits 0.7.1",
-            "target": "reth_primitives_traits"
-          },
-          {
             "id": "revm 43.0.2",
             "target": "revm"
           },
@@ -44552,7 +44534,6 @@
             "target": "assert_matches"
           },
           {
-            "alias": "criterion",
             "id": "codspeed-criterion-compat 4.5.0",
             "target": "codspeed_criterion_compat"
           },
@@ -44658,14 +44639,6 @@
             "target": "rayon"
           },
           {
-            "id": "reth-codecs 0.7.1",
-            "target": "reth_codecs"
-          },
-          {
-            "id": "reth-primitives-traits 0.7.1",
-            "target": "reth_primitives_traits"
-          },
-          {
             "id": "revm 43.0.2",
             "target": "revm"
           },
@@ -44727,10 +44700,6 @@
             "target": "alloy_primitives"
           },
           {
-            "id": "reth-primitives-traits 0.7.1",
-            "target": "reth_primitives_traits"
-          },
-          {
             "id": "tracing 0.1.44",
             "target": "tracing"
           }
@@ -44790,10 +44759,6 @@
         ],
         "deps": [
           {
-            "id": "alloy-evm 0.39.0",
-            "target": "alloy_evm"
-          },
-          {
             "id": "alloy-primitives 1.7.2",
             "target": "alloy_primitives"
           },
@@ -44812,10 +44777,6 @@
           {
             "id": "metrics 0.24.6",
             "target": "metrics"
-          },
-          {
-            "id": "reth-primitives-traits 0.7.1",
-            "target": "reth_primitives_traits"
           },
           {
             "id": "revm 43.0.2",
@@ -44883,10 +44844,6 @@
           {
             "id": "rayon 1.12.0",
             "target": "rayon"
-          },
-          {
-            "id": "reth-primitives-traits 0.7.1",
-            "target": "reth_primitives_traits"
           },
           {
             "id": "slotmap 1.1.1",
@@ -44958,6 +44915,7 @@
     "reth-zstd-compressors 0.7.1": {
       "common_attrs": {
         "crate_features": [
+          "default",
           "std"
         ],
         "deps": [
@@ -44969,19 +44927,8 @@
         "edition": "2024"
       },
       "library_target_name": "reth_zstd_compressors",
-      "license": "MIT OR Apache-2.0",
-      "license_ids": [
-        "Apache-2.0",
-        "MIT"
-      ],
       "name": "reth-zstd-compressors",
-      "package_url": "https://github.com/paradigmxyz/reth-core",
-      "repository": {
-        "Http": {
-          "sha256": "dbdee2f0ad09dc32b43ab52641f8239766a66de4345834bad27d5cfa2f62864d",
-          "url": "https://static.crates.io/crates/reth-zstd-compressors/0.7.1/download"
-        }
-      },
+      "repository": null,
       "targets": [
         {
           "Library": {
@@ -45640,27 +45587,25 @@
             "target": "thiserror"
           }
         ],
-        "edition": "2021",
-        "extra_deps": [
-          "@@//alloy/crates/rpc-types-eth:alloy_rpc_types_eth",
-          "@@//alloy/crates/rpc-types-trace:alloy_rpc_types_trace"
-        ]
+        "deps_dev": [
+          {
+            "id": "alloy-hardforks 0.4.8",
+            "target": "alloy_hardforks"
+          },
+          {
+            "id": "criterion 0.8.2",
+            "target": "criterion"
+          },
+          {
+            "id": "snapbox 1.2.2",
+            "target": "snapbox"
+          }
+        ],
+        "edition": "2021"
       },
       "library_target_name": "revm_inspectors",
-      "license": "MIT OR Apache-2.0",
-      "license_file": "LICENSE-APACHE",
-      "license_ids": [
-        "Apache-2.0",
-        "MIT"
-      ],
       "name": "revm-inspectors",
-      "package_url": "https://github.com/paradigmxyz/revm-inspectors",
-      "repository": {
-        "Http": {
-          "sha256": "79b609cb78fcb3a8c10f3190847c9bb0223423cf46e2de30a61ea9e37a3e6736",
-          "url": "https://static.crates.io/crates/revm-inspectors/0.43.0/download"
-        }
-      },
+      "repository": null,
       "targets": [
         {
           "Library": {
@@ -46498,6 +46443,144 @@
       ],
       "version": "0.3.1"
     },
+    "rstest 0.26.1": {
+      "common_attrs": {
+        "crate_features": [
+          "async-timeout",
+          "crate-name",
+          "default"
+        ],
+        "deps": [
+          {
+            "id": "futures-timer 3.0.3",
+            "target": "futures_timer"
+          },
+          {
+            "id": "futures-util 0.3.34",
+            "target": "futures_util"
+          }
+        ],
+        "edition": "2021",
+        "proc_macro_deps": [
+          {
+            "id": "rstest_macros 0.26.1",
+            "target": "rstest_macros"
+          }
+        ]
+      },
+      "library_target_name": "rstest",
+      "license": "MIT OR Apache-2.0",
+      "license_file": "LICENSE-APACHE",
+      "license_ids": [
+        "Apache-2.0",
+        "MIT"
+      ],
+      "name": "rstest",
+      "package_url": "https://github.com/la10736/rstest",
+      "repository": {
+        "Http": {
+          "sha256": "f5a3193c063baaa2a95a33f03035c8a72b83d97a54916055ba22d35ed3839d49",
+          "url": "https://static.crates.io/crates/rstest/0.26.1/download"
+        }
+      },
+      "targets": [
+        {
+          "Library": {
+            "crate_name": "rstest",
+            "crate_root": "src/lib.rs"
+          }
+        }
+      ],
+      "version": "0.26.1"
+    },
+    "rstest_macros 0.26.1": {
+      "build_script_attrs": {
+        "deps": [
+          {
+            "id": "rustc_version 0.4.1",
+            "target": "rustc_version"
+          }
+        ]
+      },
+      "common_attrs": {
+        "crate_features": [
+          "async-timeout",
+          "crate-name"
+        ],
+        "deps": [
+          {
+            "id": "cfg-if 1.0.4",
+            "target": "cfg_if"
+          },
+          {
+            "id": "glob 0.3.3",
+            "target": "glob"
+          },
+          {
+            "id": "proc-macro-crate 3.5.0",
+            "target": "proc_macro_crate"
+          },
+          {
+            "id": "proc-macro2 1.0.107",
+            "target": "proc_macro2"
+          },
+          {
+            "id": "quote 1.0.47",
+            "target": "quote"
+          },
+          {
+            "id": "regex 1.12.3",
+            "target": "regex"
+          },
+          {
+            "id": "relative-path 1.9.3",
+            "target": "relative_path"
+          },
+          {
+            "id": "syn 2.0.118",
+            "target": "syn"
+          },
+          {
+            "id": "unicode-ident 1.0.24",
+            "target": "unicode_ident"
+          }
+        ],
+        "edition": "2021",
+        "extra_deps": [
+          ":build_script_build"
+        ]
+      },
+      "library_target_name": "rstest_macros",
+      "license": "MIT OR Apache-2.0",
+      "license_file": "LICENSE-APACHE",
+      "license_ids": [
+        "Apache-2.0",
+        "MIT"
+      ],
+      "name": "rstest_macros",
+      "package_url": "https://github.com/la10736/rstest",
+      "repository": {
+        "Http": {
+          "sha256": "9c845311f0ff7951c5506121a9ad75aec44d083c31583b2ea5a30bcb0b0abba0",
+          "url": "https://static.crates.io/crates/rstest_macros/0.26.1/download"
+        }
+      },
+      "targets": [
+        {
+          "ProcMacro": {
+            "crate_name": "rstest_macros",
+            "crate_root": "src/lib.rs"
+          }
+        },
+        {
+          "BuildScript": {
+            "crate_name": "build_script_build",
+            "crate_root": "build.rs"
+          }
+        }
+      ],
+      "version": "0.26.1"
+    },
     "ruint 1.20.0": {
       "common_attrs": {
         "crate_features": [
@@ -46891,7 +46974,7 @@
                 "target": "errno"
               },
               {
-                "id": "windows-sys 0.52.0",
+                "id": "windows-sys 0.61.2",
                 "target": "windows_sys"
               }
             ],
@@ -47210,7 +47293,7 @@
             ],
             "cfg(windows)": [
               {
-                "id": "windows-sys 0.52.0",
+                "id": "windows-sys 0.59.0",
                 "target": "windows_sys"
               }
             ]
@@ -47315,7 +47398,7 @@
             ],
             "cfg(windows)": [
               {
-                "id": "windows-sys 0.52.0",
+                "id": "windows-sys 0.61.2",
                 "target": "windows_sys"
               }
             ]
@@ -49842,6 +49925,40 @@
       ],
       "version": "2.7.0"
     },
+    "similar 3.2.0": {
+      "common_attrs": {
+        "crate_features": [
+          "default",
+          "inline",
+          "std",
+          "text"
+        ],
+        "edition": "2024"
+      },
+      "library_target_name": "similar",
+      "license": "Apache-2.0",
+      "license_file": "LICENSE",
+      "license_ids": [
+        "Apache-2.0"
+      ],
+      "name": "similar",
+      "package_url": "https://github.com/mitsuhiko/similar",
+      "repository": {
+        "Http": {
+          "sha256": "4f66ca1f7aca2474dc10c942eb22feffc897735f54cd1db90138c2fddb490987",
+          "url": "https://static.crates.io/crates/similar/3.2.0/download"
+        }
+      },
+      "targets": [
+        {
+          "Library": {
+            "crate_name": "similar",
+            "crate_root": "src/lib.rs"
+          }
+        }
+      ],
+      "version": "3.2.0"
+    },
     "similar-asserts 1.7.0": {
       "common_attrs": {
         "crate_features": [
@@ -50193,6 +50310,112 @@
       ],
       "version": "1.1.2"
     },
+    "snapbox 1.2.2": {
+      "common_attrs": {
+        "crate_features": [
+          "color",
+          "color-auto",
+          "default",
+          "diff",
+          "structured-data",
+          "term-svg"
+        ],
+        "deps": [
+          {
+            "id": "anstream 1.0.0",
+            "target": "anstream"
+          },
+          {
+            "id": "anstyle 1.0.14",
+            "target": "anstyle"
+          },
+          {
+            "id": "anstyle-svg 1.1.1",
+            "target": "anstyle_svg"
+          },
+          {
+            "id": "normalize-line-endings 0.3.0",
+            "target": "normalize_line_endings"
+          },
+          {
+            "id": "serde_json 1.0.151",
+            "target": "serde_json"
+          },
+          {
+            "id": "similar 3.2.0",
+            "target": "similar"
+          },
+          {
+            "id": "snapbox-macros 1.1.0",
+            "target": "snapbox_macros"
+          }
+        ],
+        "edition": "2024"
+      },
+      "library_target_name": "snapbox",
+      "license": "MIT OR Apache-2.0",
+      "license_file": "LICENSE-APACHE",
+      "license_ids": [
+        "Apache-2.0",
+        "MIT"
+      ],
+      "name": "snapbox",
+      "package_url": "https://github.com/assert-rs/snapbox/",
+      "repository": {
+        "Http": {
+          "sha256": "8de56eb4784a2c5c1efede55a0f06fbf481bc12b42b355b9525c15db1e3581a8",
+          "url": "https://static.crates.io/crates/snapbox/1.2.2/download"
+        }
+      },
+      "targets": [
+        {
+          "Library": {
+            "crate_name": "snapbox",
+            "crate_root": "src/lib.rs"
+          }
+        }
+      ],
+      "version": "1.2.2"
+    },
+    "snapbox-macros 1.1.0": {
+      "common_attrs": {
+        "crate_features": [
+          "color",
+          "default"
+        ],
+        "deps": [
+          {
+            "id": "anstream 1.0.0",
+            "target": "anstream"
+          }
+        ],
+        "edition": "2024"
+      },
+      "library_target_name": "snapbox_macros",
+      "license": "MIT OR Apache-2.0",
+      "license_file": "LICENSE-APACHE",
+      "license_ids": [
+        "Apache-2.0",
+        "MIT"
+      ],
+      "name": "snapbox-macros",
+      "package_url": "https://github.com/assert-rs/snapbox/",
+      "repository": {
+        "Http": {
+          "sha256": "ed4a172e483585ebbc7c7f7d1705ca7e3f94f606ed78caa14805673189fd5455",
+          "url": "https://static.crates.io/crates/snapbox-macros/1.1.0/download"
+        }
+      },
+      "targets": [
+        {
+          "Library": {
+            "crate_name": "snapbox_macros",
+            "crate_root": "src/lib.rs"
+          }
+        }
+      ],
+      "version": "1.1.0"
+    },
     "socket2 0.6.5": {
       "common_attrs": {
         "crate_features": [
@@ -50209,7 +50432,7 @@
             ],
             "cfg(windows)": [
               {
-                "id": "windows-sys 0.60.2",
+                "id": "windows-sys 0.61.2",
                 "target": "windows_sys"
               }
             ]
@@ -51403,7 +51626,7 @@
             ],
             "cfg(windows)": [
               {
-                "id": "windows-sys 0.52.0",
+                "id": "windows-sys 0.61.2",
                 "target": "windows_sys"
               }
             ]
@@ -57523,7 +57746,7 @@
           "selects": {
             "cfg(windows)": [
               {
-                "id": "windows-sys 0.48.0",
+                "id": "windows-sys 0.61.2",
                 "target": "windows_sys"
               }
             ]
@@ -61519,7 +61742,6 @@
     "alloy-eip2930 0.2.3",
     "alloy-eip7702 0.6.3",
     "alloy-eip7928 0.4.10",
-    "alloy-evm 0.39.0",
     "alloy-hardforks 0.2.13",
     "alloy-hardforks 0.4.8",
     "alloy-json-abi 1.7.2",
@@ -61527,6 +61749,7 @@
     "alloy-rlp 0.3.16",
     "alloy-sol-types 1.7.2",
     "alloy-trie 0.9.5",
+    "anstyle 1.0.14",
     "anyhow 1.0.104",
     "aquamarine 0.6.0",
     "arbitrary 1.4.2",
@@ -61544,6 +61767,8 @@
     "bindgen 0.72.1",
     "bitflags 2.13.1",
     "blake3 1.8.7",
+    "boa_engine 0.21.1",
+    "boa_gc 0.21.1",
     "boyer-moore-magiclen 0.2.24",
     "byteorder 1.5.0",
     "bytes 1.12.1",
@@ -61556,6 +61781,7 @@
     "coins-bip32 0.12.0",
     "coins-bip39 0.12.0",
     "coins-ledger 0.13.2",
+    "colorchoice 1.0.5",
     "comfy-table 7.2.2",
     "concat-kdf 0.1.0",
     "crossbeam-channel 0.5.17",
@@ -61636,6 +61862,7 @@
     "opentelemetry-semantic-conventions 0.32.1",
     "opentelemetry_sdk 0.32.1",
     "page_size 0.6.0",
+    "parity-scale-codec 3.7.5",
     "parking_lot 0.12.5",
     "paste 1.0.15",
     "pin-project 1.1.13",
@@ -61645,18 +61872,17 @@
     "procfs 0.18.0",
     "proptest 1.11.0",
     "proptest-arbitrary-interop 0.1.0",
+    "quanta 0.12.6",
     "quote 1.0.47",
     "rand 0.8.6",
     "rand 0.9.4",
     "ratatui 0.30.2",
     "rayon 1.12.0",
     "reqwest 0.13.4",
-    "reth-codecs 0.7.1",
-    "reth-codecs-derive 0.7.1",
-    "reth-primitives-traits 0.7.1",
-    "reth-rpc-traits 0.7.0",
     "revm 43.0.2",
-    "revm-inspectors 0.43.0",
+    "revm-bytecode 43.0.0",
+    "revm-primitives 43.0.0",
+    "revm-state 43.0.0",
     "ringbuffer 0.16.0",
     "rmp-serde 1.3.1",
     "roaring 0.11.5",
@@ -61712,6 +61938,7 @@
     "url 2.5.8",
     "vergen 10.0.1",
     "vergen-git2 10.0.1",
+    "visibility 0.1.1",
     "walkdir 2.5.0",
     "wasmtimer 0.4.3",
     "ws_stream_wasm 0.7.5",
@@ -61724,10 +61951,12 @@
     "brotli 8.0.4",
     "ci_info 0.14.15",
     "codspeed-criterion-compat 4.5.0",
+    "criterion 0.8.2",
     "flate2 1.1.10",
     "insta 1.48.0",
-    "reth-zstd-compressors 0.7.1",
+    "rstest 0.26.1",
     "similar-asserts 1.7.0",
+    "snapbox 1.2.2",
     "test-case 3.3.1",
     "test-fuzz 7.3.0",
     "tokio-test 0.4.5",
@@ -61742,6 +61971,7 @@
     "alloy-eip7547 2.4.2": "bazel/cargo/alloy/crates/eip7547",
     "alloy-eips 2.4.2": "bazel/cargo/alloy/crates/eips",
     "alloy-ens 2.4.2": "bazel/cargo/alloy/crates/ens",
+    "alloy-evm 0.39.0": "bazel/cargo/alloy-evm/crates/evm",
     "alloy-genesis 2.4.2": "bazel/cargo/alloy/crates/genesis",
     "alloy-json-rpc 2.4.2": "bazel/cargo/alloy/crates/json-rpc",
     "alloy-network 2.4.2": "bazel/cargo/alloy/crates/network",
@@ -61816,6 +62046,8 @@
     "reth-cli-commands 2.5.2": "bazel/cargo/reth/crates/cli/commands",
     "reth-cli-runner 2.5.2": "bazel/cargo/reth/crates/cli/runner",
     "reth-cli-util 2.5.2": "bazel/cargo/reth/crates/cli/util",
+    "reth-codecs 0.7.1": "bazel/cargo/reth-core/crates/codecs",
+    "reth-codecs-derive 0.7.1": "bazel/cargo/reth-core/crates/codecs-derive",
     "reth-config 2.5.2": "bazel/cargo/reth/crates/config",
     "reth-consensus 2.5.2": "bazel/cargo/reth/crates/consensus/consensus",
     "reth-consensus-common 2.5.2": "bazel/cargo/reth/crates/consensus/common",
@@ -61883,6 +62115,7 @@
     "reth-payload-primitives 2.5.2": "bazel/cargo/reth/crates/payload/primitives",
     "reth-payload-util 2.5.2": "bazel/cargo/reth/crates/payload/util",
     "reth-payload-validator 2.5.2": "bazel/cargo/reth/crates/payload/validator",
+    "reth-primitives-traits 0.7.1": "bazel/cargo/reth-core/crates/primitives-traits",
     "reth-provider 2.5.2": "bazel/cargo/reth/crates/storage/provider",
     "reth-prune 2.5.2": "bazel/cargo/reth/crates/prune/prune",
     "reth-prune-types 2.5.2": "bazel/cargo/reth/crates/prune/types",
@@ -61897,6 +62130,7 @@
     "reth-rpc-eth-types 2.5.2": "bazel/cargo/reth/crates/rpc/rpc-eth-types",
     "reth-rpc-layer 2.5.2": "bazel/cargo/reth/crates/rpc/rpc-layer",
     "reth-rpc-server-types 2.5.2": "bazel/cargo/reth/crates/rpc/rpc-server-types",
+    "reth-rpc-traits 0.7.1": "bazel/cargo/reth-core/crates/rpc-traits",
     "reth-snap-sync 2.5.2": "bazel/cargo/reth/crates/snap-sync",
     "reth-stages 2.5.2": "bazel/cargo/reth/crates/stages/stages",
     "reth-stages-api 2.5.2": "bazel/cargo/reth/crates/stages/api",
@@ -61917,6 +62151,8 @@
     "reth-trie-common 2.5.2": "bazel/cargo/reth/crates/trie/common",
     "reth-trie-db 2.5.2": "bazel/cargo/reth/crates/trie/db",
     "reth-trie-parallel 2.5.2": "bazel/cargo/reth/crates/trie/parallel",
-    "reth-trie-sparse 2.5.2": "bazel/cargo/reth/crates/trie/sparse"
+    "reth-trie-sparse 2.5.2": "bazel/cargo/reth/crates/trie/sparse",
+    "reth-zstd-compressors 0.7.1": "bazel/cargo/reth-core/crates/zstd-compressors",
+    "revm-inspectors 0.43.0": "bazel/cargo/revm-inspectors"
   }
 }

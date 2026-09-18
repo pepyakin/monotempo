@@ -67,6 +67,8 @@ crate_library(
     deps = [
         "//alloy/crates/rpc-types-engine:alloy_rpc_types_engine",
         "//alloy/crates/rpc-types-eth:alloy_rpc_types_eth",
+        "//reth-core/crates/codecs:reth_codecs",
+        "//reth-core/crates/primitives-traits:reth_primitives_traits",
         "//reth/crates/chainspec:reth_chainspec",
         "//reth/crates/cli/util:reth_cli_util",
         "//reth/crates/consensus/common:reth_consensus_common",
@@ -97,8 +99,6 @@ crate_library(
         "//reth/crates/transaction-pool:reth_transaction_pool",
         "//reth/crates/trie/db:reth_trie_db",
         "//reth/crates/trie/trie:reth_trie",
-        "@crates//:reth-codecs",
-        "@crates//:reth-primitives-traits",
     ],
 )
 

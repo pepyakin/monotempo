@@ -25,6 +25,7 @@ crate_library(
     deps = [
         "//alloy/crates/consensus:alloy_consensus",
         "//alloy/crates/eips:alloy_eips",
+        "//reth-core/crates/primitives-traits:reth_primitives_traits",
         "//reth/crates/chainspec:reth_chainspec",
         "//reth/crates/consensus/consensus:reth_consensus",
         "//reth/crates/ethereum/evm:reth_evm_ethereum",
@@ -61,7 +62,6 @@ crate_library(
         "@crates//:rand-0.9.4",
         "@crates//:rand_08-0.8.6",
         "@crates//:rayon",
-        "@crates//:reth-primitives-traits",
         "@crates//:rustc-hash",
         "@crates//:schnellru",
         "@crates//:secp256k1",
@@ -98,12 +98,12 @@ crate_unit_test(
         "//reth/testing/testing-utils:reth_testing_utils",
         "@crates//:alloy-eip7928",
         "@crates//:alloy-trie",
-        "@crates//:criterion",
+        "@crates//:codspeed-criterion-compat",
         "@crates//:test-case",
         "@crates//:url",
     ],
     aliases = {
-        "@crates//:criterion": "criterion",
+        "@crates//:codspeed-criterion-compat": "criterion",
     },
 )
 
@@ -117,6 +117,7 @@ crate_integration_test(
         "//alloy/crates/consensus:alloy_consensus",
         "//alloy/crates/eips:alloy_eips",
         "//alloy/crates/genesis:alloy_genesis",
+        "//reth-core/crates/primitives-traits:reth_primitives_traits",
         "//reth/crates/chainspec:reth_chainspec",
         "//reth/crates/consensus/consensus:reth_consensus",
         "//reth/crates/ethereum/evm:reth_evm_ethereum",
@@ -150,7 +151,7 @@ crate_integration_test(
         "@crates//:alloy-primitives",
         "@crates//:alloy-rlp",
         "@crates//:alloy-trie",
-        "@crates//:criterion",
+        "@crates//:codspeed-criterion-compat",
         "@crates//:derive_more",
         "@crates//:discv5",
         "@crates//:enr",
@@ -162,7 +163,6 @@ crate_integration_test(
         "@crates//:rand-0.9.4",
         "@crates//:rand_08-0.8.6",
         "@crates//:rayon",
-        "@crates//:reth-primitives-traits",
         "@crates//:rustc-hash",
         "@crates//:schnellru",
         "@crates//:secp256k1",
@@ -182,7 +182,7 @@ crate_integration_test(
         "@crates//:auto_impl",
     ],
     aliases = {
-        "@crates//:criterion": "criterion",
+        "@crates//:codspeed-criterion-compat": "criterion",
         "@crates//:rand_08-0.8.6": "rand_08",
     },
 )

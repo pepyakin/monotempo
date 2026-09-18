@@ -60,7 +60,7 @@ tracing = { version = "^0.1.0", features = ["attributes"], default-features = fa
 
 [dev-dependencies]
 assert_matches = { version = "^1.5.0" }
-criterion = { package = "codspeed-criterion-compat", version = "^4.3" }
+codspeed-criterion-compat = { version = "^4.3" }
 rand_08 = { package = "rand", version = "^0.8" }
 reth-tracing = { path = "../../tracing" }
 secp256k1 = { version = "^0.30", features = ["global-context", "recovery", "rand"], default-features = false }

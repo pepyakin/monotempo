@@ -136,7 +136,7 @@ tracing = { version = "^0.1.0", features = ["attributes"], default-features = fa
 alloy-eip7928 = { version = "^0.4.10", features = ["rlp"], default-features = false }
 alloy-genesis = { version = "^2.4.2", default-features = false }
 alloy-trie = { version = "^0.9.4", default-features = false }
-criterion = { package = "codspeed-criterion-compat", version = "^4.3" }
+codspeed-criterion-compat = { version = "^4.3" }
 reth-discv4 = { path = "../discv4", features = ["test-utils"] }
 reth-network = { path = ".", features = ["test-utils"] }
 reth-network-p2p = { path = "../p2p", features = ["test-utils"] }

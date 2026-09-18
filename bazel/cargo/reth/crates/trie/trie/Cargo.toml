@@ -81,7 +81,7 @@ triehash = { version = "^0.8", optional = true }
 
 [dev-dependencies]
 assert_matches = { version = "^1.5.0" }
-criterion = { package = "codspeed-criterion-compat", version = "^4.3" }
+codspeed-criterion-compat = { version = "^4.3" }
 parking_lot = { version = "^0.12" }
 pretty_assertions = { version = "^1.4" }
 proptest = { version = "^1.7" }

@@ -29,6 +29,7 @@ crate_library(
     deps = [
         "//alloy/crates/consensus:alloy_consensus",
         "//alloy/crates/eips:alloy_eips",
+        "//reth-core/crates/primitives-traits:reth_primitives_traits",
         "//reth/crates/chainspec:reth_chainspec",
         "//reth/crates/ethereum/primitives:reth_ethereum_primitives",
         "@crates//:alloy-chains",
@@ -42,12 +43,11 @@ crate_library(
         "@crates//:derive_more",
         "@crates//:proptest",
         "@crates//:proptest-arbitrary-interop",
-        "@crates//:reth-primitives-traits",
         "@crates//:serde",
         "@crates//:thiserror",
     ],
     proc_macro_deps = [
-        "@crates//:reth-codecs-derive",
+        "//reth-core/crates/codecs-derive:reth_codecs_derive",
     ],
 )
 

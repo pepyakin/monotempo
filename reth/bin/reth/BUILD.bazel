@@ -51,6 +51,7 @@ crate_library(
     declared_features = DECLARED_FEATURES,
     deps = [
         "//alloy/crates/rpc-types:alloy_rpc_types",
+        "//reth-core/crates/primitives-traits:reth_primitives_traits",
         "//reth/crates/chainspec:reth_chainspec",
         "//reth/crates/cli/runner:reth_cli_runner",
         "//reth/crates/cli/util:reth_cli_util",
@@ -81,7 +82,6 @@ crate_library(
         "//reth/crates/transaction-pool:reth_transaction_pool",
         "@crates//:alloy-primitives",
         "@crates//:clap",
-        "@crates//:reth-primitives-traits",
         "@crates//:tracing",
     ],
     proc_macro_deps = [
@@ -96,6 +96,7 @@ crate_binary(
     declared_features = DECLARED_FEATURES,
     deps = [
         "//alloy/crates/rpc-types:alloy_rpc_types",
+        "//reth-core/crates/primitives-traits:reth_primitives_traits",
         "//reth/crates/chainspec:reth_chainspec",
         "//reth/crates/cli/runner:reth_cli_runner",
         "//reth/crates/cli/util:reth_cli_util",
@@ -127,7 +128,6 @@ crate_binary(
         ":reth_lib",
         "@crates//:alloy-primitives",
         "@crates//:clap",
-        "@crates//:reth-primitives-traits",
         "@crates//:tracing",
     ],
     proc_macro_deps = [
@@ -170,6 +170,7 @@ crate_integration_test(
         "//alloy/crates/provider:alloy_provider",
         "//alloy/crates/rpc-types-eth:alloy_rpc_types_eth",
         "//alloy/crates/rpc-types:alloy_rpc_types",
+        "//reth-core/crates/primitives-traits:reth_primitives_traits",
         "//reth/crates/chainspec:reth_chainspec",
         "//reth/crates/cli/runner:reth_cli_runner",
         "//reth/crates/cli/util:reth_cli_util",
@@ -206,7 +207,6 @@ crate_integration_test(
         "@crates//:http-body-util",
         "@crates//:hyper",
         "@crates//:hyper-util",
-        "@crates//:reth-primitives-traits",
         "@crates//:serde_json",
         "@crates//:tar",
         "@crates//:tempfile",

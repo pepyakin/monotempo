@@ -6,7 +6,7 @@
 # (see bazel/generate.py); this workspace is never used by `cargo build`.
 
 [workspace]
-resolver = "2"
+resolver = "3"
 members = [
     "alloy/crates/alloy",
     "alloy/crates/consensus",
@@ -50,6 +50,7 @@ members = [
     "alloy/crates/transport-ipc",
     "alloy/crates/transport-ws",
     "alloy/crates/tx-macros",
+    "alloy-evm/crates/evm",
     "reth/bin/reth",
     "reth/bin/reth-bb",
     "reth/crates/chain-state",
@@ -192,6 +193,12 @@ members = [
     "reth/testing/ef-tests",
     "reth/testing/runner",
     "reth/testing/testing-utils",
+    "reth-core/crates/codecs",
+    "reth-core/crates/codecs-derive",
+    "reth-core/crates/primitives-traits",
+    "reth-core/crates/rpc-traits",
+    "reth-core/crates/zstd-compressors",
+    "revm-inspectors",
 ]
 
 # Union of the projects' `[patch.crates-io]` sections.
@@ -227,8 +234,15 @@ alloy-transport-http = { path = "alloy/crates/transport-http" }
 alloy-transport-ipc = { path = "alloy/crates/transport-ipc" }
 alloy-transport-ws = { path = "alloy/crates/transport-ws" }
 alloy-tx-macros = { path = "alloy/crates/tx-macros" }
+alloy-evm = { path = "alloy-evm/crates/evm" }
+reth-codecs = { path = "reth-core/crates/codecs" }
+reth-codecs-derive = { path = "reth-core/crates/codecs-derive" }
+reth-primitives-traits = { path = "reth-core/crates/primitives-traits" }
+reth-rpc-traits = { path = "reth-core/crates/rpc-traits" }
+reth-zstd-compressors = { path = "reth-core/crates/zstd-compressors" }
+revm-inspectors = { path = "revm-inspectors" }
 
 # Digest of every member manifest. crate_universe only re-resolves when a
 # manifest it was given changes, and it is given this one alone.
 [workspace.metadata.bazel]
-members-digest = "cc683280a6b1f80b1161ce0401825fc67732217b1e56bb26901810a0b1430316"
+members-digest = "497892b56ec4281008694f6fc22a56fd0b25a4a61971a2b952139a4babecc512"

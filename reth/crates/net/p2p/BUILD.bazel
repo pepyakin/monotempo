@@ -29,6 +29,7 @@ crate_library(
     deps = [
         "//alloy/crates/consensus:alloy_consensus",
         "//alloy/crates/eips:alloy_eips",
+        "//reth-core/crates/primitives-traits:reth_primitives_traits",
         "//reth/crates/consensus/consensus:reth_consensus",
         "//reth/crates/ethereum/primitives:reth_ethereum_primitives",
         "//reth/crates/net/eth-wire-types:reth_eth_wire_types",
@@ -40,7 +41,6 @@ crate_library(
         "@crates//:derive_more",
         "@crates//:futures",
         "@crates//:parking_lot",
-        "@crates//:reth-primitives-traits",
         "@crates//:tokio",
         "@crates//:tracing",
     ],

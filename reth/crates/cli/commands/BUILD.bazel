@@ -23,6 +23,8 @@ crate_library(
     deps = [
         "//alloy/crates/consensus:alloy_consensus",
         "//alloy/crates/eips:alloy_eips",
+        "//reth-core/crates/codecs:reth_codecs",
+        "//reth-core/crates/primitives-traits:reth_primitives_traits",
         "//reth/crates/chainspec:reth_chainspec",
         "//reth/crates/cli/cli:reth_cli",
         "//reth/crates/cli/runner:reth_cli_runner",
@@ -86,8 +88,6 @@ crate_library(
         "@crates//:ratatui",
         "@crates//:rayon",
         "@crates//:reqwest",
-        "@crates//:reth-codecs",
-        "@crates//:reth-primitives-traits",
         "@crates//:secp256k1",
         "@crates//:serde",
         "@crates//:serde_json",

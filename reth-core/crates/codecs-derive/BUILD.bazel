@@ -1,0 +1,35 @@
+# GENERATED FILE - DO NOT EDIT.
+#
+# Regenerate with `python3 bazel/generate.py` after changing Cargo.toml.
+
+load("//bazel:rust.bzl", "crate_cargo_toml_env_vars", "crate_proc_macro", "crate_unit_test")
+load("//reth-core/bazel:workspace.bzl", "WORKSPACE")
+
+FEATURES = []
+
+DECLARED_FEATURES = []
+
+crate_cargo_toml_env_vars(WORKSPACE)
+
+crate_proc_macro(
+    name = "reth_codecs_derive",
+    workspace = WORKSPACE,
+    crate_features = FEATURES,
+    declared_features = DECLARED_FEATURES,
+    deps = [
+        "@crates//:proc-macro2",
+        "@crates//:quote",
+        "@crates//:syn",
+    ],
+)
+
+crate_unit_test(
+    name = "reth_codecs_derive_test",
+    workspace = WORKSPACE,
+    crate = ":reth_codecs_derive",
+    crate_features = FEATURES,
+    declared_features = DECLARED_FEATURES,
+    deps = [
+        "@crates//:similar-asserts",
+    ],
+)

@@ -1,0 +1,63 @@
+# GENERATED FILE - DO NOT EDIT.
+#
+# Regenerate with `python3 bazel/generate.py` after changing Cargo.toml.
+
+load("//bazel:rust.bzl", "crate_cargo_toml_env_vars", "crate_library", "crate_unit_test")
+load("//alloy-evm/bazel:workspace.bzl", "WORKSPACE")
+
+FEATURES = [
+    "asm-keccak",
+    "call-util",
+    "default",
+    "overrides",
+    "rpc",
+    "std",
+]
+
+DECLARED_FEATURES = [
+    "asm-keccak",
+    "call-util",
+    "default",
+    "engine",
+    "gmp",
+    "overrides",
+    "rpc",
+    "secp256k1",
+    "std",
+]
+
+crate_cargo_toml_env_vars(WORKSPACE)
+
+crate_library(
+    name = "alloy_evm",
+    workspace = WORKSPACE,
+    crate_features = FEATURES,
+    declared_features = DECLARED_FEATURES,
+    deps = [
+        "//alloy/crates/consensus:alloy_consensus",
+        "//alloy/crates/eips:alloy_eips",
+        "//alloy/crates/rpc-types-eth:alloy_rpc_types_eth",
+        "@crates//:alloy-hardforks-0.4.8",
+        "@crates//:alloy-primitives",
+        "@crates//:alloy-sol-types",
+        "@crates//:derive_more",
+        "@crates//:revm",
+        "@crates//:thiserror",
+        "@crates//:tracing",
+    ],
+    proc_macro_deps = [
+        "@crates//:auto_impl",
+    ],
+)
+
+crate_unit_test(
+    name = "alloy_evm_test",
+    workspace = WORKSPACE,
+    crate = ":alloy_evm",
+    crate_features = FEATURES,
+    declared_features = DECLARED_FEATURES,
+    deps = [
+        "@crates//:serde_json",
+        "@crates//:test-case",
+    ],
+)

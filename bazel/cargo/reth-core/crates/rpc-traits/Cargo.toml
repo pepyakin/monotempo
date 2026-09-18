@@ -1,0 +1,40 @@
+# GENERATED FILE - DO NOT EDIT. Regenerate with `python3 bazel/generate.py`.
+#
+# Bazel-only derivation of `reth-core/crates/rpc-traits/Cargo.toml`: the same
+# package as `cargo metadata` describes it in the reth-core workspace, with
+# workspace inheritance resolved. Cargo builds are unaffected.
+
+[package]
+name = "reth-rpc-traits"
+version = "0.7.1"
+edition = "2024"
+rust-version = "1.93"
+build = false
+autolib = false
+autobins = false
+autoexamples = false
+autotests = false
+autobenches = false
+
+[lib]
+name = "reth_rpc_traits"
+path = "src/lib.rs"
+
+[features]
+default = ["std"]
+std = [
+    "alloy-primitives/std",
+    "alloy-consensus/std",
+    "alloy-rpc-types-eth/std",
+    "reth-primitives-traits/std",
+    "thiserror/std",
+]
+
+[dependencies]
+alloy-consensus = { version = "^2.0", default-features = false }
+alloy-network = { version = "^2.0", default-features = false }
+alloy-primitives = { version = "^1.5.6", features = ["map-foldhash"], default-features = false }
+alloy-rpc-types-eth = { version = "^2.0", default-features = false }
+alloy-signer = { version = "^2.0", default-features = false }
+reth-primitives-traits = { path = "../primitives-traits", default-features = false }
+thiserror = { version = "^2.0.0", default-features = false }

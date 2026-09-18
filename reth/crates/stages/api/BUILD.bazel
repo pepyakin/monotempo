@@ -22,6 +22,8 @@ crate_library(
     declared_features = DECLARED_FEATURES,
     deps = [
         "//alloy/crates/eips:alloy_eips",
+        "//reth-core/crates/codecs:reth_codecs",
+        "//reth-core/crates/primitives-traits:reth_primitives_traits",
         "//reth/crates/consensus/consensus:reth_consensus",
         "//reth/crates/errors:reth_errors",
         "//reth/crates/metrics:reth_metrics",
@@ -35,8 +37,6 @@ crate_library(
         "@crates//:alloy-primitives",
         "@crates//:futures-util",
         "@crates//:metrics",
-        "@crates//:reth-codecs",
-        "@crates//:reth-primitives-traits",
         "@crates//:thiserror",
         "@crates//:tokio",
         "@crates//:tracing",

@@ -1,0 +1,54 @@
+# GENERATED FILE - DO NOT EDIT. Regenerate with `python3 bazel/generate.py`.
+#
+# Bazel-only derivation of `revm-inspectors/./Cargo.toml`: the same
+# package as `cargo metadata` describes it in the revm-inspectors workspace, with
+# workspace inheritance resolved. Cargo builds are unaffected.
+
+[package]
+name = "revm-inspectors"
+version = "0.43.0"
+edition = "2021"
+rust-version = "1.94"
+build = false
+autolib = false
+autobins = false
+autoexamples = false
+autotests = false
+autobenches = false
+
+[lib]
+name = "revm_inspectors"
+path = "src/lib.rs"
+
+[[test]]
+name = "it"
+path = "tests/it/main.rs"
+
+[[bench]]
+name = "js_tracer"
+path = "benches/js_tracer.rs"
+
+[features]
+default = ["std"]
+std = ["alloy-primitives/std", "anstyle/std", "serde/std", "serde_json/std", "revm/std", "thiserror/std"]
+serde = ["dep:serde", "revm/serde"]
+js-tracer = ["dep:boa_engine", "dep:boa_gc"]
+
+[dependencies]
+alloy-primitives = { version = "^1.4", features = ["map"], default-features = false }
+alloy-rpc-types-eth = { version = "^2.0", default-features = false }
+alloy-rpc-types-trace = { version = "^2.0", default-features = false }
+alloy-sol-types = { version = "^1.4", default-features = false }
+anstyle = { version = "^1.0", optional = true }
+boa_engine = { version = "^0.21", optional = true }
+boa_gc = { version = "^0.21", optional = true }
+colorchoice = { version = "^1.0" }
+revm = { version = "^43.0.0", default-features = false }
+serde = { version = "^1", features = ["derive"], optional = true }
+serde_json = { version = "^1.0", features = ["alloc"], default-features = false }
+thiserror = { version = "^2.0", default-features = false }
+
+[dev-dependencies]
+alloy-hardforks = { version = "^0.4" }
+criterion = { version = "^0.8" }
+snapbox = { version = "^1.2", features = ["term-svg"] }

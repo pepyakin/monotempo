@@ -167,14 +167,33 @@ workspace, makes the alloy crates workspace members, so reth's generated
 `BUILD.bazel` files depend on `//alloy/crates/<x>:alloy_<x>` directly and an
 edit to alloy rebuilds (and retests) exactly the reth crates that use it.
 
-The patch also redirects external crates that depend on alloy (crates.io
-`alloy-evm`, `revm-inspectors`, the crates.io `reth-*` a few of reth's
-dependencies pull in). crate_universe deliberately leaves dependencies on
-workspace members out of the crates it renders, so the generator writes them
-back as `crate.annotation(crate = ..., version = "=...", deps = ["@@//alloy/..."])`
-in `bazel/cargo/member_deps.MODULE.bazel`, which the root `MODULE.bazel`
-`include()`s. Changing which external crates reach into the tree therefore
-needs a repin (`CARGO_BAZEL_REPIN=1 bazel mod deps`) after the generator.
+The same goes for `reth-core/`, `alloy-evm/` and `revm-inspectors/`: reth
+patches their crates to the tree, and they in turn patch `alloy-*` to
+`../alloy/crates/*`, so a project's `[patch.crates-io]` lists every in-tree
+project it uses, directly or through another in-tree project. A project may
+be a single crate without a `[workspace]` (`revm-inspectors/`); its own
+`[package]` and `[lints]` then stand in for the workspace tables. The Bazel
+Cargo workspace uses the highest `resolver` any project asks for.
+
+If a `[patch.crates-io]` left an external crate depending on a workspace
+member, crate_universe would drop that edge (it deliberately leaves
+dependencies on workspace members out of the crates it renders). The
+generator writes such edges back as
+`crate.annotation(crate = ..., version = "=...", deps = ["@@//alloy/..."])` in
+`bazel/cargo/member_deps.MODULE.bazel`, which the root `MODULE.bazel`
+`include()`s. Today the file is empty: every external crate that depended on
+alloy came from reth-core, alloy-evm or revm-inspectors, which are in-tree.
+Changing which external crates reach into the tree needs a repin
+(`CARGO_BAZEL_REPIN=1 bazel mod deps`) after the generator.
+
+One more thing the single workspace forces: crate_universe names its
+`@crates//:<x>` aliases after the dependency's rename, and cannot render two
+different packages under the same name (reth's `criterion = { package =
+"codspeed-criterion-compat" }` next to revm-inspectors' real `criterion`).
+The generator drops the rename in the derived manifest of the renaming crate
+and restores it in its `BUILD.bazel` with `aliases`, so the sources still see
+`criterion`. It refuses if the crate's `[features]` refer to the renamed
+dependency, since those would have to change too.
 
 ## Hermeticity
 

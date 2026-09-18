@@ -18,9 +18,9 @@ crate_binary(
     declared_features = DECLARED_FEATURES,
     workspace_lints = False,
     deps = [
+        "//alloy-evm/crates/evm:alloy_evm",
         "//alloy/crates/eips:alloy_eips",
         "//reth/crates/ethereum/reth:reth_ethereum",
-        "@crates//:alloy-evm",
         "@crates//:alloy-sol-types",
         "@crates//:eyre",
     ],

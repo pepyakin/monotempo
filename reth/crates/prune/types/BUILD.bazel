@@ -31,11 +31,11 @@ crate_library(
     crate_features = FEATURES,
     declared_features = DECLARED_FEATURES,
     deps = [
+        "//reth-core/crates/codecs:reth_codecs",
         "@crates//:alloy-primitives",
         "@crates//:arbitrary",
         "@crates//:derive_more",
         "@crates//:modular-bitfield",
-        "@crates//:reth-codecs",
         "@crates//:serde",
         "@crates//:strum",
         "@crates//:thiserror",

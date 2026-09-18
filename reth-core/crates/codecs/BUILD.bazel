@@ -1,0 +1,66 @@
+# GENERATED FILE - DO NOT EDIT.
+#
+# Regenerate with `python3 bazel/generate.py` after changing Cargo.toml.
+
+load("//bazel:rust.bzl", "crate_cargo_toml_env_vars", "crate_library", "crate_unit_test")
+load("//reth-core/bazel:workspace.bzl", "WORKSPACE")
+
+FEATURES = [
+    "alloy",
+    "arbitrary",
+    "default",
+    "serde",
+    "std",
+    "test-utils",
+]
+
+DECLARED_FEATURES = [
+    "alloy",
+    "arbitrary",
+    "default",
+    "serde",
+    "std",
+    "test-utils",
+]
+
+crate_cargo_toml_env_vars(WORKSPACE)
+
+crate_library(
+    name = "reth_codecs",
+    workspace = WORKSPACE,
+    crate_features = FEATURES,
+    declared_features = DECLARED_FEATURES,
+    deps = [
+        "//alloy/crates/consensus:alloy_consensus",
+        "//alloy/crates/eips:alloy_eips",
+        "//alloy/crates/genesis:alloy_genesis",
+        "//reth-core/crates/zstd-compressors:reth_zstd_compressors",
+        "@crates//:alloy-primitives",
+        "@crates//:alloy-trie",
+        "@crates//:arbitrary",
+        "@crates//:bytes",
+        "@crates//:modular-bitfield",
+        "@crates//:parity-scale-codec",
+        "@crates//:serde",
+    ],
+    proc_macro_deps = [
+        "//reth-core/crates/codecs-derive:reth_codecs_derive",
+        "@crates//:visibility",
+    ],
+)
+
+crate_unit_test(
+    name = "reth_codecs_test",
+    workspace = WORKSPACE,
+    crate = ":reth_codecs",
+    crate_features = FEATURES,
+    declared_features = DECLARED_FEATURES,
+    deps = [
+        "@crates//:proptest",
+        "@crates//:proptest-arbitrary-interop",
+        "@crates//:rstest",
+        "@crates//:serde_json",
+        "@crates//:test-fuzz",
+    ],
+    test_fuzz = True,
+)

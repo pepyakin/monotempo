@@ -1,0 +1,91 @@
+# GENERATED FILE - DO NOT EDIT.
+#
+# Regenerate with `python3 bazel/generate.py` after changing Cargo.toml.
+
+load("//bazel:rust.bzl", "crate_cargo_toml_env_vars", "crate_library", "crate_unit_test")
+load("//reth-core/bazel:workspace.bzl", "WORKSPACE")
+
+FEATURES = [
+    "alloy-rpc-types-eth",
+    "arbitrary",
+    "dashmap",
+    "default",
+    "eip7928",
+    "quanta",
+    "rayon",
+    "reth-codec",
+    "rpc-compat",
+    "secp256k1",
+    "serde",
+    "std",
+    "test-utils",
+]
+
+DECLARED_FEATURES = [
+    "alloy-rpc-types-eth",
+    "arbitrary",
+    "dashmap",
+    "default",
+    "eip7928",
+    "quanta",
+    "rayon",
+    "reth-codec",
+    "rpc-compat",
+    "secp256k1",
+    "serde",
+    "std",
+    "test-utils",
+]
+
+crate_cargo_toml_env_vars(WORKSPACE)
+
+crate_library(
+    name = "reth_primitives_traits",
+    workspace = WORKSPACE,
+    crate_features = FEATURES,
+    declared_features = DECLARED_FEATURES,
+    deps = [
+        "//alloy/crates/consensus:alloy_consensus",
+        "//alloy/crates/eips:alloy_eips",
+        "//alloy/crates/genesis:alloy_genesis",
+        "//alloy/crates/rpc-types-eth:alloy_rpc_types_eth",
+        "//reth-core/crates/codecs:reth_codecs",
+        "@crates//:alloy-eip7928",
+        "@crates//:alloy-primitives",
+        "@crates//:alloy-rlp",
+        "@crates//:alloy-trie",
+        "@crates//:arbitrary",
+        "@crates//:byteorder",
+        "@crates//:bytes",
+        "@crates//:dashmap",
+        "@crates//:derive_more",
+        "@crates//:modular-bitfield",
+        "@crates//:once_cell",
+        "@crates//:proptest",
+        "@crates//:proptest-arbitrary-interop",
+        "@crates//:quanta",
+        "@crates//:rayon",
+        "@crates//:revm-bytecode",
+        "@crates//:revm-primitives",
+        "@crates//:revm-state",
+        "@crates//:secp256k1",
+        "@crates//:serde",
+        "@crates//:thiserror",
+    ],
+)
+
+crate_unit_test(
+    name = "reth_primitives_traits_test",
+    workspace = WORKSPACE,
+    crate = ":reth_primitives_traits",
+    crate_features = FEATURES,
+    declared_features = DECLARED_FEATURES,
+    deps = [
+        "@crates//:rand-0.9.4",
+        "@crates//:rand_08-0.8.6",
+        "@crates//:serde_json",
+    ],
+    aliases = {
+        "@crates//:rand_08-0.8.6": "rand_08",
+    },
+)
