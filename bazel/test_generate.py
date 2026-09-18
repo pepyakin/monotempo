@@ -1,5 +1,6 @@
 """Regression checks for Cargo target kinds used by the monorepo projects."""
 
+import tomllib
 import unittest
 from unittest.mock import patch
 
@@ -58,6 +59,67 @@ class RenderTargetsTest(unittest.TestCase):
                 self.assertIn('name = "example"', output)
                 self.assertEqual('name = "localnet"' in output, expected)
                 self.assertEqual('":localnet"' in output, expected)
+
+    def test_independent_package_version_reaches_every_target(self):
+        crate = self.crate([
+            generate.Target("lib", "example", "src/lib.rs", []),
+            generate.Target("bin", "example", "src/main.rs", []),
+            generate.Target("custom-build", "build-script-build", "build.rs", []),
+            generate.Target("test", "integration", "tests/integration.rs", []),
+        ])
+        crate.version = "0.6.3"
+        output = generate.render_build_file(crate, {})
+        self.assertEqual(output.count('version = "0.6.3"'), 5)
+        workspace = generate.render_workspace_bzl(crate.project, {
+            "workspace": {"package": {"edition": "2024"}},
+        })
+        self.assertIn("version = None", workspace)
+
+    def test_cross_package_fixtures_are_public_and_available_at_runtime(self):
+        crate = self.crate([generate.Target("lib", "example", "src/lib.rs", [])])
+        crate.project.filegroups = {"example": {"fixtures": ["tests/abi/**"]}}
+        crate.project.compile_data = {"example": {"crate": ["//other:fixtures"]}}
+        output = generate.render_build_file(crate, {})
+        self.assertIn('name = "fixtures"', output)
+        self.assertIn('"tests/abi/**"', output)
+        self.assertIn('visibility = ["//visibility:public"]', output)
+        library, unit_test = output.split("crate_unit_test(\n")
+        self.assertIn('compile_data = [\n        "//other:fixtures",\n    ]', library)
+        self.assertIn('data = [\n        "//other:fixtures",\n    ]', unit_test)
+
+    def test_runtime_environment_only_reaches_tests(self):
+        crate = self.crate([
+            generate.Target("lib", "example", "src/lib.rs", []),
+            generate.Target("test", "integration", "tests/integration.rs", []),
+        ])
+        crate.project.test_env = {"example": {"CARGO_PKG_NAME": "example"}}
+        output = generate.render_build_file(crate, {})
+        library, tests = output.split("crate_unit_test(\n")
+        self.assertNotIn('"CARGO_PKG_NAME"', library)
+        self.assertEqual(tests.count('"CARGO_PKG_NAME": "example"'), 2)
+
+    def test_target_outside_package_stays_inside_derived_package(self):
+        project = self.crate([]).project
+        package_dir = project.root / "crates/example"
+        member = generate.Member(project=project, manifest={}, pkg={
+            "name": "example", "version": "0.3.16", "edition": "2021",
+            "manifest_path": str(package_dir / "Cargo.toml"),
+            "dependencies": [],
+            "targets": [
+                {"name": "example", "kind": ["lib"], "crate_types": ["lib"],
+                 "src_path": str(package_dir / "src/lib.rs")},
+                {"name": "enum", "kind": ["example"], "crate_types": ["bin"],
+                 "src_path": str(package_dir / "../../examples/enum.rs")},
+            ],
+        })
+        derived = generate.derive_manifest(member, {}, set())
+        manifest = tomllib.loads(derived.text)
+        self.assertEqual(manifest["lib"]["path"], "src/lib.rs")
+        self.assertEqual(manifest["example"][0]["path"], "__workspace__/examples/enum.rs")
+        self.assertEqual(derived.children, {
+            "src": package_dir / "src",
+            "__workspace__/examples/enum.rs": project.root / "examples/enum.rs",
+        })
 
 
 if __name__ == "__main__":

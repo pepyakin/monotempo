@@ -80,6 +80,9 @@ crate_unit_test(
     aliases = {
         "@tempo_crates//:rand_08-0.8.6": "rand_08",
     },
+    data = [
+        "//tempo/crates/node:tests/assets/test-genesis.json",
+    ],
     process_per_test = True,
 )
 

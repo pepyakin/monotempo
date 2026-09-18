@@ -1,5 +1,5 @@
 {
-  "checksum": "ffa8233e2bb242fd7c87ea85e9a1ba4cec8af2d7fc209f6f319189cbeb0357db",
+  "checksum": "8a0ee84a94b9a2c79f667922c04c575362e1f153672d1427a74f1657160a4c09",
   "conditions": {
     "aarch64-apple-darwin": [
       "aarch64-apple-darwin"
@@ -795,12 +795,6 @@
           "transport-http",
           "transports"
         ],
-        "deps": [
-          {
-            "id": "alloy-core 1.7.2",
-            "target": "alloy_core"
-          }
-        ],
         "edition": "2021"
       },
       "library_target_name": "alloy",
@@ -820,19 +814,12 @@
       "common_attrs": {
         "crate_features": [
           "arbitrary",
+          "default",
           "rlp",
           "serde",
           "std"
         ],
         "deps": [
-          {
-            "id": "alloy-primitives 1.7.2",
-            "target": "alloy_primitives"
-          },
-          {
-            "id": "alloy-rlp 0.3.16",
-            "target": "alloy_rlp"
-          },
           {
             "id": "arbitrary 1.4.2",
             "target": "arbitrary"
@@ -854,23 +841,17 @@
             "target": "serde"
           }
         ],
+        "deps_dev": [
+          {
+            "id": "serde_json 1.0.151",
+            "target": "serde_json"
+          }
+        ],
         "edition": "2024"
       },
       "library_target_name": "alloy_chains",
-      "license": "MIT OR Apache-2.0",
-      "license_file": "LICENSE-APACHE",
-      "license_ids": [
-        "Apache-2.0",
-        "MIT"
-      ],
       "name": "alloy-chains",
-      "package_url": "https://github.com/alloy-rs/chains",
-      "repository": {
-        "Http": {
-          "sha256": "e5fdcfed8f106be3df944054aaa42bc13ae103a3ac8a9f4b08d4f053e3a743f8",
-          "url": "https://static.crates.io/crates/alloy-chains/0.2.37/download"
-        }
-      },
+      "repository": null,
       "targets": [
         {
           "Library": {
@@ -895,18 +876,6 @@
           "std"
         ],
         "deps": [
-          {
-            "id": "alloy-primitives 1.7.2",
-            "target": "alloy_primitives"
-          },
-          {
-            "id": "alloy-rlp 0.3.16",
-            "target": "alloy_rlp"
-          },
-          {
-            "id": "alloy-trie 0.9.5",
-            "target": "alloy_trie"
-          },
           {
             "id": "arbitrary 1.4.2",
             "target": "arbitrary"
@@ -997,14 +966,6 @@
         ],
         "deps": [
           {
-            "id": "alloy-primitives 1.7.2",
-            "target": "alloy_primitives"
-          },
-          {
-            "id": "alloy-rlp 0.3.16",
-            "target": "alloy_rlp"
-          },
-          {
             "id": "arbitrary 1.4.2",
             "target": "arbitrary"
           },
@@ -1042,22 +1003,6 @@
       "common_attrs": {
         "deps": {
           "common": [
-            {
-              "id": "alloy-dyn-abi 1.7.2",
-              "target": "alloy_dyn_abi"
-            },
-            {
-              "id": "alloy-json-abi 1.7.2",
-              "target": "alloy_json_abi"
-            },
-            {
-              "id": "alloy-primitives 1.7.2",
-              "target": "alloy_primitives"
-            },
-            {
-              "id": "alloy-sol-types 1.7.2",
-              "target": "alloy_sol_types"
-            },
             {
               "id": "futures 0.3.34",
               "target": "futures"
@@ -1115,56 +1060,24 @@
       ],
       "version": "2.4.2"
     },
-    "alloy-core 1.7.2": {
+    "alloy-core 1.7.3": {
       "common_attrs": {
         "crate_features": [
           "default",
           "dyn-abi",
           "json",
           "json-abi",
+          "map",
           "rlp",
           "serde",
           "sol-types",
           "std"
         ],
-        "deps": [
-          {
-            "id": "alloy-dyn-abi 1.7.2",
-            "target": "alloy_dyn_abi"
-          },
-          {
-            "id": "alloy-json-abi 1.7.2",
-            "target": "alloy_json_abi"
-          },
-          {
-            "id": "alloy-primitives 1.7.2",
-            "target": "alloy_primitives"
-          },
-          {
-            "id": "alloy-rlp 0.3.16",
-            "target": "alloy_rlp"
-          },
-          {
-            "id": "alloy-sol-types 1.7.2",
-            "target": "alloy_sol_types"
-          }
-        ],
         "edition": "2024"
       },
       "library_target_name": "alloy_core",
-      "license": "MIT OR Apache-2.0",
-      "license_ids": [
-        "Apache-2.0",
-        "MIT"
-      ],
       "name": "alloy-core",
-      "package_url": "https://github.com/alloy-rs/core",
-      "repository": {
-        "Http": {
-          "sha256": "fa2d25cf04344ea5eeb47e0cd21c794e646a029959bf5700bd8c05342c0353fe",
-          "url": "https://static.crates.io/crates/alloy-core/1.7.2/download"
-        }
-      },
+      "repository": null,
       "targets": [
         {
           "Library": {
@@ -1173,9 +1086,32 @@
           }
         }
       ],
-      "version": "1.7.2"
+      "version": "1.7.3"
     },
-    "alloy-dyn-abi 1.7.2": {
+    "alloy-core-sol-test 1.7.3": {
+      "common_attrs": {
+        "deps": [
+          {
+            "id": "derive_more 2.1.1",
+            "target": "derive_more"
+          }
+        ],
+        "edition": "2024"
+      },
+      "library_target_name": "alloy_core_sol_test",
+      "name": "alloy-core-sol-test",
+      "repository": null,
+      "targets": [
+        {
+          "Library": {
+            "crate_name": "alloy_core_sol_test",
+            "crate_root": "src/lib.rs"
+          }
+        }
+      ],
+      "version": "1.7.3"
+    },
+    "alloy-dyn-abi 1.7.3": {
       "common_attrs": {
         "crate_features": [
           "default",
@@ -1183,22 +1119,6 @@
           "std"
         ],
         "deps": [
-          {
-            "id": "alloy-json-abi 1.7.2",
-            "target": "alloy_json_abi"
-          },
-          {
-            "id": "alloy-primitives 1.7.2",
-            "target": "alloy_primitives"
-          },
-          {
-            "id": "alloy-sol-type-parser 1.7.2",
-            "target": "alloy_sol_type_parser"
-          },
-          {
-            "id": "alloy-sol-types 1.7.2",
-            "target": "alloy_sol_types"
-          },
           {
             "id": "derive_more 2.1.1",
             "target": "derive_more"
@@ -1220,22 +1140,25 @@
             "target": "winnow"
           }
         ],
+        "deps_dev": [
+          {
+            "id": "criterion 0.7.0",
+            "target": "criterion"
+          },
+          {
+            "id": "ethabi 18.0.0",
+            "target": "ethabi"
+          },
+          {
+            "id": "rand 0.9.4",
+            "target": "rand"
+          }
+        ],
         "edition": "2024"
       },
       "library_target_name": "alloy_dyn_abi",
-      "license": "MIT OR Apache-2.0",
-      "license_ids": [
-        "Apache-2.0",
-        "MIT"
-      ],
       "name": "alloy-dyn-abi",
-      "package_url": "https://github.com/alloy-rs/core",
-      "repository": {
-        "Http": {
-          "sha256": "201b9e973fe90b2effd9ab356d4f2a46ab56046ba9d46f163367553e72c045b0",
-          "url": "https://static.crates.io/crates/alloy-dyn-abi/1.7.2/download"
-        }
-      },
+      "repository": null,
       "targets": [
         {
           "Library": {
@@ -1244,24 +1167,17 @@
           }
         }
       ],
-      "version": "1.7.2"
+      "version": "1.7.3"
     },
     "alloy-eip2124 0.2.0": {
       "common_attrs": {
         "crate_features": [
           "arbitrary",
+          "default",
           "serde",
           "std"
         ],
         "deps": [
-          {
-            "id": "alloy-primitives 1.7.2",
-            "target": "alloy_primitives"
-          },
-          {
-            "id": "alloy-rlp 0.3.16",
-            "target": "alloy_rlp"
-          },
           {
             "id": "arbitrary 1.4.2",
             "target": "arbitrary"
@@ -1283,22 +1199,11 @@
             "target": "thiserror"
           }
         ],
-        "edition": "2021"
+        "edition": "2024"
       },
       "library_target_name": "alloy_eip2124",
-      "license": "MIT OR Apache-2.0",
-      "license_ids": [
-        "Apache-2.0",
-        "MIT"
-      ],
       "name": "alloy-eip2124",
-      "package_url": "https://github.com/alloy-rs/eips",
-      "repository": {
-        "Http": {
-          "sha256": "741bdd7499908b3aa0b159bba11e71c8cddd009a2c2eb7a06e825f1ec87900a5",
-          "url": "https://static.crates.io/crates/alloy-eip2124/0.2.0/download"
-        }
-      },
+      "repository": null,
       "targets": [
         {
           "Library": {
@@ -1309,22 +1214,15 @@
       ],
       "version": "0.2.0"
     },
-    "alloy-eip2930 0.2.3": {
+    "alloy-eip2930 0.2.4": {
       "common_attrs": {
         "crate_features": [
           "arbitrary",
+          "default",
           "serde",
           "std"
         ],
         "deps": [
-          {
-            "id": "alloy-primitives 1.7.2",
-            "target": "alloy_primitives"
-          },
-          {
-            "id": "alloy-rlp 0.3.16",
-            "target": "alloy_rlp"
-          },
           {
             "id": "arbitrary 1.4.2",
             "target": "arbitrary"
@@ -1338,22 +1236,17 @@
             "target": "serde"
           }
         ],
+        "deps_dev": [
+          {
+            "id": "serde_json 1.0.151",
+            "target": "serde_json"
+          }
+        ],
         "edition": "2024"
       },
       "library_target_name": "alloy_eip2930",
-      "license": "MIT OR Apache-2.0",
-      "license_ids": [
-        "Apache-2.0",
-        "MIT"
-      ],
       "name": "alloy-eip2930",
-      "package_url": "https://github.com/alloy-rs/eips",
-      "repository": {
-        "Http": {
-          "sha256": "9441120fa82df73e8959ae0e4ab8ade03de2aaae61be313fbf5746277847ce25",
-          "url": "https://static.crates.io/crates/alloy-eip2930/0.2.3/download"
-        }
-      },
+      "repository": null,
       "targets": [
         {
           "Library": {
@@ -1362,15 +1255,11 @@
           }
         }
       ],
-      "version": "0.2.3"
+      "version": "0.2.4"
     },
     "alloy-eip5792 2.4.2": {
       "common_attrs": {
         "deps": [
-          {
-            "id": "alloy-primitives 1.7.2",
-            "target": "alloy_primitives"
-          },
           {
             "id": "serde 1.0.229",
             "target": "serde"
@@ -1398,10 +1287,6 @@
     "alloy-eip7547 2.4.2": {
       "common_attrs": {
         "deps": [
-          {
-            "id": "alloy-primitives 1.7.2",
-            "target": "alloy_primitives"
-          },
           {
             "id": "serde 1.0.229",
             "target": "serde"
@@ -1432,6 +1317,7 @@
       "common_attrs": {
         "crate_features": [
           "arbitrary",
+          "default",
           "k256",
           "serde",
           "serde-bincode-compat",
@@ -1439,14 +1325,6 @@
           "std"
         ],
         "deps": [
-          {
-            "id": "alloy-primitives 1.7.2",
-            "target": "alloy_primitives"
-          },
-          {
-            "id": "alloy-rlp 0.3.16",
-            "target": "alloy_rlp"
-          },
           {
             "id": "arbitrary 1.4.2",
             "target": "arbitrary"
@@ -1472,22 +1350,21 @@
             "target": "thiserror"
           }
         ],
+        "deps_dev": [
+          {
+            "id": "bincode 1.3.3",
+            "target": "bincode"
+          },
+          {
+            "id": "serde_json 1.0.151",
+            "target": "serde_json"
+          }
+        ],
         "edition": "2024"
       },
       "library_target_name": "alloy_eip7702",
-      "license": "MIT OR Apache-2.0",
-      "license_ids": [
-        "Apache-2.0",
-        "MIT"
-      ],
       "name": "alloy-eip7702",
-      "package_url": "https://github.com/alloy-rs/eips",
-      "repository": {
-        "Http": {
-          "sha256": "2919c5a56a1007492da313e7a3b6d45ef5edc5d33416fdec63c0d7a2702a0d20",
-          "url": "https://static.crates.io/crates/alloy-eip7702/0.6.3/download"
-        }
-      },
+      "repository": null,
       "targets": [
         {
           "Library": {
@@ -1502,19 +1379,12 @@
       "common_attrs": {
         "crate_features": [
           "arbitrary",
+          "default",
           "rlp",
           "serde",
           "std"
         ],
         "deps": [
-          {
-            "id": "alloy-primitives 1.7.2",
-            "target": "alloy_primitives"
-          },
-          {
-            "id": "alloy-rlp 0.3.16",
-            "target": "alloy_rlp"
-          },
           {
             "id": "arbitrary 1.4.2",
             "target": "arbitrary"
@@ -1532,22 +1402,17 @@
             "target": "thiserror"
           }
         ],
+        "deps_dev": [
+          {
+            "id": "serde_json 1.0.151",
+            "target": "serde_json"
+          }
+        ],
         "edition": "2024"
       },
       "library_target_name": "alloy_eip7928",
-      "license": "MIT OR Apache-2.0",
-      "license_ids": [
-        "Apache-2.0",
-        "MIT"
-      ],
       "name": "alloy-eip7928",
-      "package_url": "https://github.com/alloy-rs/eips",
-      "repository": {
-        "Http": {
-          "sha256": "1cb19c9d53b507960f649e5689f7098e556696023fe1b57b67f2181ed54bc5b7",
-          "url": "https://static.crates.io/crates/alloy-eip7928/0.4.10/download"
-        }
-      },
+      "repository": null,
       "targets": [
         {
           "Library": {
@@ -1557,6 +1422,43 @@
         }
       ],
       "version": "0.4.10"
+    },
+    "alloy-eip8141 0.1.0": {
+      "common_attrs": {
+        "crate_features": [
+          "default",
+          "std"
+        ],
+        "deps": [
+          {
+            "id": "thiserror 2.0.20",
+            "target": "thiserror"
+          }
+        ],
+        "deps_dev": [
+          {
+            "id": "bincode 1.3.3",
+            "target": "bincode"
+          },
+          {
+            "id": "serde_json 1.0.151",
+            "target": "serde_json"
+          }
+        ],
+        "edition": "2024"
+      },
+      "library_target_name": "alloy_eip8141",
+      "name": "alloy-eip8141",
+      "repository": null,
+      "targets": [
+        {
+          "Library": {
+            "crate_name": "alloy_eip8141",
+            "crate_root": "src/lib.rs"
+          }
+        }
+      ],
+      "version": "0.1.0"
     },
     "alloy-eips 2.4.2": {
       "common_attrs": {
@@ -1573,30 +1475,6 @@
           "std"
         ],
         "deps": [
-          {
-            "id": "alloy-eip2124 0.2.0",
-            "target": "alloy_eip2124"
-          },
-          {
-            "id": "alloy-eip2930 0.2.3",
-            "target": "alloy_eip2930"
-          },
-          {
-            "id": "alloy-eip7702 0.6.3",
-            "target": "alloy_eip7702"
-          },
-          {
-            "id": "alloy-eip7928 0.4.10",
-            "target": "alloy_eip7928"
-          },
-          {
-            "id": "alloy-primitives 1.7.2",
-            "target": "alloy_primitives"
-          },
-          {
-            "id": "alloy-rlp 0.3.16",
-            "target": "alloy_rlp"
-          },
           {
             "id": "arbitrary 1.4.2",
             "target": "arbitrary"
@@ -1667,12 +1545,6 @@
     },
     "alloy-ens 2.4.2": {
       "common_attrs": {
-        "deps": [
-          {
-            "id": "alloy-primitives 1.7.2",
-            "target": "alloy_primitives"
-          }
-        ],
         "deps_dev": [
           {
             "id": "serde_json 1.0.151",
@@ -1709,18 +1581,6 @@
           "std"
         ],
         "deps": [
-          {
-            "id": "alloy-hardforks 0.4.8",
-            "target": "alloy_hardforks"
-          },
-          {
-            "id": "alloy-primitives 1.7.2",
-            "target": "alloy_primitives"
-          },
-          {
-            "id": "alloy-sol-types 1.7.2",
-            "target": "alloy_sol_types"
-          },
           {
             "id": "derive_more 2.1.1",
             "target": "derive_more"
@@ -1778,14 +1638,6 @@
         ],
         "deps": [
           {
-            "id": "alloy-primitives 1.7.2",
-            "target": "alloy_primitives"
-          },
-          {
-            "id": "alloy-trie 0.9.5",
-            "target": "alloy_trie"
-          },
-          {
             "id": "serde 1.0.229",
             "target": "serde"
           },
@@ -1823,23 +1675,16 @@
       "common_attrs": {
         "deps": [
           {
-            "id": "alloy-chains 0.2.37",
-            "target": "alloy_chains"
-          },
-          {
-            "id": "alloy-eip2124 0.2.0",
-            "target": "alloy_eip2124"
-          },
-          {
-            "id": "alloy-primitives 1.7.2",
-            "target": "alloy_primitives"
-          },
-          {
             "id": "dyn-clone 1.0.20",
             "target": "dyn_clone"
           }
         ],
         "edition": "2024",
+        "extra_deps": [
+          "@@//alloy-chains:alloy_chains",
+          "@@//alloy-core/crates/primitives:alloy_primitives",
+          "@@//alloy-eips/crates/eip2124:alloy_eip2124"
+        ],
         "proc_macro_deps": [
           {
             "id": "auto_impl 1.3.0",
@@ -1878,18 +1723,6 @@
         ],
         "deps": [
           {
-            "id": "alloy-chains 0.2.37",
-            "target": "alloy_chains"
-          },
-          {
-            "id": "alloy-eip2124 0.2.0",
-            "target": "alloy_eip2124"
-          },
-          {
-            "id": "alloy-primitives 1.7.2",
-            "target": "alloy_primitives"
-          },
-          {
             "id": "dyn-clone 1.0.20",
             "target": "dyn_clone"
           },
@@ -1907,19 +1740,8 @@
         ]
       },
       "library_target_name": "alloy_hardforks",
-      "license": "MIT OR Apache-2.0",
-      "license_ids": [
-        "Apache-2.0",
-        "MIT"
-      ],
       "name": "alloy-hardforks",
-      "package_url": "https://github.com/alloy-rs/hardforks",
-      "repository": {
-        "Http": {
-          "sha256": "865371fb677c005f7cb0ea9c2847a1ba4fdb042caf6428b1769fee20368bbfc7",
-          "url": "https://static.crates.io/crates/alloy-hardforks/0.4.8/download"
-        }
-      },
+      "repository": null,
       "targets": [
         {
           "Library": {
@@ -1930,7 +1752,7 @@
       ],
       "version": "0.4.8"
     },
-    "alloy-json-abi 1.7.2": {
+    "alloy-json-abi 1.7.3": {
       "common_attrs": {
         "crate_features": [
           "default",
@@ -1938,14 +1760,6 @@
           "std"
         ],
         "deps": [
-          {
-            "id": "alloy-primitives 1.7.2",
-            "target": "alloy_primitives"
-          },
-          {
-            "id": "alloy-sol-type-parser 1.7.2",
-            "target": "alloy_sol_type_parser"
-          },
           {
             "id": "serde 1.0.229",
             "target": "serde"
@@ -1955,22 +1769,25 @@
             "target": "serde_json"
           }
         ],
+        "deps_dev": [
+          {
+            "id": "criterion 0.7.0",
+            "target": "criterion"
+          },
+          {
+            "id": "ethabi 18.0.0",
+            "target": "ethabi"
+          },
+          {
+            "id": "pretty_assertions 1.4.1",
+            "target": "pretty_assertions"
+          }
+        ],
         "edition": "2024"
       },
       "library_target_name": "alloy_json_abi",
-      "license": "MIT OR Apache-2.0",
-      "license_ids": [
-        "Apache-2.0",
-        "MIT"
-      ],
       "name": "alloy-json-abi",
-      "package_url": "https://github.com/alloy-rs/core",
-      "repository": {
-        "Http": {
-          "sha256": "1dba4e59c3581a39e03e0b0b4a46ee9c41315b5d843b1e903271952b32bedb7c",
-          "url": "https://static.crates.io/crates/alloy-json-abi/1.7.2/download"
-        }
-      },
+      "repository": null,
       "targets": [
         {
           "Library": {
@@ -1979,19 +1796,11 @@
           }
         }
       ],
-      "version": "1.7.2"
+      "version": "1.7.3"
     },
     "alloy-json-rpc 2.4.2": {
       "common_attrs": {
         "deps": [
-          {
-            "id": "alloy-primitives 1.7.2",
-            "target": "alloy_primitives"
-          },
-          {
-            "id": "alloy-sol-types 1.7.2",
-            "target": "alloy_sol_types"
-          },
           {
             "id": "http 1.5.0",
             "target": "http"
@@ -2031,14 +1840,6 @@
     "alloy-network 2.4.2": {
       "common_attrs": {
         "deps": [
-          {
-            "id": "alloy-primitives 1.7.2",
-            "target": "alloy_primitives"
-          },
-          {
-            "id": "alloy-sol-types 1.7.2",
-            "target": "alloy_sol_types"
-          },
           {
             "id": "derive_more 2.1.1",
             "target": "derive_more"
@@ -2094,10 +1895,6 @@
         ],
         "deps": [
           {
-            "id": "alloy-primitives 1.7.2",
-            "target": "alloy_primitives"
-          },
-          {
             "id": "serde 1.0.229",
             "target": "serde"
           }
@@ -2124,10 +1921,6 @@
             {
               "id": "alloy-hardforks 0.2.13",
               "target": "alloy_hardforks"
-            },
-            {
-              "id": "alloy-primitives 1.7.2",
-              "target": "alloy_primitives"
             },
             {
               "id": "k256 0.13.4",
@@ -2192,7 +1985,7 @@
       ],
       "version": "2.4.2"
     },
-    "alloy-primitives 1.7.2": {
+    "alloy-primitives 1.7.3": {
       "common_attrs": {
         "crate_features": [
           "arbitrary",
@@ -2212,10 +2005,6 @@
           "std"
         ],
         "deps": [
-          {
-            "id": "alloy-rlp 0.3.16",
-            "target": "alloy_rlp"
-          },
           {
             "id": "arbitrary 1.4.2",
             "target": "arbitrary"
@@ -2298,6 +2087,24 @@
             "target": "sha3"
           }
         ],
+        "deps_dev": [
+          {
+            "id": "bcs 0.2.1",
+            "target": "bcs"
+          },
+          {
+            "id": "bincode 1.3.3",
+            "target": "bincode"
+          },
+          {
+            "id": "criterion 0.7.0",
+            "target": "criterion"
+          },
+          {
+            "id": "serde_json 1.0.151",
+            "target": "serde_json"
+          }
+        ],
         "edition": "2024",
         "proc_macro_deps": [
           {
@@ -2311,19 +2118,8 @@
         ]
       },
       "library_target_name": "alloy_primitives",
-      "license": "MIT OR Apache-2.0",
-      "license_ids": [
-        "Apache-2.0",
-        "MIT"
-      ],
       "name": "alloy-primitives",
-      "package_url": "https://github.com/alloy-rs/core",
-      "repository": {
-        "Http": {
-          "sha256": "ce7b00f0cb42c66ec353076ded1dff1fbf818f6e0e26c40c8a8456c04483fca4",
-          "url": "https://static.crates.io/crates/alloy-primitives/1.7.2/download"
-        }
-      },
+      "repository": null,
       "targets": [
         {
           "Library": {
@@ -2332,7 +2128,7 @@
           }
         }
       ],
-      "version": "1.7.2"
+      "version": "1.7.3"
     },
     "alloy-provider 2.4.2": {
       "common_attrs": {
@@ -2352,18 +2148,6 @@
         ],
         "deps": {
           "common": [
-            {
-              "id": "alloy-chains 0.2.37",
-              "target": "alloy_chains"
-            },
-            {
-              "id": "alloy-primitives 1.7.2",
-              "target": "alloy_primitives"
-            },
-            {
-              "id": "alloy-sol-types 1.7.2",
-              "target": "alloy_sol_types"
-            },
             {
               "id": "async-stream 0.3.6",
               "target": "async_stream"
@@ -2442,10 +2226,6 @@
         },
         "deps_dev": [
           {
-            "id": "alloy-rlp 0.3.16",
-            "target": "alloy_rlp"
-          },
-          {
             "id": "ci_info 0.14.15",
             "target": "ci_info"
           },
@@ -2503,10 +2283,6 @@
       "common_attrs": {
         "deps": {
           "common": [
-            {
-              "id": "alloy-primitives 1.7.2",
-              "target": "alloy_primitives"
-            },
             {
               "id": "bimap 0.6.3",
               "target": "bimap"
@@ -2594,28 +2370,22 @@
             "target": "bytes"
           }
         ],
-        "edition": "2021",
-        "proc_macro_deps": [
+        "deps_dev": [
           {
-            "id": "alloy-rlp-derive 0.3.16",
-            "target": "alloy_rlp_derive"
+            "alias": "hex",
+            "id": "const-hex 1.18.1",
+            "target": "const_hex"
+          },
+          {
+            "id": "hex-literal 0.4.1",
+            "target": "hex_literal"
           }
-        ]
+        ],
+        "edition": "2021"
       },
       "library_target_name": "alloy_rlp",
-      "license": "MIT OR Apache-2.0",
-      "license_ids": [
-        "Apache-2.0",
-        "MIT"
-      ],
       "name": "alloy-rlp",
-      "package_url": "https://github.com/alloy-rs/rlp",
-      "repository": {
-        "Http": {
-          "sha256": "24671b1f62edcf0f9b62994c7bf72cd621a04a4b99f5020ece1a647b40e2f103",
-          "url": "https://static.crates.io/crates/alloy-rlp/0.3.16/download"
-        }
-      },
+      "repository": null,
       "targets": [
         {
           "Library": {
@@ -2645,19 +2415,8 @@
         "edition": "2021"
       },
       "library_target_name": "alloy_rlp_derive",
-      "license": "MIT OR Apache-2.0",
-      "license_ids": [
-        "Apache-2.0",
-        "MIT"
-      ],
       "name": "alloy-rlp-derive",
-      "package_url": "https://github.com/alloy-rs/rlp",
-      "repository": {
-        "Http": {
-          "sha256": "9d4311c03125e8a18296504560b9de3d75ecbd0dcda7f71e6cf2a196d57e6fba",
-          "url": "https://static.crates.io/crates/alloy-rlp-derive/0.3.16/download"
-        }
-      },
+      "repository": null,
       "targets": [
         {
           "ProcMacro": {
@@ -2681,10 +2440,6 @@
         ],
         "deps": {
           "common": [
-            {
-              "id": "alloy-primitives 1.7.2",
-              "target": "alloy_primitives"
-            },
             {
               "id": "futures 0.3.34",
               "target": "futures"
@@ -2777,10 +2532,6 @@
         ],
         "deps": [
           {
-            "id": "alloy-primitives 1.7.2",
-            "target": "alloy_primitives"
-          },
-          {
             "id": "serde 1.0.229",
             "target": "serde"
           }
@@ -2813,10 +2564,6 @@
     "alloy-rpc-types-admin 2.4.2": {
       "common_attrs": {
         "deps": [
-          {
-            "id": "alloy-primitives 1.7.2",
-            "target": "alloy_primitives"
-          },
           {
             "id": "serde 1.0.229",
             "target": "serde"
@@ -2851,10 +2598,6 @@
       "common_attrs": {
         "deps": [
           {
-            "id": "alloy-primitives 1.7.2",
-            "target": "alloy_primitives"
-          },
-          {
             "id": "serde 1.0.229",
             "target": "serde"
           }
@@ -2888,10 +2631,6 @@
       "common_attrs": {
         "deps": [
           {
-            "id": "alloy-primitives 1.7.2",
-            "target": "alloy_primitives"
-          },
-          {
             "id": "serde 1.0.229",
             "target": "serde"
           },
@@ -2921,10 +2660,6 @@
           "ssz"
         ],
         "deps": [
-          {
-            "id": "alloy-primitives 1.7.2",
-            "target": "alloy_primitives"
-          },
           {
             "id": "derive_more 2.1.1",
             "target": "derive_more"
@@ -2989,14 +2724,6 @@
       "common_attrs": {
         "deps": [
           {
-            "id": "alloy-primitives 1.7.2",
-            "target": "alloy_primitives"
-          },
-          {
-            "id": "alloy-rlp 0.3.16",
-            "target": "alloy_rlp"
-          },
-          {
             "id": "derive_more 2.1.1",
             "target": "derive_more"
           },
@@ -3042,14 +2769,6 @@
           "std"
         ],
         "deps": [
-          {
-            "id": "alloy-primitives 1.7.2",
-            "target": "alloy_primitives"
-          },
-          {
-            "id": "alloy-rlp 0.3.16",
-            "target": "alloy_rlp"
-          },
           {
             "id": "derive_more 2.1.1",
             "target": "derive_more"
@@ -3133,18 +2852,6 @@
         ],
         "deps": [
           {
-            "id": "alloy-primitives 1.7.2",
-            "target": "alloy_primitives"
-          },
-          {
-            "id": "alloy-rlp 0.3.16",
-            "target": "alloy_rlp"
-          },
-          {
-            "id": "alloy-sol-types 1.7.2",
-            "target": "alloy_sol_types"
-          },
-          {
             "id": "arbitrary 1.4.2",
             "target": "arbitrary"
           },
@@ -3206,10 +2913,6 @@
       "common_attrs": {
         "deps": [
           {
-            "id": "alloy-primitives 1.7.2",
-            "target": "alloy_primitives"
-          },
-          {
             "id": "serde 1.0.229",
             "target": "serde"
           },
@@ -3247,14 +2950,6 @@
       "common_attrs": {
         "deps": [
           {
-            "id": "alloy-dyn-abi 1.7.2",
-            "target": "alloy_dyn_abi"
-          },
-          {
-            "id": "alloy-primitives 1.7.2",
-            "target": "alloy_primitives"
-          },
-          {
             "id": "serde 1.0.229",
             "target": "serde"
           },
@@ -3281,10 +2976,6 @@
     "alloy-rpc-types-trace 2.4.2": {
       "common_attrs": {
         "deps": [
-          {
-            "id": "alloy-primitives 1.7.2",
-            "target": "alloy_primitives"
-          },
           {
             "id": "serde 1.0.229",
             "target": "serde"
@@ -3323,10 +3014,6 @@
       "common_attrs": {
         "deps": [
           {
-            "id": "alloy-primitives 1.7.2",
-            "target": "alloy_primitives"
-          },
-          {
             "id": "serde 1.0.229",
             "target": "serde"
           }
@@ -3364,10 +3051,6 @@
           "std"
         ],
         "deps": [
-          {
-            "id": "alloy-primitives 1.7.2",
-            "target": "alloy_primitives"
-          },
           {
             "id": "arbitrary 1.4.2",
             "target": "arbitrary"
@@ -3409,10 +3092,6 @@
     "alloy-signer 2.4.2": {
       "common_attrs": {
         "deps": [
-          {
-            "id": "alloy-primitives 1.7.2",
-            "target": "alloy_primitives"
-          },
           {
             "id": "either 1.18.0",
             "target": "either"
@@ -3473,10 +3152,6 @@
       "common_attrs": {
         "deps": [
           {
-            "id": "alloy-primitives 1.7.2",
-            "target": "alloy_primitives"
-          },
-          {
             "id": "aws-config 1.12.0",
             "target": "aws_config"
           },
@@ -3532,10 +3207,6 @@
       "common_attrs": {
         "deps": [
           {
-            "id": "alloy-primitives 1.7.2",
-            "target": "alloy_primitives"
-          },
-          {
             "id": "gcloud-sdk 0.29.0",
             "target": "gcloud_sdk"
           },
@@ -3587,10 +3258,6 @@
       "common_attrs": {
         "deps": [
           {
-            "id": "alloy-primitives 1.7.2",
-            "target": "alloy_primitives"
-          },
-          {
             "id": "coins-ledger 0.13.2",
             "target": "coins_ledger"
           },
@@ -3612,10 +3279,6 @@
           }
         ],
         "deps_dev": [
-          {
-            "id": "alloy-rlp 0.3.16",
-            "target": "alloy_rlp"
-          },
           {
             "id": "tokio 1.53.1",
             "target": "tokio"
@@ -3654,10 +3317,6 @@
         ],
         "deps": [
           {
-            "id": "alloy-primitives 1.7.2",
-            "target": "alloy_primitives"
-          },
-          {
             "id": "coins-bip32 0.12.0",
             "target": "coins_bip32"
           },
@@ -3683,14 +3342,6 @@
           }
         ],
         "deps_dev": [
-          {
-            "id": "alloy-dyn-abi 1.7.2",
-            "target": "alloy_dyn_abi"
-          },
-          {
-            "id": "alloy-sol-types 1.7.2",
-            "target": "alloy_sol_types"
-          },
           {
             "id": "serde 1.0.229",
             "target": "serde"
@@ -3737,10 +3388,6 @@
       "common_attrs": {
         "deps": {
           "common": [
-            {
-              "id": "alloy-primitives 1.7.2",
-              "target": "alloy_primitives"
-            },
             {
               "id": "serde 1.0.229",
               "target": "serde"
@@ -3792,10 +3439,6 @@
       "common_attrs": {
         "deps": [
           {
-            "id": "alloy-primitives 1.7.2",
-            "target": "alloy_primitives"
-          },
-          {
             "id": "semver 1.0.28",
             "target": "semver"
           },
@@ -3843,10 +3486,6 @@
       "common_attrs": {
         "deps": [
           {
-            "id": "alloy-primitives 1.7.2",
-            "target": "alloy_primitives"
-          },
-          {
             "id": "thiserror 2.0.20",
             "target": "thiserror"
           },
@@ -3890,20 +3529,12 @@
       ],
       "version": "2.4.2"
     },
-    "alloy-sol-macro 1.7.2": {
+    "alloy-sol-macro 1.7.3": {
       "common_attrs": {
         "crate_features": [
           "json"
         ],
         "deps": [
-          {
-            "id": "alloy-sol-macro-expander 1.7.2",
-            "target": "alloy_sol_macro_expander"
-          },
-          {
-            "id": "alloy-sol-macro-input 1.7.2",
-            "target": "alloy_sol_macro_input"
-          },
           {
             "id": "proc-macro-error3 3.0.1",
             "target": "proc_macro_error3"
@@ -3924,19 +3555,8 @@
         "edition": "2024"
       },
       "library_target_name": "alloy_sol_macro",
-      "license": "MIT OR Apache-2.0",
-      "license_ids": [
-        "Apache-2.0",
-        "MIT"
-      ],
       "name": "alloy-sol-macro",
-      "package_url": "https://github.com/alloy-rs/core",
-      "repository": {
-        "Http": {
-          "sha256": "c64558980fb038cd34b4285ec2b36a2a8bd8d4ddd13b3f6e42d97cb5ee29938e",
-          "url": "https://static.crates.io/crates/alloy-sol-macro/1.7.2/download"
-        }
-      },
+      "repository": null,
       "targets": [
         {
           "ProcMacro": {
@@ -3945,22 +3565,14 @@
           }
         }
       ],
-      "version": "1.7.2"
+      "version": "1.7.3"
     },
-    "alloy-sol-macro-expander 1.7.2": {
+    "alloy-sol-macro-expander 1.7.3": {
       "common_attrs": {
         "crate_features": [
           "json"
         ],
         "deps": [
-          {
-            "id": "alloy-json-abi 1.7.2",
-            "target": "alloy_json_abi"
-          },
-          {
-            "id": "alloy-sol-macro-input 1.7.2",
-            "target": "alloy_sol_macro_input"
-          },
           {
             "alias": "hex",
             "id": "const-hex 1.18.1",
@@ -3993,28 +3605,13 @@
           {
             "id": "syn 2.0.118",
             "target": "syn"
-          },
-          {
-            "id": "syn-solidity 1.7.2",
-            "target": "syn_solidity"
           }
         ],
         "edition": "2024"
       },
       "library_target_name": "alloy_sol_macro_expander",
-      "license": "MIT OR Apache-2.0",
-      "license_ids": [
-        "Apache-2.0",
-        "MIT"
-      ],
       "name": "alloy-sol-macro-expander",
-      "package_url": "https://github.com/alloy-rs/core",
-      "repository": {
-        "Http": {
-          "sha256": "1ffb0e793abdbaea9d01259493c8272c3af295d03389e70a2acdf53b57ad1edf",
-          "url": "https://static.crates.io/crates/alloy-sol-macro-expander/1.7.2/download"
-        }
-      },
+      "repository": null,
       "targets": [
         {
           "Library": {
@@ -4023,18 +3620,14 @@
           }
         }
       ],
-      "version": "1.7.2"
+      "version": "1.7.3"
     },
-    "alloy-sol-macro-input 1.7.2": {
+    "alloy-sol-macro-input 1.7.3": {
       "common_attrs": {
         "crate_features": [
           "json"
         ],
         "deps": [
-          {
-            "id": "alloy-json-abi 1.7.2",
-            "target": "alloy_json_abi"
-          },
           {
             "alias": "hex",
             "id": "const-hex 1.18.1",
@@ -4067,28 +3660,13 @@
           {
             "id": "syn 2.0.118",
             "target": "syn"
-          },
-          {
-            "id": "syn-solidity 1.7.2",
-            "target": "syn_solidity"
           }
         ],
         "edition": "2024"
       },
       "library_target_name": "alloy_sol_macro_input",
-      "license": "MIT OR Apache-2.0",
-      "license_ids": [
-        "Apache-2.0",
-        "MIT"
-      ],
       "name": "alloy-sol-macro-input",
-      "package_url": "https://github.com/alloy-rs/core",
-      "repository": {
-        "Http": {
-          "sha256": "32c2c0ec8425d9663dac939ba75750f17d2933d2f020814b4f8fde4a60da6d26",
-          "url": "https://static.crates.io/crates/alloy-sol-macro-input/1.7.2/download"
-        }
-      },
+      "repository": null,
       "targets": [
         {
           "Library": {
@@ -4097,11 +3675,12 @@
           }
         }
       ],
-      "version": "1.7.2"
+      "version": "1.7.3"
     },
-    "alloy-sol-type-parser 1.7.2": {
+    "alloy-sol-type-parser 1.7.3": {
       "common_attrs": {
         "crate_features": [
+          "default",
           "eip712",
           "serde",
           "std"
@@ -4116,22 +3695,17 @@
             "target": "winnow"
           }
         ],
+        "deps_dev": [
+          {
+            "id": "serde_json 1.0.151",
+            "target": "serde_json"
+          }
+        ],
         "edition": "2024"
       },
       "library_target_name": "alloy_sol_type_parser",
-      "license": "MIT OR Apache-2.0",
-      "license_ids": [
-        "Apache-2.0",
-        "MIT"
-      ],
       "name": "alloy-sol-type-parser",
-      "package_url": "https://github.com/alloy-rs/core",
-      "repository": {
-        "Http": {
-          "sha256": "96b37db6a7ad8170596345f864522f789cc7af093f516d6cdf34bbdcfba8adab",
-          "url": "https://static.crates.io/crates/alloy-sol-type-parser/1.7.2/download"
-        }
-      },
+      "repository": null,
       "targets": [
         {
           "Library": {
@@ -4140,9 +3714,9 @@
           }
         }
       ],
-      "version": "1.7.2"
+      "version": "1.7.3"
     },
-    "alloy-sol-types 1.7.2": {
+    "alloy-sol-types 1.7.3": {
       "common_attrs": {
         "crate_features": [
           "arbitrary",
@@ -4153,40 +3727,47 @@
         ],
         "deps": [
           {
-            "id": "alloy-json-abi 1.7.2",
-            "target": "alloy_json_abi"
-          },
-          {
-            "id": "alloy-primitives 1.7.2",
-            "target": "alloy_primitives"
-          },
-          {
             "id": "serde 1.0.229",
             "target": "serde"
           }
         ],
-        "edition": "2024",
-        "proc_macro_deps": [
+        "deps_dev": [
           {
-            "id": "alloy-sol-macro 1.7.2",
-            "target": "alloy_sol_macro"
+            "id": "derive_more 2.1.1",
+            "target": "derive_more"
+          },
+          {
+            "id": "pretty_assertions 1.4.1",
+            "target": "pretty_assertions"
+          },
+          {
+            "id": "proptest 1.11.0",
+            "target": "proptest"
+          },
+          {
+            "id": "serde_json 1.0.151",
+            "target": "serde_json"
+          },
+          {
+            "id": "trybuild 1.0.121",
+            "target": "trybuild"
+          }
+        ],
+        "edition": "2024",
+        "proc_macro_deps_dev": [
+          {
+            "id": "paste 1.0.15",
+            "target": "paste"
+          },
+          {
+            "id": "rustversion 1.0.22",
+            "target": "rustversion"
           }
         ]
       },
       "library_target_name": "alloy_sol_types",
-      "license": "MIT OR Apache-2.0",
-      "license_ids": [
-        "Apache-2.0",
-        "MIT"
-      ],
       "name": "alloy-sol-types",
-      "package_url": "https://github.com/alloy-rs/core",
-      "repository": {
-        "Http": {
-          "sha256": "1f40e33a0f588dde548c3b6767a71e61b593421a8c1b253b9cf1441dc7cf7ab5",
-          "url": "https://static.crates.io/crates/alloy-sol-types/1.7.2/download"
-        }
-      },
+      "repository": null,
       "targets": [
         {
           "Library": {
@@ -4195,7 +3776,7 @@
           }
         }
       ],
-      "version": "1.7.2"
+      "version": "1.7.3"
     },
     "alloy-transport 2.4.2": {
       "common_attrs": {
@@ -4261,12 +3842,6 @@
             ]
           }
         },
-        "deps_dev": [
-          {
-            "id": "alloy-primitives 1.7.2",
-            "target": "alloy_primitives"
-          }
-        ],
         "edition": "2021",
         "proc_macro_deps": [
           {
@@ -4518,19 +4093,12 @@
       "common_attrs": {
         "crate_features": [
           "arbitrary",
+          "default",
           "ethereum",
           "serde",
           "std"
         ],
         "deps": [
-          {
-            "id": "alloy-primitives 1.7.2",
-            "target": "alloy_primitives"
-          },
-          {
-            "id": "alloy-rlp 0.3.16",
-            "target": "alloy_rlp"
-          },
           {
             "id": "arbitrary 1.4.2",
             "target": "arbitrary"
@@ -4564,6 +4132,24 @@
             "target": "tracing"
           }
         ],
+        "deps_dev": [
+          {
+            "id": "codspeed-criterion-compat 4.5.0",
+            "target": "codspeed_criterion_compat"
+          },
+          {
+            "id": "hash-db 0.15.2",
+            "target": "hash_db"
+          },
+          {
+            "id": "plain_hasher 0.2.3",
+            "target": "plain_hasher"
+          },
+          {
+            "id": "triehash 0.8.4",
+            "target": "triehash"
+          }
+        ],
         "edition": "2024",
         "proc_macro_deps": [
           {
@@ -4577,20 +4163,8 @@
         ]
       },
       "library_target_name": "alloy_trie",
-      "license": "MIT OR Apache-2.0",
-      "license_file": "LICENSE-APACHE",
-      "license_ids": [
-        "Apache-2.0",
-        "MIT"
-      ],
       "name": "alloy-trie",
-      "package_url": "https://github.com/alloy-rs/trie",
-      "repository": {
-        "Http": {
-          "sha256": "3f14b5d9b2c2173980202c6ff470d96e7c5e202c65a9f67884ad565226df7fbb",
-          "url": "https://static.crates.io/crates/alloy-trie/0.9.5/download"
-        }
-      },
+      "repository": null,
       "targets": [
         {
           "Library": {
@@ -4880,7 +4454,7 @@
           "selects": {
             "cfg(windows)": [
               {
-                "id": "windows-sys 0.61.2",
+                "id": "windows-sys 0.60.2",
                 "target": "windows_sys"
               }
             ]
@@ -4980,7 +4554,7 @@
                 "target": "once_cell_polyfill"
               },
               {
-                "id": "windows-sys 0.61.2",
+                "id": "windows-sys 0.60.2",
                 "target": "windows_sys"
               }
             ]
@@ -9182,6 +8756,40 @@
       ],
       "version": "1.8.3"
     },
+    "bcs 0.2.1": {
+      "common_attrs": {
+        "deps": [
+          {
+            "id": "serde_core 1.0.229",
+            "target": "serde_core"
+          }
+        ],
+        "edition": "2018"
+      },
+      "library_target_name": "bcs",
+      "license": "Apache-2.0",
+      "license_file": "LICENSE",
+      "license_ids": [
+        "Apache-2.0"
+      ],
+      "name": "bcs",
+      "package_url": "https://github.com/zefchain/bcs",
+      "repository": {
+        "Http": {
+          "sha256": "350f2b5fa7b76b498158ec1079dc0ea842c5b622b6b3f675005fddd889f2c9a7",
+          "url": "https://static.crates.io/crates/bcs/0.2.1/download"
+        }
+      },
+      "targets": [
+        {
+          "Library": {
+            "crate_name": "bcs",
+            "crate_root": "src/lib.rs"
+          }
+        }
+      ],
+      "version": "0.2.1"
+    },
     "bech32 0.9.1": {
       "common_attrs": {
         "crate_features": [
@@ -10606,7 +10214,7 @@
         ],
         "deps": [
           {
-            "id": "darling 0.23.0",
+            "id": "darling 0.21.3",
             "target": "darling"
           },
           {
@@ -14268,6 +13876,103 @@
       ],
       "version": "1.5.0"
     },
+    "criterion 0.7.0": {
+      "common_attrs": {
+        "crate_features": [
+          "cargo_bench_support",
+          "default",
+          "plotters",
+          "rayon"
+        ],
+        "deps": [
+          {
+            "id": "anes 0.1.6",
+            "target": "anes"
+          },
+          {
+            "id": "cast 0.3.0",
+            "target": "cast"
+          },
+          {
+            "id": "ciborium 0.2.2",
+            "target": "ciborium"
+          },
+          {
+            "id": "clap 4.6.6",
+            "target": "clap"
+          },
+          {
+            "id": "criterion-plot 0.6.0",
+            "target": "criterion_plot"
+          },
+          {
+            "id": "itertools 0.13.0",
+            "target": "itertools"
+          },
+          {
+            "id": "num-traits 0.2.19",
+            "target": "num_traits"
+          },
+          {
+            "id": "oorandom 11.1.5",
+            "target": "oorandom"
+          },
+          {
+            "id": "plotters 0.3.7",
+            "target": "plotters"
+          },
+          {
+            "id": "rayon 1.12.0",
+            "target": "rayon"
+          },
+          {
+            "id": "regex 1.12.3",
+            "target": "regex"
+          },
+          {
+            "id": "serde 1.0.229",
+            "target": "serde"
+          },
+          {
+            "id": "serde_json 1.0.151",
+            "target": "serde_json"
+          },
+          {
+            "id": "tinytemplate 1.2.1",
+            "target": "tinytemplate"
+          },
+          {
+            "id": "walkdir 2.5.0",
+            "target": "walkdir"
+          }
+        ],
+        "edition": "2021"
+      },
+      "library_target_name": "criterion",
+      "license": "Apache-2.0 OR MIT",
+      "license_file": "LICENSE-APACHE",
+      "license_ids": [
+        "Apache-2.0",
+        "MIT"
+      ],
+      "name": "criterion",
+      "package_url": "https://github.com/bheisler/criterion.rs",
+      "repository": {
+        "Http": {
+          "sha256": "e1c047a62b0cc3e145fa84415a3191f628e980b194c2755aa12300a4e6cbd928",
+          "url": "https://static.crates.io/crates/criterion/0.7.0/download"
+        }
+      },
+      "targets": [
+        {
+          "Library": {
+            "crate_name": "criterion",
+            "crate_root": "src/lib.rs"
+          }
+        }
+      ],
+      "version": "0.7.0"
+    },
     "criterion 0.8.2": {
       "common_attrs": {
         "crate_features": [
@@ -14417,6 +14122,45 @@
         }
       ],
       "version": "0.5.0"
+    },
+    "criterion-plot 0.6.0": {
+      "common_attrs": {
+        "deps": [
+          {
+            "id": "cast 0.3.0",
+            "target": "cast"
+          },
+          {
+            "id": "itertools 0.13.0",
+            "target": "itertools"
+          }
+        ],
+        "edition": "2021"
+      },
+      "library_target_name": "criterion_plot",
+      "license": "MIT OR Apache-2.0",
+      "license_file": "LICENSE-APACHE",
+      "license_ids": [
+        "Apache-2.0",
+        "MIT"
+      ],
+      "name": "criterion-plot",
+      "package_url": "https://github.com/bheisler/criterion.rs",
+      "repository": {
+        "Http": {
+          "sha256": "9b1bcc0dc7dfae599d84ad0b1a55f80cde8af3725da8313b528da95ef783e338",
+          "url": "https://static.crates.io/crates/criterion-plot/0.6.0/download"
+        }
+      },
+      "targets": [
+        {
+          "Library": {
+            "crate_name": "criterion_plot",
+            "crate_root": "src/lib.rs"
+          }
+        }
+      ],
+      "version": "0.6.0"
     },
     "criterion-plot 0.8.2": {
       "common_attrs": {
@@ -14821,6 +14565,9 @@
       "build_script_attrs": {},
       "common_attrs": {
         "crate_features": [
+          "default",
+          "limit_128",
+          "limit_256",
           "std"
         ],
         "edition": "2021",
@@ -15206,10 +14953,6 @@
       "common_attrs": {
         "deps": [
           {
-            "id": "alloy-primitives 1.7.2",
-            "target": "alloy_primitives"
-          },
-          {
             "id": "serde 1.0.229",
             "target": "serde"
           }
@@ -15220,6 +14963,50 @@
       "repository": null,
       "targets": [],
       "version": "0.1.0"
+    },
+    "darling 0.21.3": {
+      "common_attrs": {
+        "crate_features": [
+          "default",
+          "suggestions"
+        ],
+        "deps": [
+          {
+            "id": "darling_core 0.21.3",
+            "target": "darling_core"
+          }
+        ],
+        "edition": "2021",
+        "proc_macro_deps": [
+          {
+            "id": "darling_macro 0.21.3",
+            "target": "darling_macro"
+          }
+        ]
+      },
+      "library_target_name": "darling",
+      "license": "MIT",
+      "license_file": "LICENSE",
+      "license_ids": [
+        "MIT"
+      ],
+      "name": "darling",
+      "package_url": "https://github.com/TedDriggs/darling",
+      "repository": {
+        "Http": {
+          "sha256": "9cdf337090841a411e2a7f3deb9187445851f91b309c0c0a29e05f74a00a48c0",
+          "url": "https://static.crates.io/crates/darling/0.21.3/download"
+        }
+      },
+      "targets": [
+        {
+          "Library": {
+            "crate_name": "darling",
+            "crate_root": "src/lib.rs"
+          }
+        }
+      ],
+      "version": "0.21.3"
     },
     "darling 0.23.0": {
       "common_attrs": {
@@ -15309,6 +15096,64 @@
         }
       ],
       "version": "0.24.1"
+    },
+    "darling_core 0.21.3": {
+      "common_attrs": {
+        "crate_features": [
+          "strsim",
+          "suggestions"
+        ],
+        "deps": [
+          {
+            "id": "fnv 1.0.7",
+            "target": "fnv"
+          },
+          {
+            "id": "ident_case 1.0.1",
+            "target": "ident_case"
+          },
+          {
+            "id": "proc-macro2 1.0.107",
+            "target": "proc_macro2"
+          },
+          {
+            "id": "quote 1.0.47",
+            "target": "quote"
+          },
+          {
+            "id": "strsim 0.11.1",
+            "target": "strsim"
+          },
+          {
+            "id": "syn 2.0.118",
+            "target": "syn"
+          }
+        ],
+        "edition": "2021"
+      },
+      "library_target_name": "darling_core",
+      "license": "MIT",
+      "license_file": "LICENSE",
+      "license_ids": [
+        "MIT"
+      ],
+      "name": "darling_core",
+      "package_url": "https://github.com/TedDriggs/darling",
+      "repository": {
+        "Http": {
+          "sha256": "1247195ecd7e3c85f83c8d2a366e4210d588e802133e1e355180a9870b517ea4",
+          "url": "https://static.crates.io/crates/darling_core/0.21.3/download"
+        }
+      },
+      "targets": [
+        {
+          "Library": {
+            "crate_name": "darling_core",
+            "crate_root": "src/lib.rs"
+          }
+        }
+      ],
+      "version": "0.21.3"
     },
     "darling_core 0.23.0": {
       "common_attrs": {
@@ -15422,6 +15267,48 @@
         }
       ],
       "version": "0.24.1"
+    },
+    "darling_macro 0.21.3": {
+      "common_attrs": {
+        "deps": [
+          {
+            "id": "darling_core 0.21.3",
+            "target": "darling_core"
+          },
+          {
+            "id": "quote 1.0.47",
+            "target": "quote"
+          },
+          {
+            "id": "syn 2.0.118",
+            "target": "syn"
+          }
+        ],
+        "edition": "2021"
+      },
+      "library_target_name": "darling_macro",
+      "license": "MIT",
+      "license_file": "LICENSE",
+      "license_ids": [
+        "MIT"
+      ],
+      "name": "darling_macro",
+      "package_url": "https://github.com/TedDriggs/darling",
+      "repository": {
+        "Http": {
+          "sha256": "d38308df82d1080de0afee5d069fa14b0326a88c14f15c5ccda35b4a6c414c81",
+          "url": "https://static.crates.io/crates/darling_macro/0.21.3/download"
+        }
+      },
+      "targets": [
+        {
+          "ProcMacro": {
+            "crate_name": "darling_macro",
+            "crate_root": "src/lib.rs"
+          }
+        }
+      ],
+      "version": "0.21.3"
     },
     "darling_macro 0.23.0": {
       "common_attrs": {
@@ -15655,7 +15542,7 @@
             "target": "data_encoding"
           },
           {
-            "id": "syn 2.0.118",
+            "id": "syn 1.0.109",
             "target": "syn"
           }
         ],
@@ -16673,10 +16560,6 @@
             "target": "aes_gcm"
           },
           {
-            "id": "alloy-rlp 0.3.16",
-            "target": "alloy_rlp"
-          },
-          {
             "id": "arrayvec 0.7.8",
             "target": "arrayvec"
           },
@@ -16761,7 +16644,10 @@
             "target": "zeroize"
           }
         ],
-        "edition": "2018"
+        "edition": "2018",
+        "extra_deps": [
+          "@@//alloy-rlp/crates/rlp:alloy_rlp"
+        ]
       },
       "library_target_name": "discv5",
       "license": "Apache-2.0",
@@ -17293,14 +17179,6 @@
       "common_attrs": {
         "deps": [
           {
-            "id": "alloy-primitives 1.7.2",
-            "target": "alloy_primitives"
-          },
-          {
-            "id": "alloy-rlp 0.3.16",
-            "target": "alloy_rlp"
-          },
-          {
             "id": "rayon 1.12.0",
             "target": "rayon"
           },
@@ -17576,10 +17454,6 @@
         ],
         "deps": [
           {
-            "id": "alloy-rlp 0.3.16",
-            "target": "alloy_rlp"
-          },
-          {
             "id": "base64 0.22.1",
             "target": "base64"
           },
@@ -17624,7 +17498,10 @@
             "target": "zeroize"
           }
         ],
-        "edition": "2021"
+        "edition": "2021",
+        "extra_deps": [
+          "@@//alloy-rlp/crates/rlp:alloy_rlp"
+        ]
       },
       "library_target_name": "enr",
       "license": "MIT",
@@ -17901,7 +17778,7 @@
             ],
             "cfg(windows)": [
               {
-                "id": "windows-sys 0.61.2",
+                "id": "windows-sys 0.52.0",
                 "target": "windows_sys"
               }
             ]
@@ -17933,6 +17810,203 @@
         }
       ],
       "version": "0.3.14"
+    },
+    "ethabi 18.0.0": {
+      "common_attrs": {
+        "crate_features": [
+          "default",
+          "full-serde",
+          "once_cell",
+          "regex",
+          "rlp",
+          "serde",
+          "serde_json",
+          "std",
+          "thiserror",
+          "uint"
+        ],
+        "deps": [
+          {
+            "id": "ethereum-types 0.14.1",
+            "target": "ethereum_types"
+          },
+          {
+            "id": "hex 0.4.3",
+            "target": "hex"
+          },
+          {
+            "id": "once_cell 1.21.4",
+            "target": "once_cell"
+          },
+          {
+            "id": "regex 1.12.3",
+            "target": "regex"
+          },
+          {
+            "id": "serde 1.0.229",
+            "target": "serde"
+          },
+          {
+            "id": "serde_json 1.0.151",
+            "target": "serde_json"
+          },
+          {
+            "id": "sha3 0.10.8",
+            "target": "sha3"
+          },
+          {
+            "id": "thiserror 1.0.69",
+            "target": "thiserror"
+          },
+          {
+            "id": "uint 0.9.5",
+            "target": "uint"
+          }
+        ],
+        "edition": "2021"
+      },
+      "library_target_name": "ethabi",
+      "license": "Apache-2.0",
+      "license_ids": [
+        "Apache-2.0"
+      ],
+      "name": "ethabi",
+      "package_url": "https://github.com/rust-ethereum/ethabi",
+      "repository": {
+        "Http": {
+          "sha256": "7413c5f74cc903ea37386a8965a936cbeb334bd270862fdece542c1b2dcbc898",
+          "url": "https://static.crates.io/crates/ethabi/18.0.0/download"
+        }
+      },
+      "targets": [
+        {
+          "Library": {
+            "crate_name": "ethabi",
+            "crate_root": "src/lib.rs"
+          }
+        }
+      ],
+      "version": "18.0.0"
+    },
+    "ethbloom 0.13.0": {
+      "common_attrs": {
+        "crate_features": [
+          "impl-rlp",
+          "impl-serde",
+          "rlp",
+          "serialize",
+          "std"
+        ],
+        "deps": [
+          {
+            "id": "crunchy 0.2.4",
+            "target": "crunchy"
+          },
+          {
+            "id": "fixed-hash 0.8.0",
+            "target": "fixed_hash"
+          },
+          {
+            "id": "impl-rlp 0.3.0",
+            "target": "impl_rlp"
+          },
+          {
+            "id": "impl-serde 0.4.0",
+            "target": "impl_serde"
+          },
+          {
+            "id": "tiny-keccak 2.0.2",
+            "target": "tiny_keccak"
+          }
+        ],
+        "edition": "2021"
+      },
+      "library_target_name": "ethbloom",
+      "license": "MIT OR Apache-2.0",
+      "license_ids": [
+        "Apache-2.0",
+        "MIT"
+      ],
+      "name": "ethbloom",
+      "package_url": "https://github.com/paritytech/parity-common",
+      "repository": {
+        "Http": {
+          "sha256": "c22d4b5885b6aa2fe5e8b9329fb8d232bf739e434e6b87347c63bdd00c120f60",
+          "url": "https://static.crates.io/crates/ethbloom/0.13.0/download"
+        }
+      },
+      "targets": [
+        {
+          "Library": {
+            "crate_name": "ethbloom",
+            "crate_root": "src/lib.rs"
+          }
+        }
+      ],
+      "version": "0.13.0"
+    },
+    "ethereum-types 0.14.1": {
+      "common_attrs": {
+        "crate_features": [
+          "ethbloom",
+          "impl-rlp",
+          "impl-serde",
+          "rlp",
+          "serialize",
+          "std"
+        ],
+        "deps": [
+          {
+            "id": "ethbloom 0.13.0",
+            "target": "ethbloom"
+          },
+          {
+            "id": "fixed-hash 0.8.0",
+            "target": "fixed_hash"
+          },
+          {
+            "id": "impl-rlp 0.3.0",
+            "target": "impl_rlp"
+          },
+          {
+            "id": "impl-serde 0.4.0",
+            "target": "impl_serde"
+          },
+          {
+            "id": "primitive-types 0.12.2",
+            "target": "primitive_types"
+          },
+          {
+            "alias": "uint_crate",
+            "id": "uint 0.9.5",
+            "target": "uint"
+          }
+        ],
+        "edition": "2021"
+      },
+      "library_target_name": "ethereum_types",
+      "license": "MIT OR Apache-2.0",
+      "license_ids": [
+        "Apache-2.0",
+        "MIT"
+      ],
+      "name": "ethereum-types",
+      "package_url": "https://github.com/paritytech/parity-common",
+      "repository": {
+        "Http": {
+          "sha256": "02d215cbf040552efcbe99a38372fe80ab9d00268e20012b79fcd0f073edd8ee",
+          "url": "https://static.crates.io/crates/ethereum-types/0.14.1/download"
+        }
+      },
+      "targets": [
+        {
+          "Library": {
+            "crate_name": "ethereum_types",
+            "crate_root": "src/lib.rs"
+          }
+        }
+      ],
+      "version": "0.14.1"
     },
     "ethereum_hashing 0.8.0": {
       "common_attrs": {
@@ -17990,10 +18064,6 @@
       "common_attrs": {
         "deps": [
           {
-            "id": "alloy-primitives 1.7.2",
-            "target": "alloy_primitives"
-          },
-          {
             "id": "hex 0.4.3",
             "target": "hex"
           },
@@ -18007,6 +18077,9 @@
           }
         ],
         "edition": "2021",
+        "extra_deps": [
+          "@@//alloy-core/crates/primitives:alloy_primitives"
+        ],
         "proc_macro_deps": [
           {
             "id": "serde_derive 1.0.229",
@@ -18042,10 +18115,6 @@
       "common_attrs": {
         "deps": [
           {
-            "id": "alloy-primitives 1.7.2",
-            "target": "alloy_primitives"
-          },
-          {
             "id": "ethereum_serde_utils 0.8.0",
             "target": "serde_utils"
           },
@@ -18067,6 +18136,9 @@
           }
         ],
         "edition": "2021",
+        "extra_deps": [
+          "@@//alloy-core/crates/primitives:alloy_primitives"
+        ],
         "proc_macro_deps": [
           {
             "id": "serde_derive 1.0.229",
@@ -18192,10 +18264,6 @@
       "common_attrs": {
         "deps": [
           {
-            "id": "alloy-primitives 1.7.2",
-            "target": "alloy_primitives"
-          },
-          {
             "id": "clap 4.6.6",
             "target": "clap"
           },
@@ -18273,14 +18341,6 @@
     "example-bsc-p2p 0.0.0": {
       "common_attrs": {
         "deps": [
-          {
-            "id": "alloy-primitives 1.7.2",
-            "target": "alloy_primitives"
-          },
-          {
-            "id": "alloy-rlp 0.3.16",
-            "target": "alloy_rlp"
-          },
           {
             "id": "bytes 1.12.1",
             "target": "bytes"
@@ -18368,10 +18428,6 @@
       "common_attrs": {
         "deps": [
           {
-            "id": "alloy-sol-types 1.7.2",
-            "target": "alloy_sol_types"
-          },
-          {
             "id": "eyre 0.6.14",
             "target": "eyre"
           }
@@ -18386,10 +18442,6 @@
     "example-custom-dev-node 0.0.0": {
       "common_attrs": {
         "deps": [
-          {
-            "id": "alloy-primitives 1.7.2",
-            "target": "alloy_primitives"
-          },
           {
             "id": "eyre 0.6.14",
             "target": "eyre"
@@ -18418,10 +18470,6 @@
       "common_attrs": {
         "deps": [
           {
-            "id": "alloy-primitives 1.7.2",
-            "target": "alloy_primitives"
-          },
-          {
             "id": "eyre 0.6.14",
             "target": "eyre"
           },
@@ -18449,10 +18497,6 @@
       "common_attrs": {
         "deps": [
           {
-            "id": "alloy-primitives 1.7.2",
-            "target": "alloy_primitives"
-          },
-          {
             "id": "eyre 0.6.14",
             "target": "eyre"
           },
@@ -18471,10 +18515,6 @@
     "example-custom-inspector 0.0.0": {
       "common_attrs": {
         "deps": [
-          {
-            "id": "alloy-primitives 1.7.2",
-            "target": "alloy_primitives"
-          },
           {
             "id": "clap 4.6.6",
             "target": "clap"
@@ -18532,10 +18572,6 @@
     "example-custom-rlpx-subprotocol 0.0.0": {
       "common_attrs": {
         "deps": [
-          {
-            "id": "alloy-primitives 1.7.2",
-            "target": "alloy_primitives"
-          },
           {
             "id": "eyre 0.6.14",
             "target": "eyre"
@@ -18595,10 +18631,6 @@
       "common_attrs": {
         "deps": [
           {
-            "id": "alloy-primitives 1.7.2",
-            "target": "alloy_primitives"
-          },
-          {
             "id": "eyre 0.6.14",
             "target": "eyre"
           },
@@ -18621,10 +18653,6 @@
     "example-db-access 0.0.0": {
       "common_attrs": {
         "deps": [
-          {
-            "id": "alloy-primitives 1.7.2",
-            "target": "alloy_primitives"
-          },
           {
             "id": "eyre 0.6.14",
             "target": "eyre"
@@ -18667,10 +18695,6 @@
     "example-full-contract-state 2.5.2": {
       "common_attrs": {
         "deps": [
-          {
-            "id": "alloy-primitives 1.7.2",
-            "target": "alloy_primitives"
-          },
           {
             "id": "eyre 0.6.14",
             "target": "eyre"
@@ -18878,10 +18902,6 @@
       "common_attrs": {
         "deps": [
           {
-            "id": "alloy-primitives 1.7.2",
-            "target": "alloy_primitives"
-          },
-          {
             "id": "clap 4.6.6",
             "target": "clap"
           },
@@ -18904,10 +18924,6 @@
     "exex-subscription 2.5.2": {
       "common_attrs": {
         "deps": [
-          {
-            "id": "alloy-primitives 1.7.2",
-            "target": "alloy_primitives"
-          },
           {
             "id": "clap 4.6.6",
             "target": "clap"
@@ -19430,7 +19446,25 @@
     },
     "fixed-hash 0.8.0": {
       "common_attrs": {
+        "crate_features": [
+          "byteorder",
+          "rand",
+          "rustc-hex",
+          "std"
+        ],
         "deps": [
+          {
+            "id": "byteorder 1.5.0",
+            "target": "byteorder"
+          },
+          {
+            "id": "rand 0.8.6",
+            "target": "rand"
+          },
+          {
+            "id": "rustc-hex 2.1.0",
+            "target": "rustc_hex"
+          },
           {
             "id": "static_assertions 1.1.0",
             "target": "static_assertions"
@@ -22239,6 +22273,35 @@
       ],
       "version": "0.2.2"
     },
+    "hex-literal 0.4.1": {
+      "common_attrs": {
+        "edition": "2021"
+      },
+      "library_target_name": "hex_literal",
+      "license": "MIT OR Apache-2.0",
+      "license_file": "LICENSE-APACHE",
+      "license_ids": [
+        "Apache-2.0",
+        "MIT"
+      ],
+      "name": "hex-literal",
+      "package_url": "https://github.com/RustCrypto/utils",
+      "repository": {
+        "Http": {
+          "sha256": "6fe2267d4ed49bc07b63801559be28c718ea06c4738b7a03c94df7386d2cde46",
+          "url": "https://static.crates.io/crates/hex-literal/0.4.1/download"
+        }
+      },
+      "targets": [
+        {
+          "Library": {
+            "crate_name": "hex_literal",
+            "crate_root": "src/lib.rs"
+          }
+        }
+      ],
+      "version": "0.4.1"
+    },
     "hickory-net 0.26.3": {
       "common_attrs": {
         "crate_features": [
@@ -24453,6 +24516,74 @@
       ],
       "version": "0.6.0"
     },
+    "impl-rlp 0.3.0": {
+      "common_attrs": {
+        "deps": [
+          {
+            "id": "rlp 0.5.2",
+            "target": "rlp"
+          }
+        ],
+        "edition": "2018"
+      },
+      "library_target_name": "impl_rlp",
+      "license": "MIT OR Apache-2.0",
+      "license_ids": [
+        "Apache-2.0",
+        "MIT"
+      ],
+      "name": "impl-rlp",
+      "package_url": "https://github.com/paritytech/parity-common",
+      "repository": {
+        "Http": {
+          "sha256": "f28220f89297a075ddc7245cd538076ee98b01f2a9c23a53a4f1105d5a322808",
+          "url": "https://static.crates.io/crates/impl-rlp/0.3.0/download"
+        }
+      },
+      "targets": [
+        {
+          "Library": {
+            "crate_name": "impl_rlp",
+            "crate_root": "src/lib.rs"
+          }
+        }
+      ],
+      "version": "0.3.0"
+    },
+    "impl-serde 0.4.0": {
+      "common_attrs": {
+        "deps": [
+          {
+            "id": "serde 1.0.229",
+            "target": "serde"
+          }
+        ],
+        "edition": "2021"
+      },
+      "library_target_name": "impl_serde",
+      "license": "MIT OR Apache-2.0",
+      "license_ids": [
+        "Apache-2.0",
+        "MIT"
+      ],
+      "name": "impl-serde",
+      "package_url": "https://github.com/paritytech/parity-common",
+      "repository": {
+        "Http": {
+          "sha256": "ebc88fc67028ae3db0c853baa36269d398d5f45b6982f95549ff5def78c935cd",
+          "url": "https://static.crates.io/crates/impl-serde/0.4.0/download"
+        }
+      },
+      "targets": [
+        {
+          "Library": {
+            "crate_name": "impl_serde",
+            "crate_root": "src/lib.rs"
+          }
+        }
+      ],
+      "version": "0.4.0"
+    },
     "impl-trait-for-tuples 0.2.3": {
       "common_attrs": {
         "deps": [
@@ -25196,7 +25327,7 @@
             ],
             "cfg(windows)": [
               {
-                "id": "windows-sys 0.61.2",
+                "id": "windows-sys 0.52.0",
                 "target": "windows_sys"
               }
             ]
@@ -30433,7 +30564,7 @@
             "cfg(windows)": [
               {
                 "alias": "windows",
-                "id": "windows-sys 0.61.2",
+                "id": "windows-sys 0.59.0",
                 "target": "windows_sys"
               }
             ]
@@ -31021,10 +31152,6 @@
         ],
         "deps": [
           {
-            "id": "alloy-rlp 0.3.16",
-            "target": "alloy_rlp"
-          },
-          {
             "id": "arbitrary 1.4.2",
             "target": "arbitrary"
           },
@@ -31049,7 +31176,10 @@
             "target": "smallvec"
           }
         ],
-        "edition": "2024"
+        "edition": "2024",
+        "extra_deps": [
+          "@@//alloy-rlp/crates/rlp:alloy_rlp"
+        ]
       },
       "library_target_name": "nybbles",
       "license": "MIT OR Apache-2.0",
@@ -34158,10 +34288,27 @@
     },
     "primitive-types 0.12.2": {
       "common_attrs": {
+        "crate_features": [
+          "byteorder",
+          "impl-rlp",
+          "impl-serde",
+          "rlp",
+          "rustc-hex",
+          "serde_no_std",
+          "std"
+        ],
         "deps": [
           {
             "id": "fixed-hash 0.8.0",
             "target": "fixed_hash"
+          },
+          {
+            "id": "impl-rlp 0.3.0",
+            "target": "impl_rlp"
+          },
+          {
+            "id": "impl-serde 0.4.0",
+            "target": "impl_serde"
           },
           {
             "id": "uint 0.9.5",
@@ -37449,10 +37596,6 @@
         ],
         "deps": [
           {
-            "id": "alloy-primitives 1.7.2",
-            "target": "alloy_primitives"
-          },
-          {
             "id": "clap 4.6.6",
             "target": "clap"
           },
@@ -37532,10 +37675,6 @@
       "common_attrs": {
         "deps": [
           {
-            "id": "alloy-primitives 1.7.2",
-            "target": "alloy_primitives"
-          },
-          {
             "id": "futures-core 0.3.34",
             "target": "futures_core"
           },
@@ -37588,18 +37727,6 @@
           "otlp-logs"
         ],
         "deps": [
-          {
-            "id": "alloy-hardforks 0.4.8",
-            "target": "alloy_hardforks"
-          },
-          {
-            "id": "alloy-primitives 1.7.2",
-            "target": "alloy_primitives"
-          },
-          {
-            "id": "alloy-rlp 0.3.16",
-            "target": "alloy_rlp"
-          },
           {
             "id": "clap 4.6.6",
             "target": "clap"
@@ -37660,10 +37787,6 @@
           "test-utils"
         ],
         "deps": [
-          {
-            "id": "alloy-primitives 1.7.2",
-            "target": "alloy_primitives"
-          },
           {
             "id": "derive_more 2.1.1",
             "target": "derive_more"
@@ -37730,30 +37853,12 @@
         ],
         "deps": [
           {
-            "id": "alloy-chains 0.2.37",
-            "target": "alloy_chains"
-          },
-          {
-            "id": "alloy-primitives 1.7.2",
-            "target": "alloy_primitives"
-          },
-          {
-            "id": "alloy-trie 0.9.5",
-            "target": "alloy_trie"
-          },
-          {
             "id": "derive_more 2.1.1",
             "target": "derive_more"
           },
           {
             "id": "serde_json 1.0.151",
             "target": "serde_json"
-          }
-        ],
-        "deps_dev": [
-          {
-            "id": "alloy-rlp 0.3.16",
-            "target": "alloy_rlp"
           }
         ],
         "edition": "2024",
@@ -37811,22 +37916,6 @@
     "reth-cli-commands 2.5.2": {
       "common_attrs": {
         "deps": [
-          {
-            "id": "alloy-chains 0.2.37",
-            "target": "alloy_chains"
-          },
-          {
-            "id": "alloy-eip7928 0.4.10",
-            "target": "alloy_eip7928"
-          },
-          {
-            "id": "alloy-primitives 1.7.2",
-            "target": "alloy_primitives"
-          },
-          {
-            "id": "alloy-rlp 0.3.16",
-            "target": "alloy_rlp"
-          },
           {
             "id": "backon 1.6.0",
             "target": "backon"
@@ -37996,10 +38085,6 @@
         "deps": {
           "common": [
             {
-              "id": "alloy-primitives 1.7.2",
-              "target": "alloy_primitives"
-            },
-            {
               "id": "cfg-if 1.0.4",
               "target": "cfg_if"
             },
@@ -38074,14 +38159,6 @@
           "test-utils"
         ],
         "deps": [
-          {
-            "id": "alloy-primitives 1.7.2",
-            "target": "alloy_primitives"
-          },
-          {
-            "id": "alloy-trie 0.9.5",
-            "target": "alloy_trie"
-          },
           {
             "id": "arbitrary 1.4.2",
             "target": "arbitrary"
@@ -38212,10 +38289,6 @@
         ],
         "deps_dev": [
           {
-            "id": "alloy-primitives 1.7.2",
-            "target": "alloy_primitives"
-          },
-          {
             "id": "tempfile 3.27.0",
             "target": "tempfile"
           }
@@ -38243,14 +38316,6 @@
           "test-utils"
         ],
         "deps": [
-          {
-            "id": "alloy-eip7928 0.4.10",
-            "target": "alloy_eip7928"
-          },
-          {
-            "id": "alloy-primitives 1.7.2",
-            "target": "alloy_primitives"
-          },
           {
             "id": "thiserror 2.0.20",
             "target": "thiserror"
@@ -38283,12 +38348,6 @@
           "default",
           "std"
         ],
-        "deps": [
-          {
-            "id": "alloy-primitives 1.7.2",
-            "target": "alloy_primitives"
-          }
-        ],
         "deps_dev": [
           {
             "id": "rand 0.9.4",
@@ -38313,10 +38372,6 @@
     "reth-consensus-debug-client 2.5.2": {
       "common_attrs": {
         "deps": [
-          {
-            "id": "alloy-primitives 1.7.2",
-            "target": "alloy_primitives"
-          },
           {
             "id": "derive_more 2.1.1",
             "target": "derive_more"
@@ -38384,10 +38439,6 @@
         ],
         "deps": {
           "common": [
-            {
-              "id": "alloy-primitives 1.7.2",
-              "target": "alloy_primitives"
-            },
             {
               "id": "derive_more 2.1.1",
               "target": "derive_more"
@@ -38487,10 +38538,6 @@
         ],
         "deps": [
           {
-            "id": "alloy-primitives 1.7.2",
-            "target": "alloy_primitives"
-          },
-          {
             "id": "arbitrary 1.4.2",
             "target": "arbitrary"
           },
@@ -38560,10 +38607,6 @@
       "common_attrs": {
         "deps": [
           {
-            "id": "alloy-primitives 1.7.2",
-            "target": "alloy_primitives"
-          },
-          {
             "id": "boyer-moore-magiclen 0.2.24",
             "target": "boyer_moore_magiclen"
           },
@@ -38615,10 +38658,6 @@
         ],
         "deps": [
           {
-            "id": "alloy-primitives 1.7.2",
-            "target": "alloy_primitives"
-          },
-          {
             "id": "arbitrary 1.4.2",
             "target": "arbitrary"
           },
@@ -38668,14 +38707,6 @@
           "test-utils"
         ],
         "deps": [
-          {
-            "id": "alloy-primitives 1.7.2",
-            "target": "alloy_primitives"
-          },
-          {
-            "id": "alloy-rlp 0.3.16",
-            "target": "alloy_rlp"
-          },
           {
             "id": "discv5 0.10.4",
             "target": "discv5"
@@ -38755,14 +38786,6 @@
       "common_attrs": {
         "deps": [
           {
-            "id": "alloy-primitives 1.7.2",
-            "target": "alloy_primitives"
-          },
-          {
-            "id": "alloy-rlp 0.3.16",
-            "target": "alloy_rlp"
-          },
-          {
             "id": "derive_more 2.1.1",
             "target": "derive_more"
           },
@@ -38836,10 +38859,6 @@
         ],
         "deps": [
           {
-            "id": "alloy-primitives 1.7.2",
-            "target": "alloy_primitives"
-          },
-          {
             "id": "dashmap 6.2.1",
             "target": "dashmap"
           },
@@ -38894,14 +38913,6 @@
         ],
         "deps_dev": [
           {
-            "id": "alloy-chains 0.2.37",
-            "target": "alloy_chains"
-          },
-          {
-            "id": "alloy-rlp 0.3.16",
-            "target": "alloy_rlp"
-          },
-          {
             "id": "rand 0.9.4",
             "target": "rand"
           }
@@ -38931,14 +38942,6 @@
           "test-utils"
         ],
         "deps": [
-          {
-            "id": "alloy-primitives 1.7.2",
-            "target": "alloy_primitives"
-          },
-          {
-            "id": "alloy-rlp 0.3.16",
-            "target": "alloy_rlp"
-          },
           {
             "id": "async-compression 0.4.44",
             "target": "async_compression"
@@ -39021,14 +39024,6 @@
       "common_attrs": {
         "deps": [
           {
-            "id": "alloy-primitives 1.7.2",
-            "target": "alloy_primitives"
-          },
-          {
-            "id": "alloy-rlp 0.3.16",
-            "target": "alloy_rlp"
-          },
-          {
             "id": "derive_more 2.1.1",
             "target": "derive_more"
           },
@@ -39094,14 +39089,6 @@
           {
             "id": "aes 0.8.4",
             "target": "aes"
-          },
-          {
-            "id": "alloy-primitives 1.7.2",
-            "target": "alloy_primitives"
-          },
-          {
-            "id": "alloy-rlp 0.3.16",
-            "target": "alloy_rlp"
           },
           {
             "id": "byteorder 1.5.0",
@@ -39188,10 +39175,6 @@
       "common_attrs": {
         "deps": [
           {
-            "id": "alloy-primitives 1.7.2",
-            "target": "alloy_primitives"
-          },
-          {
             "id": "eyre 0.6.14",
             "target": "eyre"
           },
@@ -39237,10 +39220,6 @@
         ],
         "deps": [
           {
-            "id": "alloy-primitives 1.7.2",
-            "target": "alloy_primitives"
-          },
-          {
             "id": "futures 0.3.34",
             "target": "futures"
           },
@@ -39255,12 +39234,6 @@
           {
             "id": "tokio 1.53.1",
             "target": "tokio"
-          }
-        ],
-        "deps_dev": [
-          {
-            "id": "alloy-rlp 0.3.16",
-            "target": "alloy_rlp"
           }
         ],
         "edition": "2024",
@@ -39295,18 +39268,6 @@
           "test-utils"
         ],
         "deps": [
-          {
-            "id": "alloy-eip7928 0.4.10",
-            "target": "alloy_eip7928"
-          },
-          {
-            "id": "alloy-primitives 1.7.2",
-            "target": "alloy_primitives"
-          },
-          {
-            "id": "alloy-rlp 0.3.16",
-            "target": "alloy_rlp"
-          },
           {
             "id": "crossbeam-channel 0.5.17",
             "target": "crossbeam_channel"
@@ -39410,10 +39371,6 @@
       "common_attrs": {
         "deps": [
           {
-            "id": "alloy-primitives 1.7.2",
-            "target": "alloy_primitives"
-          },
-          {
             "id": "eyre 0.6.14",
             "target": "eyre"
           },
@@ -39468,14 +39425,6 @@
     "reth-era 2.5.2": {
       "common_attrs": {
         "deps": [
-          {
-            "id": "alloy-primitives 1.7.2",
-            "target": "alloy_primitives"
-          },
-          {
-            "id": "alloy-rlp 0.3.16",
-            "target": "alloy_rlp"
-          },
           {
             "id": "ethereum_ssz 0.10.4",
             "target": "ssz"
@@ -39544,10 +39493,6 @@
       "common_attrs": {
         "deps": [
           {
-            "id": "alloy-primitives 1.7.2",
-            "target": "alloy_primitives"
-          },
-          {
             "id": "bytes 1.12.1",
             "target": "bytes"
           },
@@ -39604,14 +39549,6 @@
     "reth-era-utils 2.5.2": {
       "common_attrs": {
         "deps": [
-          {
-            "id": "alloy-primitives 1.7.2",
-            "target": "alloy_primitives"
-          },
-          {
-            "id": "alloy-rlp 0.3.16",
-            "target": "alloy_rlp"
-          },
           {
             "id": "eyre 0.6.14",
             "target": "eyre"
@@ -39691,18 +39628,6 @@
           "serde"
         ],
         "deps": [
-          {
-            "id": "alloy-chains 0.2.37",
-            "target": "alloy_chains"
-          },
-          {
-            "id": "alloy-primitives 1.7.2",
-            "target": "alloy_primitives"
-          },
-          {
-            "id": "alloy-rlp 0.3.16",
-            "target": "alloy_rlp"
-          },
           {
             "id": "bytes 1.12.1",
             "target": "bytes"
@@ -39807,30 +39732,6 @@
           "std"
         ],
         "deps": [
-          {
-            "id": "alloy-chains 0.2.37",
-            "target": "alloy_chains"
-          },
-          {
-            "id": "alloy-eip7928 0.4.10",
-            "target": "alloy_eip7928"
-          },
-          {
-            "id": "alloy-hardforks 0.4.8",
-            "target": "alloy_hardforks"
-          },
-          {
-            "id": "alloy-primitives 1.7.2",
-            "target": "alloy_primitives"
-          },
-          {
-            "id": "alloy-rlp 0.3.16",
-            "target": "alloy_rlp"
-          },
-          {
-            "id": "alloy-trie 0.9.5",
-            "target": "alloy_trie"
-          },
           {
             "id": "arbitrary 1.4.2",
             "target": "arbitrary"
@@ -39974,10 +39875,6 @@
         ],
         "deps": [
           {
-            "id": "alloy-primitives 1.7.2",
-            "target": "alloy_primitives"
-          },
-          {
             "id": "tracing 0.1.44",
             "target": "tracing"
           }
@@ -40004,10 +39901,6 @@
           "std"
         ],
         "deps": [
-          {
-            "id": "alloy-primitives 1.7.2",
-            "target": "alloy_primitives"
-          },
           {
             "id": "serde 1.0.229",
             "target": "serde"
@@ -40049,18 +39942,6 @@
         ],
         "deps": [
           {
-            "id": "alloy-eip2124 0.2.0",
-            "target": "alloy_eip2124"
-          },
-          {
-            "id": "alloy-hardforks 0.4.8",
-            "target": "alloy_hardforks"
-          },
-          {
-            "id": "alloy-primitives 1.7.2",
-            "target": "alloy_primitives"
-          },
-          {
             "id": "arbitrary 1.4.2",
             "target": "arbitrary"
           },
@@ -40097,14 +39978,6 @@
     "reth-ethereum-payload-builder 2.5.2": {
       "common_attrs": {
         "deps": [
-          {
-            "id": "alloy-primitives 1.7.2",
-            "target": "alloy_primitives"
-          },
-          {
-            "id": "alloy-rlp 0.3.16",
-            "target": "alloy_rlp"
-          },
           {
             "id": "revm 43.0.2",
             "target": "revm"
@@ -40147,14 +40020,6 @@
           }
         ],
         "deps_dev": [
-          {
-            "id": "alloy-primitives 1.7.2",
-            "target": "alloy_primitives"
-          },
-          {
-            "id": "alloy-rlp 0.3.16",
-            "target": "alloy_rlp"
-          },
           {
             "id": "arbitrary 1.4.2",
             "target": "arbitrary"
@@ -40207,12 +40072,6 @@
             "target": "tempfile"
           }
         ],
-        "deps_dev": [
-          {
-            "id": "alloy-primitives 1.7.2",
-            "target": "alloy_primitives"
-          }
-        ],
         "edition": "2024"
       },
       "library_target_name": "reth_etl",
@@ -40237,14 +40096,6 @@
           "test-utils"
         ],
         "deps": [
-          {
-            "id": "alloy-eip7928 0.4.10",
-            "target": "alloy_eip7928"
-          },
-          {
-            "id": "alloy-primitives 1.7.2",
-            "target": "alloy_primitives"
-          },
           {
             "id": "derive_more 2.1.1",
             "target": "derive_more"
@@ -40300,10 +40151,6 @@
         ],
         "deps": [
           {
-            "id": "alloy-primitives 1.7.2",
-            "target": "alloy_primitives"
-          },
-          {
             "id": "revm 43.0.2",
             "target": "revm"
           }
@@ -40335,10 +40182,6 @@
           "test-utils"
         ],
         "deps": [
-          {
-            "id": "alloy-primitives 1.7.2",
-            "target": "alloy_primitives"
-          },
           {
             "id": "fixed-cache 0.1.10",
             "target": "fixed_cache"
@@ -40385,14 +40228,6 @@
         ],
         "deps": [
           {
-            "id": "alloy-primitives 1.7.2",
-            "target": "alloy_primitives"
-          },
-          {
-            "id": "alloy-rlp 0.3.16",
-            "target": "alloy_rlp"
-          },
-          {
             "id": "nybbles 0.4.8",
             "target": "nybbles"
           },
@@ -40427,14 +40262,6 @@
           "std"
         ],
         "deps": [
-          {
-            "id": "alloy-primitives 1.7.2",
-            "target": "alloy_primitives"
-          },
-          {
-            "id": "alloy-rlp 0.3.16",
-            "target": "alloy_rlp"
-          },
           {
             "id": "derive_more 2.1.1",
             "target": "derive_more"
@@ -40484,10 +40311,6 @@
     "reth-exex 2.5.2": {
       "common_attrs": {
         "deps": [
-          {
-            "id": "alloy-primitives 1.7.2",
-            "target": "alloy_primitives"
-          },
           {
             "id": "eyre 0.6.14",
             "target": "eyre"
@@ -40607,10 +40430,6 @@
         ],
         "deps": [
           {
-            "id": "alloy-primitives 1.7.2",
-            "target": "alloy_primitives"
-          },
-          {
             "id": "serde 1.0.229",
             "target": "serde"
           },
@@ -40682,14 +40501,6 @@
     "reth-invalid-block-hooks 2.5.2": {
       "common_attrs": {
         "deps": [
-          {
-            "id": "alloy-primitives 1.7.2",
-            "target": "alloy_primitives"
-          },
-          {
-            "id": "alloy-rlp 0.3.16",
-            "target": "alloy_rlp"
-          },
           {
             "id": "eyre 0.6.14",
             "target": "eyre"
@@ -40987,10 +40798,6 @@
       "common_attrs": {
         "deps": [
           {
-            "id": "alloy-primitives 1.7.2",
-            "target": "alloy_primitives"
-          },
-          {
             "id": "ipnet 2.12.2",
             "target": "ipnet"
           }
@@ -41068,14 +40875,6 @@
           "test-utils"
         ],
         "deps": [
-          {
-            "id": "alloy-primitives 1.7.2",
-            "target": "alloy_primitives"
-          },
-          {
-            "id": "alloy-rlp 0.3.16",
-            "target": "alloy_rlp"
-          },
           {
             "id": "derive_more 2.1.1",
             "target": "derive_more"
@@ -41168,14 +40967,6 @@
         ],
         "deps_dev": [
           {
-            "id": "alloy-eip7928 0.4.10",
-            "target": "alloy_eip7928"
-          },
-          {
-            "id": "alloy-trie 0.9.5",
-            "target": "alloy_trie"
-          },
-          {
             "id": "codspeed-criterion-compat 4.5.0",
             "target": "codspeed_criterion_compat"
           },
@@ -41219,10 +41010,6 @@
           "serde"
         ],
         "deps": [
-          {
-            "id": "alloy-primitives 1.7.2",
-            "target": "alloy_primitives"
-          },
           {
             "id": "derive_more 2.1.1",
             "target": "derive_more"
@@ -41283,14 +41070,6 @@
         ],
         "deps": [
           {
-            "id": "alloy-eip7928 0.4.10",
-            "target": "alloy_eip7928"
-          },
-          {
-            "id": "alloy-primitives 1.7.2",
-            "target": "alloy_primitives"
-          },
-          {
             "id": "derive_more 2.1.1",
             "target": "derive_more"
           },
@@ -41348,14 +41127,6 @@
           "std"
         ],
         "deps": [
-          {
-            "id": "alloy-primitives 1.7.2",
-            "target": "alloy_primitives"
-          },
-          {
-            "id": "alloy-rlp 0.3.16",
-            "target": "alloy_rlp"
-          },
           {
             "id": "enr 0.13.0",
             "target": "enr"
@@ -41418,10 +41189,6 @@
           "test-utils"
         ],
         "deps": [
-          {
-            "id": "alloy-eip2124 0.2.0",
-            "target": "alloy_eip2124"
-          },
           {
             "id": "humantime-serde 1.1.1",
             "target": "humantime_serde"
@@ -41559,10 +41326,6 @@
         ],
         "deps": [
           {
-            "id": "alloy-primitives 1.7.2",
-            "target": "alloy_primitives"
-          },
-          {
             "id": "eyre 0.6.14",
             "target": "eyre"
           },
@@ -41657,10 +41420,6 @@
           "otlp-logs"
         ],
         "deps": [
-          {
-            "id": "alloy-primitives 1.7.2",
-            "target": "alloy_primitives"
-          },
           {
             "id": "clap 4.6.6",
             "target": "clap"
@@ -41767,14 +41526,6 @@
         ],
         "deps": [
           {
-            "id": "alloy-primitives 1.7.2",
-            "target": "alloy_primitives"
-          },
-          {
-            "id": "alloy-rlp 0.3.16",
-            "target": "alloy_rlp"
-          },
-          {
             "id": "ethereum_ssz 0.10.4",
             "target": "ssz"
           },
@@ -41816,10 +41567,6 @@
           }
         ],
         "deps_dev": [
-          {
-            "id": "alloy-sol-types 1.7.2",
-            "target": "alloy_sol_types"
-          },
           {
             "id": "enr 0.13.0",
             "target": "enr"
@@ -41869,10 +41616,6 @@
     "reth-node-ethstats 2.5.2": {
       "common_attrs": {
         "deps": [
-          {
-            "id": "alloy-primitives 1.7.2",
-            "target": "alloy_primitives"
-          },
           {
             "id": "chrono 0.4.45",
             "target": "chrono"
@@ -41932,10 +41675,6 @@
     "reth-node-events 2.5.2": {
       "common_attrs": {
         "deps": [
-          {
-            "id": "alloy-primitives 1.7.2",
-            "target": "alloy_primitives"
-          },
           {
             "id": "derive_more 2.1.1",
             "target": "derive_more"
@@ -42102,10 +41841,6 @@
         ],
         "deps": [
           {
-            "id": "alloy-primitives 1.7.2",
-            "target": "alloy_primitives"
-          },
-          {
             "id": "derive_more 2.1.1",
             "target": "derive_more"
           },
@@ -42188,14 +41923,6 @@
         ],
         "deps": [
           {
-            "id": "alloy-primitives 1.7.2",
-            "target": "alloy_primitives"
-          },
-          {
-            "id": "alloy-rlp 0.3.16",
-            "target": "alloy_rlp"
-          },
-          {
             "id": "either 1.18.0",
             "target": "either"
           },
@@ -42249,12 +41976,6 @@
     },
     "reth-payload-util 2.5.2": {
       "common_attrs": {
-        "deps": [
-          {
-            "id": "alloy-primitives 1.7.2",
-            "target": "alloy_primitives"
-          }
-        ],
         "edition": "2024"
       },
       "library_target_name": "reth_payload_util",
@@ -42309,22 +42030,6 @@
           "test-utils"
         ],
         "deps": [
-          {
-            "id": "alloy-eip7928 0.4.10",
-            "target": "alloy_eip7928"
-          },
-          {
-            "id": "alloy-primitives 1.7.2",
-            "target": "alloy_primitives"
-          },
-          {
-            "id": "alloy-rlp 0.3.16",
-            "target": "alloy_rlp"
-          },
-          {
-            "id": "alloy-trie 0.9.5",
-            "target": "alloy_trie"
-          },
           {
             "id": "arbitrary 1.4.2",
             "target": "arbitrary"
@@ -42434,14 +42139,6 @@
         "deps": {
           "common": [
             {
-              "id": "alloy-eip7928 0.4.10",
-              "target": "alloy_eip7928"
-            },
-            {
-              "id": "alloy-primitives 1.7.2",
-              "target": "alloy_primitives"
-            },
-            {
               "id": "eyre 0.6.14",
               "target": "eyre"
             },
@@ -42536,10 +42233,6 @@
       "common_attrs": {
         "deps": [
           {
-            "id": "alloy-primitives 1.7.2",
-            "target": "alloy_primitives"
-          },
-          {
             "id": "itertools 0.14.0",
             "target": "itertools"
           },
@@ -42596,10 +42289,6 @@
           "test-utils"
         ],
         "deps": [
-          {
-            "id": "alloy-primitives 1.7.2",
-            "target": "alloy_primitives"
-          },
           {
             "id": "arbitrary 1.4.2",
             "target": "arbitrary"
@@ -42680,14 +42369,6 @@
         ],
         "deps": [
           {
-            "id": "alloy-primitives 1.7.2",
-            "target": "alloy_primitives"
-          },
-          {
-            "id": "alloy-rlp 0.3.16",
-            "target": "alloy_rlp"
-          },
-          {
             "id": "revm 43.0.2",
             "target": "revm"
           }
@@ -42713,22 +42394,6 @@
           "js-tracer"
         ],
         "deps": [
-          {
-            "id": "alloy-dyn-abi 1.7.2",
-            "target": "alloy_dyn_abi"
-          },
-          {
-            "id": "alloy-eip7928 0.4.10",
-            "target": "alloy_eip7928"
-          },
-          {
-            "id": "alloy-primitives 1.7.2",
-            "target": "alloy_primitives"
-          },
-          {
-            "id": "alloy-rlp 0.3.16",
-            "target": "alloy_rlp"
-          },
           {
             "id": "derive_more 2.1.1",
             "target": "derive_more"
@@ -42832,10 +42497,6 @@
         ],
         "deps": [
           {
-            "id": "alloy-primitives 1.7.2",
-            "target": "alloy_primitives"
-          },
-          {
             "id": "jsonrpsee 0.26.0",
             "target": "jsonrpsee"
           },
@@ -42923,10 +42584,6 @@
         ],
         "deps_dev": [
           {
-            "id": "alloy-primitives 1.7.2",
-            "target": "alloy_primitives"
-          },
-          {
             "id": "clap 4.6.6",
             "target": "clap"
           },
@@ -42960,10 +42617,6 @@
           "default"
         ],
         "deps": [
-          {
-            "id": "alloy-primitives 1.7.2",
-            "target": "alloy_primitives"
-          },
           {
             "id": "dyn-clone 1.0.20",
             "target": "dyn_clone"
@@ -43051,14 +42704,6 @@
       "common_attrs": {
         "deps": [
           {
-            "id": "alloy-primitives 1.7.2",
-            "target": "alloy_primitives"
-          },
-          {
-            "id": "alloy-rlp 0.3.16",
-            "target": "alloy_rlp"
-          },
-          {
             "id": "jsonrpsee-core 0.26.0",
             "target": "jsonrpsee_core"
           },
@@ -43121,22 +42766,6 @@
           "js-tracer"
         ],
         "deps": [
-          {
-            "id": "alloy-dyn-abi 1.7.2",
-            "target": "alloy_dyn_abi"
-          },
-          {
-            "id": "alloy-eip7928 0.4.10",
-            "target": "alloy_eip7928"
-          },
-          {
-            "id": "alloy-primitives 1.7.2",
-            "target": "alloy_primitives"
-          },
-          {
-            "id": "alloy-rlp 0.3.16",
-            "target": "alloy_rlp"
-          },
           {
             "id": "dyn-clone 1.0.20",
             "target": "dyn_clone"
@@ -43205,22 +42834,6 @@
           "js-tracer"
         ],
         "deps": [
-          {
-            "id": "alloy-chains 0.2.37",
-            "target": "alloy_chains"
-          },
-          {
-            "id": "alloy-eip7928 0.4.10",
-            "target": "alloy_eip7928"
-          },
-          {
-            "id": "alloy-primitives 1.7.2",
-            "target": "alloy_primitives"
-          },
-          {
-            "id": "alloy-sol-types 1.7.2",
-            "target": "alloy_sol_types"
-          },
           {
             "id": "derive_more 2.1.1",
             "target": "derive_more"
@@ -43384,10 +42997,6 @@
       "common_attrs": {
         "deps": [
           {
-            "id": "alloy-primitives 1.7.2",
-            "target": "alloy_primitives"
-          },
-          {
             "id": "jsonrpsee-core 0.26.0",
             "target": "jsonrpsee_core"
           },
@@ -43427,10 +43036,6 @@
         ],
         "deps": [
           {
-            "id": "alloy-primitives 1.7.2",
-            "target": "alloy_primitives"
-          },
-          {
             "id": "thiserror 2.0.20",
             "target": "thiserror"
           }
@@ -43454,14 +43059,6 @@
       "common_attrs": {
         "deps": [
           {
-            "id": "alloy-eip7928 0.4.10",
-            "target": "alloy_eip7928"
-          },
-          {
-            "id": "alloy-primitives 1.7.2",
-            "target": "alloy_primitives"
-          },
-          {
             "id": "revm 43.0.2",
             "target": "revm"
           },
@@ -43483,10 +43080,6 @@
           }
         ],
         "deps_dev": [
-          {
-            "id": "alloy-rlp 0.3.16",
-            "target": "alloy_rlp"
-          },
           {
             "id": "futures 0.3.34",
             "target": "futures"
@@ -43517,18 +43110,6 @@
           "test-utils"
         ],
         "deps": [
-          {
-            "id": "alloy-eip7928 0.4.10",
-            "target": "alloy_eip7928"
-          },
-          {
-            "id": "alloy-primitives 1.7.2",
-            "target": "alloy_primitives"
-          },
-          {
-            "id": "alloy-rlp 0.3.16",
-            "target": "alloy_rlp"
-          },
           {
             "id": "eyre 0.6.14",
             "target": "eyre"
@@ -43612,10 +43193,6 @@
         ],
         "deps": [
           {
-            "id": "alloy-primitives 1.7.2",
-            "target": "alloy_primitives"
-          },
-          {
             "id": "futures-util 0.3.34",
             "target": "futures_util"
           },
@@ -43683,10 +43260,6 @@
         ],
         "deps": [
           {
-            "id": "alloy-primitives 1.7.2",
-            "target": "alloy_primitives"
-          },
-          {
             "id": "arbitrary 1.4.2",
             "target": "arbitrary"
           },
@@ -43736,10 +43309,6 @@
       "common_attrs": {
         "deps": [
           {
-            "id": "alloy-primitives 1.7.2",
-            "target": "alloy_primitives"
-          },
-          {
             "id": "parking_lot 0.12.5",
             "target": "parking_lot"
           },
@@ -43785,10 +43354,6 @@
           "std"
         ],
         "deps": [
-          {
-            "id": "alloy-primitives 1.7.2",
-            "target": "alloy_primitives"
-          },
           {
             "id": "clap 4.6.6",
             "target": "clap"
@@ -43853,14 +43418,6 @@
         ],
         "deps": [
           {
-            "id": "alloy-eip7928 0.4.10",
-            "target": "alloy_eip7928"
-          },
-          {
-            "id": "alloy-primitives 1.7.2",
-            "target": "alloy_primitives"
-          },
-          {
             "id": "revm 43.0.2",
             "target": "revm"
           },
@@ -43908,14 +43465,6 @@
         ],
         "deps": [
           {
-            "id": "alloy-primitives 1.7.2",
-            "target": "alloy_primitives"
-          },
-          {
-            "id": "alloy-rlp 0.3.16",
-            "target": "alloy_rlp"
-          },
-          {
             "id": "derive_more 2.1.1",
             "target": "derive_more"
           },
@@ -43949,10 +43498,6 @@
           "rayon"
         ],
         "deps": [
-          {
-            "id": "alloy-primitives 1.7.2",
-            "target": "alloy_primitives"
-          },
           {
             "id": "metrics 0.24.6",
             "target": "metrics"
@@ -43992,10 +43537,6 @@
     "reth-storage-rpc-provider 2.5.2": {
       "common_attrs": {
         "deps": [
-          {
-            "id": "alloy-primitives 1.7.2",
-            "target": "alloy_primitives"
-          },
           {
             "id": "dashmap 6.2.1",
             "target": "dashmap"
@@ -44114,10 +43655,6 @@
       "common_attrs": {
         "deps": [
           {
-            "id": "alloy-primitives 1.7.2",
-            "target": "alloy_primitives"
-          },
-          {
             "alias": "rand_08",
             "id": "rand 0.8.6",
             "target": "rand"
@@ -44129,12 +43666,6 @@
           {
             "id": "secp256k1 0.30.0",
             "target": "secp256k1"
-          }
-        ],
-        "deps_dev": [
-          {
-            "id": "alloy-rlp 0.3.16",
-            "target": "alloy_rlp"
           }
         ],
         "edition": "2024"
@@ -44349,14 +43880,6 @@
         ],
         "deps": [
           {
-            "id": "alloy-primitives 1.7.2",
-            "target": "alloy_primitives"
-          },
-          {
-            "id": "alloy-rlp 0.3.16",
-            "target": "alloy_rlp"
-          },
-          {
             "id": "bitflags 2.13.1",
             "target": "bitflags"
           },
@@ -44492,18 +44015,6 @@
         ],
         "deps": [
           {
-            "id": "alloy-primitives 1.7.2",
-            "target": "alloy_primitives"
-          },
-          {
-            "id": "alloy-rlp 0.3.16",
-            "target": "alloy_rlp"
-          },
-          {
-            "id": "alloy-trie 0.9.5",
-            "target": "alloy_trie"
-          },
-          {
             "id": "itertools 0.14.0",
             "target": "itertools"
           },
@@ -44590,18 +44101,6 @@
           "test-utils"
         ],
         "deps": [
-          {
-            "id": "alloy-primitives 1.7.2",
-            "target": "alloy_primitives"
-          },
-          {
-            "id": "alloy-rlp 0.3.16",
-            "target": "alloy_rlp"
-          },
-          {
-            "id": "alloy-trie 0.9.5",
-            "target": "alloy_trie"
-          },
           {
             "id": "arbitrary 1.4.2",
             "target": "arbitrary"
@@ -44696,19 +44195,11 @@
         ],
         "deps": [
           {
-            "id": "alloy-primitives 1.7.2",
-            "target": "alloy_primitives"
-          },
-          {
             "id": "tracing 0.1.44",
             "target": "tracing"
           }
         ],
         "deps_dev": [
-          {
-            "id": "alloy-rlp 0.3.16",
-            "target": "alloy_rlp"
-          },
           {
             "id": "proptest 1.11.0",
             "target": "proptest"
@@ -44758,14 +44249,6 @@
           "test-utils"
         ],
         "deps": [
-          {
-            "id": "alloy-primitives 1.7.2",
-            "target": "alloy_primitives"
-          },
-          {
-            "id": "alloy-rlp 0.3.16",
-            "target": "alloy_rlp"
-          },
           {
             "id": "crossbeam-channel 0.5.17",
             "target": "crossbeam_channel"
@@ -44826,14 +44309,6 @@
         ],
         "deps": [
           {
-            "id": "alloy-primitives 1.7.2",
-            "target": "alloy_primitives"
-          },
-          {
-            "id": "alloy-trie 0.9.5",
-            "target": "alloy_trie"
-          },
-          {
             "id": "either 1.18.0",
             "target": "either"
           },
@@ -44863,10 +44338,6 @@
           }
         ],
         "deps_dev": [
-          {
-            "id": "alloy-rlp 0.3.16",
-            "target": "alloy_rlp"
-          },
           {
             "id": "arbitrary 1.4.2",
             "target": "arbitrary"
@@ -45179,14 +44650,6 @@
         ],
         "deps": [
           {
-            "id": "alloy-eip2930 0.2.3",
-            "target": "alloy_eip2930"
-          },
-          {
-            "id": "alloy-eip7702 0.6.3",
-            "target": "alloy_eip7702"
-          },
-          {
             "id": "either 1.18.0",
             "target": "either"
           },
@@ -45211,6 +44674,10 @@
           }
         ],
         "edition": "2021",
+        "extra_deps": [
+          "@@//alloy-eips/crates/eip2930:alloy_eip2930",
+          "@@//alloy-eips/crates/eip7702:alloy_eip7702"
+        ],
         "proc_macro_deps": [
           {
             "id": "auto_impl 1.3.0",
@@ -45547,14 +45014,6 @@
         ],
         "deps": [
           {
-            "id": "alloy-primitives 1.7.2",
-            "target": "alloy_primitives"
-          },
-          {
-            "id": "alloy-sol-types 1.7.2",
-            "target": "alloy_sol_types"
-          },
-          {
             "id": "anstyle 1.0.14",
             "target": "anstyle"
           },
@@ -45588,10 +45047,6 @@
           }
         ],
         "deps_dev": [
-          {
-            "id": "alloy-hardforks 0.4.8",
-            "target": "alloy_hardforks"
-          },
           {
             "id": "criterion 0.8.2",
             "target": "criterion"
@@ -45797,10 +45252,6 @@
         ],
         "deps": [
           {
-            "id": "alloy-primitives 1.7.2",
-            "target": "alloy_primitives"
-          },
-          {
             "id": "once_cell 1.21.4",
             "target": "once_cell"
           },
@@ -45809,7 +45260,10 @@
             "target": "serde"
           }
         ],
-        "edition": "2021"
+        "edition": "2021",
+        "extra_deps": [
+          "@@//alloy-core/crates/primitives:alloy_primitives"
+        ]
       },
       "library_target_name": "revm_primitives",
       "license": "MIT",
@@ -45843,10 +45297,6 @@
         ],
         "deps": [
           {
-            "id": "alloy-eip7928 0.4.10",
-            "target": "alloy_eip7928"
-          },
-          {
             "id": "bitflags 2.13.1",
             "target": "bitflags"
           },
@@ -45869,7 +45319,10 @@
             "target": "serde"
           }
         ],
-        "edition": "2021"
+        "edition": "2021",
+        "extra_deps": [
+          "@@//alloy-eips/crates/eip7928:alloy_eip7928"
+        ]
       },
       "library_target_name": "revm_state",
       "license": "MIT",
@@ -46594,10 +46047,6 @@
         ],
         "deps": [
           {
-            "id": "alloy-rlp 0.3.16",
-            "target": "alloy_rlp"
-          },
-          {
             "id": "arbitrary 1.4.2",
             "target": "arbitrary"
           },
@@ -46616,6 +46065,9 @@
           }
         ],
         "edition": "2024",
+        "extra_deps": [
+          "@@//alloy-rlp/crates/rlp:alloy_rlp"
+        ],
         "proc_macro_deps": [
           {
             "id": "ruint-macro 1.2.1",
@@ -46974,7 +46426,7 @@
                 "target": "errno"
               },
               {
-                "id": "windows-sys 0.61.2",
+                "id": "windows-sys 0.52.0",
                 "target": "windows_sys"
               }
             ],
@@ -47398,7 +46850,7 @@
             ],
             "cfg(windows)": [
               {
-                "id": "windows-sys 0.61.2",
+                "id": "windows-sys 0.52.0",
                 "target": "windows_sys"
               }
             ]
@@ -47820,7 +47272,7 @@
       ],
       "version": "0.9.0"
     },
-    "schemars 1.2.1": {
+    "schemars 1.2.2": {
       "common_attrs": {
         "deps": [
           {
@@ -47852,8 +47304,8 @@
       "package_url": "https://github.com/GREsau/schemars",
       "repository": {
         "Http": {
-          "sha256": "a2b42f36aa1cd011945615b92222f6bf73c599a102a300334cd7f8dbeec726cc",
-          "url": "https://static.crates.io/crates/schemars/1.2.1/download"
+          "sha256": "687274d293b6cdc6e73e0fee520bf2049650090d7164f87672d212a3c530cf4a",
+          "url": "https://static.crates.io/crates/schemars/1.2.2/download"
         }
       },
       "targets": [
@@ -47864,7 +47316,7 @@
           }
         }
       ],
-      "version": "1.2.1"
+      "version": "1.2.2"
     },
     "schnellru 0.2.4": {
       "common_attrs": {
@@ -50432,7 +49884,7 @@
             ],
             "cfg(windows)": [
               {
-                "id": "windows-sys 0.61.2",
+                "id": "windows-sys 0.60.2",
                 "target": "windows_sys"
               }
             ]
@@ -51152,7 +50604,7 @@
       ],
       "version": "3.0.3"
     },
-    "syn-solidity 1.7.2": {
+    "syn-solidity 1.7.3": {
       "common_attrs": {
         "crate_features": [
           "visit",
@@ -51172,6 +50624,12 @@
             "target": "syn"
           }
         ],
+        "deps_dev": [
+          {
+            "id": "pretty_assertions 1.4.1",
+            "target": "pretty_assertions"
+          }
+        ],
         "edition": "2024",
         "proc_macro_deps": [
           {
@@ -51181,19 +50639,8 @@
         ]
       },
       "library_target_name": "syn_solidity",
-      "license": "MIT OR Apache-2.0",
-      "license_ids": [
-        "Apache-2.0",
-        "MIT"
-      ],
       "name": "syn-solidity",
-      "package_url": "https://github.com/alloy-rs/core",
-      "repository": {
-        "Http": {
-          "sha256": "4c6415502cd1e9ed58b3ceb415164b812d5572757b1a6f0e280ae806723c1fab",
-          "url": "https://static.crates.io/crates/syn-solidity/1.7.2/download"
-        }
-      },
+      "repository": null,
       "targets": [
         {
           "Library": {
@@ -51202,7 +50649,7 @@
           }
         }
       ],
-      "version": "1.7.2"
+      "version": "1.7.3"
     },
     "sync_wrapper 1.0.2": {
       "common_attrs": {
@@ -51596,6 +51043,45 @@
       ],
       "version": "0.4.46"
     },
+    "target-tuple 1.0.2": {
+      "build_script_attrs": {},
+      "common_attrs": {
+        "edition": "2021",
+        "extra_deps": [
+          ":build_script_build"
+        ]
+      },
+      "library_target_name": "target_tuple",
+      "license": "MIT OR Apache-2.0",
+      "license_file": "LICENSE-APACHE",
+      "license_ids": [
+        "Apache-2.0",
+        "MIT"
+      ],
+      "name": "target-tuple",
+      "package_url": "https://github.com/dtolnay/target-tuple",
+      "repository": {
+        "Http": {
+          "sha256": "876fef147edbcbddc8ac5cbbba92c7b86519e314e86638596c09673b2ed01e7f",
+          "url": "https://static.crates.io/crates/target-tuple/1.0.2/download"
+        }
+      },
+      "targets": [
+        {
+          "Library": {
+            "crate_name": "target_tuple",
+            "crate_root": "src/lib.rs"
+          }
+        },
+        {
+          "BuildScript": {
+            "crate_name": "build_script_build",
+            "crate_root": "build.rs"
+          }
+        }
+      ],
+      "version": "1.0.2"
+    },
     "tempfile 3.27.0": {
       "common_attrs": {
         "crate_features": [
@@ -51609,7 +51095,7 @@
               "target": "fastrand"
             },
             {
-              "id": "getrandom 0.4.2",
+              "id": "getrandom 0.3.4",
               "target": "getrandom"
             },
             {
@@ -51626,7 +51112,7 @@
             ],
             "cfg(windows)": [
               {
-                "id": "windows-sys 0.61.2",
+                "id": "windows-sys 0.52.0",
                 "target": "windows_sys"
               }
             ]
@@ -51658,6 +51144,46 @@
         }
       ],
       "version": "3.27.0"
+    },
+    "termcolor 1.4.1": {
+      "common_attrs": {
+        "deps": {
+          "common": [],
+          "selects": {
+            "cfg(windows)": [
+              {
+                "id": "winapi-util 0.1.11",
+                "target": "winapi_util"
+              }
+            ]
+          }
+        },
+        "edition": "2018"
+      },
+      "library_target_name": "termcolor",
+      "license": "Unlicense OR MIT",
+      "license_file": "LICENSE-MIT",
+      "license_ids": [
+        "MIT",
+        "Unlicense"
+      ],
+      "name": "termcolor",
+      "package_url": "https://github.com/BurntSushi/termcolor",
+      "repository": {
+        "Http": {
+          "sha256": "06794f8f6c5c898b3275aebefa6b8a1cb24cd2c6c79397ab15774837a0bc5755",
+          "url": "https://static.crates.io/crates/termcolor/1.4.1/download"
+        }
+      },
+      "targets": [
+        {
+          "Library": {
+            "crate_name": "termcolor",
+            "crate_root": "src/lib.rs"
+          }
+        }
+      ],
+      "version": "1.4.1"
     },
     "test-case 3.3.1": {
       "common_attrs": {
@@ -52671,6 +52197,54 @@
       ],
       "version": "0.2.30"
     },
+    "tiny-keccak 2.0.2": {
+      "build_script_attrs": {},
+      "common_attrs": {
+        "crate_features": [
+          "default",
+          "keccak"
+        ],
+        "deps": [
+          {
+            "id": "crunchy 0.2.4",
+            "target": "crunchy"
+          }
+        ],
+        "edition": "2018",
+        "extra_deps": [
+          ":build_script_build"
+        ]
+      },
+      "library_target_name": "tiny_keccak",
+      "license": "CC0-1.0",
+      "license_file": "LICENSE",
+      "license_ids": [
+        "CC0-1.0"
+      ],
+      "name": "tiny-keccak",
+      "package_url": "https://github.com/debris/tiny-keccak",
+      "repository": {
+        "Http": {
+          "sha256": "2c9d3793400a45f954c52e73d068316d76b6f4e36977e3fcebb13a2721e80237",
+          "url": "https://static.crates.io/crates/tiny-keccak/2.0.2/download"
+        }
+      },
+      "targets": [
+        {
+          "Library": {
+            "crate_name": "tiny_keccak",
+            "crate_root": "src/lib.rs"
+          }
+        },
+        {
+          "BuildScript": {
+            "crate_name": "build_script_build",
+            "crate_root": "build.rs"
+          }
+        }
+      ],
+      "version": "2.0.2"
+    },
     "tinystr 0.8.3": {
       "common_attrs": {
         "crate_features": [
@@ -53358,11 +52932,11 @@
             "target": "toml_datetime"
           },
           {
-            "id": "toml_parser 1.1.2+spec-1.1.0",
+            "id": "toml_parser 1.1.3+spec-1.1.0",
             "target": "toml_parser"
           },
           {
-            "id": "toml_writer 1.1.1+spec-1.1.0",
+            "id": "toml_writer 1.1.2+spec-1.1.0",
             "target": "toml_writer"
           },
           {
@@ -53396,6 +52970,68 @@
         }
       ],
       "version": "0.9.12+spec-1.1.0"
+    },
+    "toml 1.1.6+spec-1.1.0": {
+      "common_attrs": {
+        "crate_features": [
+          "default",
+          "display",
+          "parse",
+          "serde",
+          "std"
+        ],
+        "deps": [
+          {
+            "id": "serde_core 1.0.229",
+            "target": "serde_core"
+          },
+          {
+            "id": "serde_spanned 1.1.1",
+            "target": "serde_spanned"
+          },
+          {
+            "id": "toml_datetime 1.1.1+spec-1.1.0",
+            "target": "toml_datetime"
+          },
+          {
+            "id": "toml_parser 1.1.3+spec-1.1.0",
+            "target": "toml_parser"
+          },
+          {
+            "id": "toml_writer 1.1.2+spec-1.1.0",
+            "target": "toml_writer"
+          },
+          {
+            "id": "winnow 1.0.1",
+            "target": "winnow"
+          }
+        ],
+        "edition": "2024"
+      },
+      "library_target_name": "toml",
+      "license": "MIT OR Apache-2.0",
+      "license_file": "LICENSE-APACHE",
+      "license_ids": [
+        "Apache-2.0",
+        "MIT"
+      ],
+      "name": "toml",
+      "package_url": "https://github.com/toml-rs/toml",
+      "repository": {
+        "Http": {
+          "sha256": "920602543f0911ab71da12c50d59701da54c196d1a2bf5cb4b75667f137a406a",
+          "url": "https://static.crates.io/crates/toml/1.1.6+spec-1.1.0/download"
+        }
+      },
+      "targets": [
+        {
+          "Library": {
+            "crate_name": "toml",
+            "crate_root": "src/lib.rs"
+          }
+        }
+      ],
+      "version": "1.1.6+spec-1.1.0"
     },
     "toml_datetime 0.6.11": {
       "common_attrs": {
@@ -53480,7 +53116,14 @@
         "crate_features": [
           "alloc",
           "default",
+          "serde",
           "std"
+        ],
+        "deps": [
+          {
+            "id": "serde_core 1.0.229",
+            "target": "serde_core"
+          }
         ],
         "edition": "2024"
       },
@@ -53579,7 +53222,7 @@
             "target": "toml_datetime"
           },
           {
-            "id": "toml_parser 1.1.2+spec-1.1.0",
+            "id": "toml_parser 1.1.3+spec-1.1.0",
             "target": "toml_parser"
           },
           {
@@ -53614,7 +53257,7 @@
       ],
       "version": "0.25.11+spec-1.1.0"
     },
-    "toml_parser 1.1.2+spec-1.1.0": {
+    "toml_parser 1.1.3+spec-1.1.0": {
       "common_attrs": {
         "crate_features": [
           "alloc",
@@ -53640,8 +53283,8 @@
       "package_url": "https://github.com/toml-rs/toml",
       "repository": {
         "Http": {
-          "sha256": "a2abe9b86193656635d2411dc43050282ca48aa31c2451210f4202550afb7526",
-          "url": "https://static.crates.io/crates/toml_parser/1.1.2+spec-1.1.0/download"
+          "sha256": "1d38ac1cf9b95face32296c0a3ede1fdc270627c9d9c02a7274dd6d960dc4d56",
+          "url": "https://static.crates.io/crates/toml_parser/1.1.3+spec-1.1.0/download"
         }
       },
       "targets": [
@@ -53652,9 +53295,9 @@
           }
         }
       ],
-      "version": "1.1.2+spec-1.1.0"
+      "version": "1.1.3+spec-1.1.0"
     },
-    "toml_writer 1.1.1+spec-1.1.0": {
+    "toml_writer 1.1.2+spec-1.1.0": {
       "common_attrs": {
         "crate_features": [
           "alloc",
@@ -53673,8 +53316,8 @@
       "package_url": "https://github.com/toml-rs/toml",
       "repository": {
         "Http": {
-          "sha256": "756daf9b1013ebe47a8776667b466417e2d4c5679d441c26230efd9ef78692db",
-          "url": "https://static.crates.io/crates/toml_writer/1.1.1+spec-1.1.0/download"
+          "sha256": "7d56353a2a665ad0f41a421187180aab746c8c325620617ad883a99a1cbe66d2",
+          "url": "https://static.crates.io/crates/toml_writer/1.1.2+spec-1.1.0/download"
         }
       },
       "targets": [
@@ -53685,7 +53328,7 @@
           }
         }
       ],
-      "version": "1.1.1+spec-1.1.0"
+      "version": "1.1.2+spec-1.1.0"
     },
     "tonic 0.14.5": {
       "common_attrs": {
@@ -55013,10 +54656,6 @@
         ],
         "deps": [
           {
-            "id": "alloy-primitives 1.7.2",
-            "target": "alloy_primitives"
-          },
-          {
             "id": "ethereum_hashing 0.8.0",
             "target": "ethereum_hashing"
           },
@@ -55033,7 +54672,10 @@
             "target": "typenum"
           }
         ],
-        "edition": "2021"
+        "edition": "2021",
+        "extra_deps": [
+          "@@//alloy-core/crates/primitives:alloy_primitives"
+        ]
       },
       "library_target_name": "tree_hash",
       "license": "Apache-2.0",
@@ -55229,6 +54871,67 @@
         }
       ],
       "version": "0.2.5"
+    },
+    "trybuild 1.0.121": {
+      "common_attrs": {
+        "deps": [
+          {
+            "id": "glob 0.3.3",
+            "target": "glob"
+          },
+          {
+            "id": "serde 1.0.229",
+            "target": "serde"
+          },
+          {
+            "id": "serde_json 1.0.151",
+            "target": "serde_json"
+          },
+          {
+            "id": "target-tuple 1.0.2",
+            "target": "target_tuple"
+          },
+          {
+            "id": "termcolor 1.4.1",
+            "target": "termcolor"
+          },
+          {
+            "id": "toml 1.1.6+spec-1.1.0",
+            "target": "toml"
+          }
+        ],
+        "edition": "2024",
+        "proc_macro_deps": [
+          {
+            "id": "serde_derive 1.0.229",
+            "target": "serde_derive"
+          }
+        ]
+      },
+      "library_target_name": "trybuild",
+      "license": "MIT OR Apache-2.0",
+      "license_file": "LICENSE-APACHE",
+      "license_ids": [
+        "Apache-2.0",
+        "MIT"
+      ],
+      "name": "trybuild",
+      "package_url": "https://github.com/dtolnay/trybuild",
+      "repository": {
+        "Http": {
+          "sha256": "c0cabaa10be1917331a313866bd94526343e03c77bcf69144b62b072ad35d47c",
+          "url": "https://static.crates.io/crates/trybuild/1.0.121/download"
+        }
+      },
+      "targets": [
+        {
+          "Library": {
+            "crate_name": "trybuild",
+            "crate_root": "src/lib.rs"
+          }
+        }
+      ],
+      "version": "1.0.121"
     },
     "tungstenite 0.29.0": {
       "common_attrs": {
@@ -55589,6 +55292,9 @@
     },
     "uint 0.9.5": {
       "common_attrs": {
+        "crate_features": [
+          "std"
+        ],
         "deps": [
           {
             "id": "byteorder 1.5.0",
@@ -57746,7 +57452,7 @@
           "selects": {
             "cfg(windows)": [
               {
-                "id": "windows-sys 0.61.2",
+                "id": "windows-sys 0.48.0",
                 "target": "windows_sys"
               }
             ]
@@ -61735,20 +61441,7 @@
   },
   "direct_deps": [
     "aes 0.8.4",
-    "alloy-chains 0.2.37",
-    "alloy-core 1.7.2",
-    "alloy-dyn-abi 1.7.2",
-    "alloy-eip2124 0.2.0",
-    "alloy-eip2930 0.2.3",
-    "alloy-eip7702 0.6.3",
-    "alloy-eip7928 0.4.10",
     "alloy-hardforks 0.2.13",
-    "alloy-hardforks 0.4.8",
-    "alloy-json-abi 1.7.2",
-    "alloy-primitives 1.7.2",
-    "alloy-rlp 0.3.16",
-    "alloy-sol-types 1.7.2",
-    "alloy-trie 0.9.5",
     "anstyle 1.0.14",
     "anyhow 1.0.104",
     "aquamarine 0.6.0",
@@ -61784,6 +61477,8 @@
     "colorchoice 1.0.5",
     "comfy-table 7.2.2",
     "concat-kdf 0.1.0",
+    "const-hex 1.18.1",
+    "crc 3.4.0",
     "crossbeam-channel 0.5.17",
     "crossbeam-queue 0.3.14",
     "crossbeam-utils 0.8.23",
@@ -61792,11 +61487,13 @@
     "darling 0.23.0",
     "dashmap 6.2.1",
     "data-encoding 2.11.1",
+    "derive_arbitrary 1.4.2",
     "derive_more 2.1.1",
     "digest 0.10.7",
     "dirs 5.0.1",
     "dirs-next 2.0.0",
     "discv5 0.10.4",
+    "dunce 1.0.5",
     "dyn-clone 1.0.20",
     "either 1.18.0",
     "elliptic-curve 0.13.8",
@@ -61807,12 +61504,16 @@
     "fdlimit 0.3.0",
     "fixed-cache 0.1.10",
     "fixed-map 0.9.5",
+    "foldhash 0.2.0",
     "futures 0.3.34",
     "futures-core 0.3.34",
     "futures-util 0.3.34",
     "futures-utils-wasm 0.1.0",
     "gcloud-sdk 0.29.0",
+    "getrandom 0.4.2",
     "hash-db 0.15.2",
+    "hashbrown 0.17.0",
+    "heck 0.5.0",
     "hickory-resolver 0.26.3",
     "hmac 0.12.1",
     "http 1.5.0",
@@ -61829,6 +61530,7 @@
     "interprocess 2.4.4",
     "ipnet 2.12.2",
     "itertools 0.14.0",
+    "itoa 1.0.18",
     "jsonrpsee 0.26.0",
     "jsonrpsee-core 0.26.0",
     "jsonrpsee-http-client 0.26.0",
@@ -61836,11 +61538,13 @@
     "jsonrpsee-types 0.26.0",
     "jsonwebtoken 10.3.0",
     "k256 0.13.4",
+    "keccak-asm 0.1.6",
     "libc 0.2.189",
     "linked_hash_set 0.1.6",
     "lru 0.18.2",
     "lz4 1.28.1",
     "lz4_flex 0.12.1",
+    "macro-string 0.2.0",
     "memchr 2.8.0",
     "memmap2 0.9.11",
     "metrics 0.24.6",
@@ -61852,6 +61556,7 @@
     "moka 0.12.16",
     "notify 8.2.0",
     "num-traits 0.2.19",
+    "num_enum 0.7.6",
     "nybbles 0.4.8",
     "once_cell 1.21.4",
     "opentelemetry 0.31.0",
@@ -61865,17 +61570,22 @@
     "parity-scale-codec 3.7.5",
     "parking_lot 0.12.5",
     "paste 1.0.15",
+    "phf 0.14.0",
     "pin-project 1.1.13",
     "plain_hasher 0.2.3",
     "pretty_assertions 1.4.1",
+    "proc-macro-error3 3.0.1",
     "proc-macro2 1.0.107",
     "procfs 0.18.0",
     "proptest 1.11.0",
     "proptest-arbitrary-interop 0.1.0",
+    "proptest-derive 0.7.0",
+    "proptest-derive 0.8.0",
     "quanta 0.12.6",
     "quote 1.0.47",
     "rand 0.8.6",
     "rand 0.9.4",
+    "rapidhash 4.4.1",
     "ratatui 0.30.2",
     "rayon 1.12.0",
     "reqwest 0.13.4",
@@ -61888,15 +61598,18 @@
     "roaring 0.11.5",
     "rocksdb 0.24.0",
     "rolling-file 0.2.0",
+    "ruint 1.20.0",
     "rustc-hash 2.1.3",
     "rustls 0.23.45",
     "schnellru 0.2.4",
     "secp256k1 0.30.0",
+    "secp256k1 0.31.1",
     "semver 1.0.28",
     "serde 1.0.229",
     "serde_json 1.0.151",
     "serde_with 3.23.0",
     "sha2 0.10.9",
+    "sha3 0.11.0",
     "slotmap 1.1.1",
     "smallvec 1.16.1",
     "snap 1.1.2",
@@ -61941,44 +61654,65 @@
     "visibility 0.1.1",
     "walkdir 2.5.0",
     "wasmtimer 0.4.3",
+    "winnow 1.0.1",
     "ws_stream_wasm 0.7.5",
     "zeroize 1.8.2",
     "zstd 0.13.3"
   ],
   "direct_dev_deps": [
     "assert_matches 1.5.0",
+    "bcs 0.2.1",
     "bincode 2.0.1",
     "brotli 8.0.4",
     "ci_info 0.14.15",
     "codspeed-criterion-compat 4.5.0",
+    "criterion 0.7.0",
     "criterion 0.8.2",
+    "ethabi 18.0.0",
     "flate2 1.1.10",
+    "hex-literal 0.4.1",
     "insta 1.48.0",
     "rstest 0.26.1",
+    "rustversion 1.0.22",
     "similar-asserts 1.7.0",
     "snapbox 1.2.2",
     "test-case 3.3.1",
     "test-fuzz 7.3.0",
     "tokio-test 0.4.5",
+    "trybuild 1.0.121",
     "yubihsm 0.42.1"
   ],
   "workspace_members": {
     "alloy 2.4.2": "bazel/cargo/alloy/crates/alloy",
+    "alloy-chains 0.2.37": "bazel/cargo/alloy-chains",
     "alloy-consensus 2.4.2": "bazel/cargo/alloy/crates/consensus",
     "alloy-consensus-any 2.4.2": "bazel/cargo/alloy/crates/consensus-any",
     "alloy-contract 2.4.2": "bazel/cargo/alloy/crates/contract",
+    "alloy-core 1.7.3": "bazel/cargo/alloy-core/crates/core",
+    "alloy-core-sol-test 1.7.3": "bazel/cargo/alloy-core/tests/core-sol",
+    "alloy-dyn-abi 1.7.3": "bazel/cargo/alloy-core/crates/dyn-abi",
+    "alloy-eip2124 0.2.0": "bazel/cargo/alloy-eips/crates/eip2124",
+    "alloy-eip2930 0.2.4": "bazel/cargo/alloy-eips/crates/eip2930",
     "alloy-eip5792 2.4.2": "bazel/cargo/alloy/crates/eip5792",
     "alloy-eip7547 2.4.2": "bazel/cargo/alloy/crates/eip7547",
+    "alloy-eip7702 0.6.3": "bazel/cargo/alloy-eips/crates/eip7702",
+    "alloy-eip7928 0.4.10": "bazel/cargo/alloy-eips/crates/eip7928",
+    "alloy-eip8141 0.1.0": "bazel/cargo/alloy-eips/crates/eip8141",
     "alloy-eips 2.4.2": "bazel/cargo/alloy/crates/eips",
     "alloy-ens 2.4.2": "bazel/cargo/alloy/crates/ens",
     "alloy-evm 0.39.0": "bazel/cargo/alloy-evm/crates/evm",
     "alloy-genesis 2.4.2": "bazel/cargo/alloy/crates/genesis",
+    "alloy-hardforks 0.4.8": "bazel/cargo/alloy-hardforks/crates/hardforks",
+    "alloy-json-abi 1.7.3": "bazel/cargo/alloy-core/crates/json-abi",
     "alloy-json-rpc 2.4.2": "bazel/cargo/alloy/crates/json-rpc",
     "alloy-network 2.4.2": "bazel/cargo/alloy/crates/network",
     "alloy-network-primitives 2.4.2": "bazel/cargo/alloy/crates/network-primitives",
     "alloy-node-bindings 2.4.2": "bazel/cargo/alloy/crates/node-bindings",
+    "alloy-primitives 1.7.3": "bazel/cargo/alloy-core/crates/primitives",
     "alloy-provider 2.4.2": "bazel/cargo/alloy/crates/provider",
     "alloy-pubsub 2.4.2": "bazel/cargo/alloy/crates/pubsub",
+    "alloy-rlp 0.3.16": "bazel/cargo/alloy-rlp/crates/rlp",
+    "alloy-rlp-derive 0.3.16": "bazel/cargo/alloy-rlp/crates/rlp-derive",
     "alloy-rpc-client 2.4.2": "bazel/cargo/alloy/crates/rpc-client",
     "alloy-rpc-types 2.4.2": "bazel/cargo/alloy/crates/rpc-types",
     "alloy-rpc-types-admin 2.4.2": "bazel/cargo/alloy/crates/rpc-types-admin",
@@ -62001,10 +61735,16 @@
     "alloy-signer-tempo 2.4.2": "bazel/cargo/alloy/crates/signer-tempo",
     "alloy-signer-trezor 2.4.2": "bazel/cargo/alloy/crates/signer-trezor",
     "alloy-signer-turnkey 2.4.2": "bazel/cargo/alloy/crates/signer-turnkey",
+    "alloy-sol-macro 1.7.3": "bazel/cargo/alloy-core/crates/sol-macro",
+    "alloy-sol-macro-expander 1.7.3": "bazel/cargo/alloy-core/crates/sol-macro-expander",
+    "alloy-sol-macro-input 1.7.3": "bazel/cargo/alloy-core/crates/sol-macro-input",
+    "alloy-sol-type-parser 1.7.3": "bazel/cargo/alloy-core/crates/sol-type-parser",
+    "alloy-sol-types 1.7.3": "bazel/cargo/alloy-core/crates/sol-types",
     "alloy-transport 2.4.2": "bazel/cargo/alloy/crates/transport",
     "alloy-transport-http 2.4.2": "bazel/cargo/alloy/crates/transport-http",
     "alloy-transport-ipc 2.4.2": "bazel/cargo/alloy/crates/transport-ipc",
     "alloy-transport-ws 2.4.2": "bazel/cargo/alloy/crates/transport-ws",
+    "alloy-trie 0.9.5": "bazel/cargo/alloy-trie",
     "alloy-tx-macros 2.4.2": "bazel/cargo/alloy/crates/tx-macros",
     "custom-hardforks 0.1.0": "bazel/cargo/reth/examples/custom-hardforks",
     "ef-test-runner 2.5.2": "bazel/cargo/reth/testing/runner",
@@ -62153,6 +61893,7 @@
     "reth-trie-parallel 2.5.2": "bazel/cargo/reth/crates/trie/parallel",
     "reth-trie-sparse 2.5.2": "bazel/cargo/reth/crates/trie/sparse",
     "reth-zstd-compressors 0.7.1": "bazel/cargo/reth-core/crates/zstd-compressors",
-    "revm-inspectors 0.43.0": "bazel/cargo/revm-inspectors"
+    "revm-inspectors 0.43.0": "bazel/cargo/revm-inspectors",
+    "syn-solidity 1.7.3": "bazel/cargo/alloy-core/crates/syn-solidity"
   }
 }

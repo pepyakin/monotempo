@@ -1,0 +1,32 @@
+# GENERATED FILE - DO NOT EDIT. Regenerate with `python3 bazel/generate.py`.
+#
+# Bazel-only derivation of `alloy-hardforks/crates/hardforks/Cargo.toml`: the same
+# package as `cargo metadata` describes it in the alloy-hardforks workspace, with
+# workspace inheritance resolved. Cargo builds are unaffected.
+
+[package]
+name = "alloy-hardforks"
+version = "0.4.8"
+edition = "2024"
+rust-version = "1.85"
+build = false
+autolib = false
+autobins = false
+autoexamples = false
+autotests = false
+autobenches = false
+
+[lib]
+name = "alloy_hardforks"
+path = "src/lib.rs"
+
+[features]
+serde = ["dep:serde", "alloy-primitives/serde"]
+
+[dependencies]
+alloy-chains = { version = "^0.2.0", default-features = false }
+alloy-eip2124 = { version = "^0.2.0", default-features = false }
+alloy-primitives = { version = "^1.0.0", default-features = false }
+auto_impl = { version = "^1" }
+dyn-clone = { version = "^1.0.17" }
+serde = { version = "^1.0", features = ["derive", "alloc"], optional = true, default-features = false }

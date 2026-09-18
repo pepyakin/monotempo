@@ -50,7 +50,28 @@ members = [
     "alloy/crates/transport-ipc",
     "alloy/crates/transport-ws",
     "alloy/crates/tx-macros",
+    "alloy-chains",
+    "alloy-core/crates/core",
+    "alloy-core/crates/dyn-abi",
+    "alloy-core/crates/json-abi",
+    "alloy-core/crates/primitives",
+    "alloy-core/crates/sol-macro",
+    "alloy-core/crates/sol-macro-expander",
+    "alloy-core/crates/sol-macro-input",
+    "alloy-core/crates/sol-type-parser",
+    "alloy-core/crates/sol-types",
+    "alloy-core/crates/syn-solidity",
+    "alloy-core/tests/core-sol",
+    "alloy-eips/crates/eip2124",
+    "alloy-eips/crates/eip2930",
+    "alloy-eips/crates/eip7702",
+    "alloy-eips/crates/eip7928",
+    "alloy-eips/crates/eip8141",
     "alloy-evm/crates/evm",
+    "alloy-hardforks/crates/hardforks",
+    "alloy-rlp/crates/rlp",
+    "alloy-rlp/crates/rlp-derive",
+    "alloy-trie",
     "reth/bin/reth",
     "reth/bin/reth-bb",
     "reth/crates/chain-state",
@@ -203,6 +224,27 @@ members = [
 
 # Union of the projects' `[patch.crates-io]` sections.
 [patch.crates-io]
+alloy-core = { path = "alloy-core/crates/core" }
+alloy-primitives = { path = "alloy-core/crates/primitives" }
+alloy-dyn-abi = { path = "alloy-core/crates/dyn-abi" }
+alloy-json-abi = { path = "alloy-core/crates/json-abi" }
+alloy-sol-types = { path = "alloy-core/crates/sol-types" }
+alloy-sol-macro = { path = "alloy-core/crates/sol-macro" }
+alloy-sol-macro-input = { path = "alloy-core/crates/sol-macro-input" }
+alloy-sol-macro-expander = { path = "alloy-core/crates/sol-macro-expander" }
+alloy-sol-type-parser = { path = "alloy-core/crates/sol-type-parser" }
+syn-solidity = { path = "alloy-core/crates/syn-solidity" }
+alloy-rlp = { path = "alloy-rlp/crates/rlp" }
+alloy-rlp-derive = { path = "alloy-rlp/crates/rlp-derive" }
+alloy-trie = { path = "alloy-trie" }
+alloy-chains = { path = "alloy-chains" }
+alloy-hardforks = { path = "alloy-hardforks/crates/hardforks" }
+alloy-eip2124 = { path = "alloy-eips/crates/eip2124" }
+alloy-eip2930 = { path = "alloy-eips/crates/eip2930" }
+alloy-eip7702 = { path = "alloy-eips/crates/eip7702" }
+alloy-eip7928 = { path = "alloy-eips/crates/eip7928" }
+alloy-eip8141 = { path = "alloy-eips/crates/eip8141" }
+rkyv = { git = "https://github.com/rkyv/rkyv", rev = "aea82f04757ed6a3674642f9e7f22b168ec7f955" }
 alloy-consensus = { path = "alloy/crates/consensus" }
 alloy-consensus-any = { path = "alloy/crates/consensus-any" }
 alloy-contract = { path = "alloy/crates/contract" }
@@ -245,4 +287,4 @@ revm-inspectors = { path = "revm-inspectors" }
 # Digest of every member manifest. crate_universe only re-resolves when a
 # manifest it was given changes, and it is given this one alone.
 [workspace.metadata.bazel]
-members-digest = "497892b56ec4281008694f6fc22a56fd0b25a4a61971a2b952139a4babecc512"
+members-digest = "09c537ca39ff06995c5ca76a7c3a6164ec01f62f24e369f604d67926ad0aad54"

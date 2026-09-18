@@ -1,0 +1,36 @@
+# GENERATED FILE - DO NOT EDIT. Regenerate with `python3 bazel/generate.py`.
+#
+# Bazel-only derivation of `alloy-core/crates/sol-macro-input/Cargo.toml`: the same
+# package as `cargo metadata` describes it in the alloy-core workspace, with
+# workspace inheritance resolved. Cargo builds are unaffected.
+
+[package]
+name = "alloy-sol-macro-input"
+version = "1.7.3"
+edition = "2024"
+rust-version = "1.85"
+build = false
+autolib = false
+autobins = false
+autoexamples = false
+autotests = false
+autobenches = false
+
+[lib]
+name = "alloy_sol_macro_input"
+path = "src/lib.rs"
+
+[features]
+json = ["dep:alloy-json-abi", "dep:serde_json", "alloy-json-abi/serde_json"]
+
+[dependencies]
+alloy-json-abi = { path = "../json-abi", optional = true, default-features = false }
+dunce = { version = "^1.0.4" }
+heck = { version = "^0.5.0" }
+hex = { package = "const-hex", version = "^1.14", features = ["alloc", "core-error"], default-features = false }
+macro-string = { version = "^0.2" }
+proc-macro2 = { version = "^1.0" }
+quote = { version = "^1.0" }
+serde_json = { version = "^1.0", features = ["alloc"], optional = true, default-features = false }
+syn = { version = "^2.0" }
+syn-solidity = { path = "../syn-solidity", default-features = false }

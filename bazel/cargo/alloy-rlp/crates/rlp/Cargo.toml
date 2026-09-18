@@ -1,0 +1,46 @@
+# GENERATED FILE - DO NOT EDIT. Regenerate with `python3 bazel/generate.py`.
+#
+# Bazel-only derivation of `alloy-rlp/crates/rlp/Cargo.toml`: the same
+# package as `cargo metadata` describes it in the alloy-rlp workspace, with
+# workspace inheritance resolved. Cargo builds are unaffected.
+
+[package]
+name = "alloy-rlp"
+version = "0.3.16"
+edition = "2021"
+rust-version = "1.71"
+build = false
+autolib = false
+autobins = false
+autoexamples = false
+autotests = false
+autobenches = false
+
+[lib]
+name = "alloy_rlp"
+path = "src/lib.rs"
+
+[[example]]
+name = "enum"
+path = "__workspace__/examples/enum.rs"
+
+[[test]]
+name = "derive"
+path = "tests/derive.rs"
+
+[features]
+default = ["std"]
+std = ["bytes/std", "arrayvec?/std"]
+derive = ["dep:alloy-rlp-derive"]
+core-net = []
+core-error = []
+arrayvec = ["dep:arrayvec"]
+
+[dependencies]
+alloy-rlp-derive = { path = "../rlp-derive", optional = true, default-features = false }
+arrayvec = { version = "^0.7", optional = true, default-features = false }
+bytes = { version = "^1.4", default-features = false }
+
+[dev-dependencies]
+hex = { package = "const-hex", version = "^1", features = ["alloc"], default-features = false }
+hex-literal = { version = "^0.4" }

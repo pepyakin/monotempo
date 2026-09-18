@@ -1,0 +1,50 @@
+# GENERATED FILE - DO NOT EDIT. Regenerate with `python3 bazel/generate.py`.
+#
+# Bazel-only derivation of `alloy-core/crates/json-abi/Cargo.toml`: the same
+# package as `cargo metadata` describes it in the alloy-core workspace, with
+# workspace inheritance resolved. Cargo builds are unaffected.
+
+[package]
+name = "alloy-json-abi"
+version = "1.7.3"
+edition = "2024"
+rust-version = "1.85"
+build = false
+autolib = false
+autobins = false
+autoexamples = false
+autotests = false
+autobenches = false
+
+[lib]
+name = "alloy_json_abi"
+path = "src/lib.rs"
+
+[[test]]
+name = "abi"
+path = "tests/abi.rs"
+
+[[test]]
+name = "it"
+path = "tests/it/main.rs"
+
+[[bench]]
+name = "json_abi"
+path = "benches/json_abi.rs"
+
+[features]
+default = ["std"]
+std = ["serde/std", "alloy-primitives/std", "alloy-sol-type-parser/std", "serde_json?/std"]
+serde_json = ["dep:serde_json"]
+
+[dependencies]
+alloy-primitives = { path = "../primitives", features = ["serde"], default-features = false }
+alloy-sol-type-parser = { path = "../sol-type-parser", features = ["serde"], default-features = false }
+serde = { version = "^1.0", features = ["alloc", "derive"], default-features = false }
+serde_json = { version = "^1.0", features = ["alloc"], optional = true, default-features = false }
+
+[dev-dependencies]
+criterion = { version = "^0.7" }
+ethabi = { version = "^18" }
+pretty_assertions = { version = "^1.4" }
+serde_json = { version = "^1.0", features = ["alloc"], default-features = false }

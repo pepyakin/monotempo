@@ -11,3 +11,105 @@ external crate, with the members' Bazel labels.
 """
 
 crate = use_extension("@rules_rust//crate_universe:extensions.bzl", "crate")
+
+crate.annotation(
+    deps = [
+        "@@//alloy-chains:alloy_chains",
+        "@@//alloy-core/crates/primitives:alloy_primitives",
+        "@@//alloy-eips/crates/eip2124:alloy_eip2124",
+    ],
+    crate = "alloy-hardforks",
+    repositories = ["crates"],
+    version = "=0.2.13",
+)
+
+crate.annotation(
+    deps = [
+        "@@//alloy-rlp/crates/rlp:alloy_rlp",
+    ],
+    crate = "discv5",
+    repositories = ["crates"],
+    version = "=0.10.4",
+)
+
+crate.annotation(
+    deps = [
+        "@@//alloy-rlp/crates/rlp:alloy_rlp",
+    ],
+    crate = "enr",
+    repositories = ["crates"],
+    version = "=0.13.0",
+)
+
+crate.annotation(
+    deps = [
+        "@@//alloy-core/crates/primitives:alloy_primitives",
+    ],
+    crate = "ethereum_serde_utils",
+    repositories = ["crates"],
+    version = "=0.8.0",
+)
+
+crate.annotation(
+    deps = [
+        "@@//alloy-core/crates/primitives:alloy_primitives",
+    ],
+    crate = "ethereum_ssz",
+    repositories = ["crates"],
+    version = "=0.10.4",
+)
+
+crate.annotation(
+    deps = [
+        "@@//alloy-rlp/crates/rlp:alloy_rlp",
+    ],
+    crate = "nybbles",
+    repositories = ["crates"],
+    version = "=0.4.8",
+)
+
+crate.annotation(
+    deps = [
+        "@@//alloy-eips/crates/eip2930:alloy_eip2930",
+        "@@//alloy-eips/crates/eip7702:alloy_eip7702",
+    ],
+    crate = "revm-context-interface",
+    repositories = ["crates"],
+    version = "=43.0.1",
+)
+
+crate.annotation(
+    deps = [
+        "@@//alloy-core/crates/primitives:alloy_primitives",
+    ],
+    crate = "revm-primitives",
+    repositories = ["crates"],
+    version = "=43.0.0",
+)
+
+crate.annotation(
+    deps = [
+        "@@//alloy-eips/crates/eip7928:alloy_eip7928",
+    ],
+    crate = "revm-state",
+    repositories = ["crates"],
+    version = "=43.0.0",
+)
+
+crate.annotation(
+    deps = [
+        "@@//alloy-rlp/crates/rlp:alloy_rlp",
+    ],
+    crate = "ruint",
+    repositories = ["crates"],
+    version = "=1.20.0",
+)
+
+crate.annotation(
+    deps = [
+        "@@//alloy-core/crates/primitives:alloy_primitives",
+    ],
+    crate = "tree_hash",
+    repositories = ["crates"],
+    version = "=0.12.1",
+)

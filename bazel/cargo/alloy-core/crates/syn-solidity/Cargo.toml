@@ -1,0 +1,38 @@
+# GENERATED FILE - DO NOT EDIT. Regenerate with `python3 bazel/generate.py`.
+#
+# Bazel-only derivation of `alloy-core/crates/syn-solidity/Cargo.toml`: the same
+# package as `cargo metadata` describes it in the alloy-core workspace, with
+# workspace inheritance resolved. Cargo builds are unaffected.
+
+[package]
+name = "syn-solidity"
+version = "1.7.3"
+edition = "2024"
+rust-version = "1.85"
+build = false
+autolib = false
+autobins = false
+autoexamples = false
+autotests = false
+autobenches = false
+
+[lib]
+name = "syn_solidity"
+path = "src/lib.rs"
+
+[[test]]
+name = "contracts"
+path = "tests/contracts.rs"
+
+[features]
+visit = []
+visit-mut = []
+
+[dependencies]
+paste = { version = "^1.0" }
+proc-macro2 = { version = "^1.0" }
+quote = { version = "^1.0" }
+syn = { version = "^2.0", features = ["extra-traits"] }
+
+[dev-dependencies]
+pretty_assertions = { version = "^1.4" }

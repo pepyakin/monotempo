@@ -1,0 +1,35 @@
+# GENERATED FILE - DO NOT EDIT. Regenerate with `python3 bazel/generate.py`.
+#
+# Bazel-only derivation of `alloy-core/crates/sol-type-parser/Cargo.toml`: the same
+# package as `cargo metadata` describes it in the alloy-core workspace, with
+# workspace inheritance resolved. Cargo builds are unaffected.
+
+[package]
+name = "alloy-sol-type-parser"
+version = "1.7.3"
+edition = "2024"
+rust-version = "1.85"
+build = false
+autolib = false
+autobins = false
+autoexamples = false
+autotests = false
+autobenches = false
+
+[lib]
+name = "alloy_sol_type_parser"
+path = "src/lib.rs"
+
+[features]
+default = ["std"]
+std = ["winnow/std"]
+serde = ["dep:serde"]
+debug = ["std"]
+eip712 = []
+
+[dependencies]
+serde = { version = "^1.0", features = ["alloc", "derive"], optional = true, default-features = false }
+winnow = { version = "^1.0", features = ["alloc", "ascii"], default-features = false }
+
+[dev-dependencies]
+serde_json = { version = "^1.0", features = ["alloc"], default-features = false }

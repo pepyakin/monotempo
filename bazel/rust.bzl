@@ -379,6 +379,7 @@ def crate_integration_test(
 def crate_build_script(
         name,
         workspace,
+        version = None,
         crate_features = [],
         deps = [],
         data = [],
@@ -399,7 +400,7 @@ def crate_build_script(
         name = name,
         srcs = ["build.rs"],
         edition = workspace.edition,
-        version = workspace.version,
+        version = version if version != None else workspace.version,
         crate_features = crate_features,
         deps = deps,
         data = data,

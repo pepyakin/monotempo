@@ -102,6 +102,10 @@ written in full. Keys:
   the test-data directories); `<target>` is an integration test name or
   `crate` for the lib, binaries and unit tests. Files in another package need
   a full label and an `exported_files.<crate>` entry there.
+* `filegroups.<crate>.<name> = [globs]`: public fixture groups for inputs
+  shared across packages (for example alloy-core's ABI JSON files).
+* `test_env.<crate>.<variable> = "value"`: runtime environment for the
+  crate's unit and integration tests.
 * `process_per_test = [crates]`: tests of these crates and of their
   dependants run one process per test.
 * `test_tags.<crate> = [tags]`: tags for the crate's test targets (`manual`
@@ -175,14 +179,14 @@ be a single crate without a `[workspace]` (`revm-inspectors/`); its own
 `[package]` and `[lints]` then stand in for the workspace tables. The Bazel
 Cargo workspace uses the highest `resolver` any project asks for.
 
-If a `[patch.crates-io]` left an external crate depending on a workspace
-member, crate_universe would drop that edge (it deliberately leaves
+When a `[patch.crates-io]` leaves an external crate depending on a workspace
+member, crate_universe drops that edge (it deliberately leaves
 dependencies on workspace members out of the crates it renders). The
 generator writes such edges back as
 `crate.annotation(crate = ..., version = "=...", deps = ["@@//alloy/..."])` in
 `bazel/cargo/member_deps.MODULE.bazel`, which the root `MODULE.bazel`
-`include()`s. Today the file is empty: every external crate that depended on
-alloy came from reth-core, alloy-evm or revm-inspectors, which are in-tree.
+`include()`s. These annotations connect external revm and other crates to
+the in-tree alloy foundations, preserving type identity across the graph.
 Changing which external crates reach into the tree needs a repin
 (`CARGO_BAZEL_REPIN=1 bazel mod deps`) after the generator.
 

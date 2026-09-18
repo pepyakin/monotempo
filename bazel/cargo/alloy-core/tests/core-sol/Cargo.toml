@@ -1,0 +1,25 @@
+# GENERATED FILE - DO NOT EDIT. Regenerate with `python3 bazel/generate.py`.
+#
+# Bazel-only derivation of `alloy-core/tests/core-sol/Cargo.toml`: the same
+# package as `cargo metadata` describes it in the alloy-core workspace, with
+# workspace inheritance resolved. Cargo builds are unaffected.
+
+[package]
+name = "alloy-core-sol-test"
+version = "1.7.3"
+edition = "2024"
+rust-version = "1.85"
+build = false
+autolib = false
+autobins = false
+autoexamples = false
+autotests = false
+autobenches = false
+
+[lib]
+name = "alloy_core_sol_test"
+path = "src/lib.rs"
+
+[dependencies]
+alloy-core = { path = "../../crates/core", features = ["sol-types", "json", "map"], default-features = false }
+derive_more = { version = "^2", default-features = false }

@@ -1,0 +1,33 @@
+# GENERATED FILE - DO NOT EDIT. Regenerate with `python3 bazel/generate.py`.
+#
+# Bazel-only derivation of `alloy-core/crates/sol-macro/Cargo.toml`: the same
+# package as `cargo metadata` describes it in the alloy-core workspace, with
+# workspace inheritance resolved. Cargo builds are unaffected.
+
+[package]
+name = "alloy-sol-macro"
+version = "1.7.3"
+edition = "2024"
+rust-version = "1.85"
+build = false
+autolib = false
+autobins = false
+autoexamples = false
+autotests = false
+autobenches = false
+
+[lib]
+name = "alloy_sol_macro"
+path = "src/lib.rs"
+proc-macro = true
+
+[features]
+json = ["alloy-sol-macro-expander/json"]
+
+[dependencies]
+alloy-sol-macro-expander = { path = "../sol-macro-expander", default-features = false }
+alloy-sol-macro-input = { path = "../sol-macro-input", default-features = false }
+proc-macro-error3 = { version = ">=3.0.0, <=3.0.1" }
+proc-macro2 = { version = "^1.0" }
+quote = { version = "^1.0" }
+syn = { version = "^2.0", features = ["extra-traits"] }

@@ -16,16 +16,24 @@ change to one file only rebuilds (and retests) the crates that depend on it.
 | `reth-core/` | `reth-primitives-traits`, `reth-codecs`, `reth-rpc-traits`, `reth-zstd-compressors`: reth's foundation crates, published separately | [paradigmxyz/reth-core](https://github.com/paradigmxyz/reth-core) | imported; reth builds against it |
 | `alloy-evm/` | EVM abstraction layer between alloy and revm | [alloy-rs/alloy-evm](https://github.com/alloy-rs/alloy-evm) | imported; reth builds against it |
 | `revm-inspectors/` | EVM tracing inspectors for the debug/trace RPC namespaces | [paradigmxyz/revm-inspectors](https://github.com/paradigmxyz/revm-inspectors) | imported; reth builds against it |
+| `alloy-core/` | Primitives, Solidity types and macros, dynamic and JSON ABI | [alloy-rs/core](https://github.com/alloy-rs/core) | imported at v1.7.3; shared in-tree dependencies |
+| `alloy-rlp/` | RLP encoding and derive macros | [alloy-rs/rlp](https://github.com/alloy-rs/rlp) | imported at v0.3.16 |
+| `alloy-trie/` | Merkle Patricia trie | [alloy-rs/trie](https://github.com/alloy-rs/trie) | imported at the 0.9.5 release commit |
+| `alloy-chains/` | EIP-155 chain definitions | [alloy-rs/chains](https://github.com/alloy-rs/chains) | imported at v0.2.37 |
+| `alloy-hardforks/` | Hardfork definitions | [alloy-rs/hardforks](https://github.com/alloy-rs/hardforks) | imported at alloy-hardforks-v0.4.8; incompatible 0.2.13 remains external |
+| `alloy-eips/` | EIP-2124, 2930, 7702, 7928 and 8141 types | [alloy-rs/eips](https://github.com/alloy-rs/eips) | imported at alloy-eip7928-v0.4.10 (individual crates have independent versions) |
 | `revm/` or `evm2/` | The EVM used by reth | [bluealloy/revm](https://github.com/bluealloy/revm) (what reth and tempo use today) or [alloy-rs/evm2](https://github.com/alloy-rs/evm2) (its successor, in development) | not yet imported; which one is still open |
 
 Until a project is imported, reth consumes it as an external crate from
 crates.io through crate_universe, exactly as its `Cargo.lock` says. Importing a
 project means moving it under its directory here and pointing the dependants
 at it with `[patch.crates-io]` in their `Cargo.toml`, as reth does for alloy;
-the Bazel build follows the patch. `reth-core`, `alloy-evm` and
-`revm-inspectors` are in-tree because they are the crates that sit between
-reth and alloy: every external crate that depended on alloy came from one of
-them, so with them imported no external crate reaches into the tree.
+the Bazel build follows the patch. External crates such as revm also consume
+the in-tree foundations through generated crate_universe annotations.
+The EIPs import pins one coherent revision: EIP-2124 0.2.0, EIP-2930 0.2.4,
+EIP-7702 0.6.3, EIP-7928 0.4.10 and EIP-8141 0.1.0. Alloy node-bindings still
+requires hardforks 0.2.x, so it retains the external 0.2.13 release rather
+than being forced onto the incompatible 0.4 API.
 
 Tempo resolves external crates separately through `@tempo_crates`, exactly as
 its `Cargo.lock` says. It still consumes its

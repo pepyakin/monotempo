@@ -24,6 +24,7 @@ crate_cargo_toml_env_vars(WORKSPACE)
 crate_library(
     name = "tempo_alloy",
     workspace = WORKSPACE,
+    version = "1.11.0",
     crate_features = FEATURES,
     declared_features = DECLARED_FEATURES,
     deps = [
@@ -74,6 +75,7 @@ crate_library(
 crate_unit_test(
     name = "tempo_alloy_test",
     workspace = WORKSPACE,
+    version = "1.11.0",
     crate = ":tempo_alloy",
     crate_features = FEATURES,
     declared_features = DECLARED_FEATURES,
@@ -89,6 +91,7 @@ crate_integration_test(
     name = "tempo_alloy_relay_transport_test",
     crate_name = "relay_transport",
     workspace = WORKSPACE,
+    version = "1.11.0",
     crate_root = "tests/relay_transport.rs",
     crate_features = FEATURES,
     declared_features = DECLARED_FEATURES,

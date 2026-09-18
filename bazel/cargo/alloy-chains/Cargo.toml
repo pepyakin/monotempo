@@ -1,0 +1,42 @@
+# GENERATED FILE - DO NOT EDIT. Regenerate with `python3 bazel/generate.py`.
+#
+# Bazel-only derivation of `alloy-chains/./Cargo.toml`: the same
+# package as `cargo metadata` describes it in the alloy-chains workspace, with
+# workspace inheritance resolved. Cargo builds are unaffected.
+
+[package]
+name = "alloy-chains"
+version = "0.2.37"
+edition = "2024"
+rust-version = "1.85"
+build = false
+autolib = false
+autobins = false
+autoexamples = false
+autotests = false
+autobenches = false
+
+[lib]
+name = "alloy_chains"
+path = "src/lib.rs"
+
+[features]
+default = ["std"]
+std = ["serde?/std", "alloy-primitives/std"]
+serde = ["dep:serde", "alloy-primitives/serde"]
+rlp = ["dep:alloy-rlp", "alloy-primitives/rlp"]
+arbitrary = ["dep:arbitrary", "dep:proptest", "alloy-primitives/arbitrary"]
+schema = ["std", "dep:schemars"]
+
+[dependencies]
+alloy-primitives = { version = "^1.6", default-features = false }
+alloy-rlp = { version = "^0.3", optional = true, default-features = false }
+arbitrary = { version = "^1.4", optional = true, default-features = false }
+num_enum = { version = "^0.7", default-features = false }
+phf = { version = "^0.14", default-features = false }
+proptest = { version = "^1.11", features = ["alloc"], optional = true, default-features = false }
+schemars = { version = "^1.2", optional = true }
+serde = { version = "^1.0", features = ["derive", "alloc"], optional = true, default-features = false }
+
+[dev-dependencies]
+serde_json = { version = "^1.0", features = ["alloc"], default-features = false }

@@ -36,6 +36,7 @@ crate_cargo_toml_env_vars(WORKSPACE)
 crate_library(
     name = "tempo_primitives",
     workspace = WORKSPACE,
+    version = "1.11.0",
     crate_features = FEATURES,
     declared_features = DECLARED_FEATURES,
     deps = [
@@ -71,6 +72,7 @@ crate_library(
 crate_unit_test(
     name = "tempo_primitives_test",
     workspace = WORKSPACE,
+    version = "1.11.0",
     crate = ":tempo_primitives",
     crate_features = FEATURES,
     declared_features = DECLARED_FEATURES,

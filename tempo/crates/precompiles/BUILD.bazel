@@ -83,6 +83,9 @@ crate_unit_test(
         "@tempo_crates//:criterion": "criterion",
         "@tempo_crates//:rand_08-0.8.6": "rand_08",
     },
+    data = [
+        "//tempo/crates/nitro-attestation:testdata/aws_attestation_2026_01_03.b64",
+    ],
 )
 
 crate_integration_test(

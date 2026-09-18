@@ -6,6 +6,14 @@ alloy/target
 # alloy-evm
 alloy-evm/target
 
+# alloy foundations
+alloy-core/target
+alloy-rlp/target
+alloy-trie/target
+alloy-chains/target
+alloy-hardforks/target
+alloy-eips/target
+
 # reth-core
 reth-core/target
 
@@ -27,7 +35,13 @@ reth/crates/storage/libmdbx-rs/mdbx-sys/libmdbx/cmake-build-debug
 # every package twice.
 # BEGIN GENERATED (bazel/generate.py)
 bazel/cargo/alloy
+bazel/cargo/alloy-chains
+bazel/cargo/alloy-core
+bazel/cargo/alloy-eips
 bazel/cargo/alloy-evm
+bazel/cargo/alloy-hardforks
+bazel/cargo/alloy-rlp
+bazel/cargo/alloy-trie
 bazel/cargo/reth
 bazel/cargo/reth-core
 bazel/cargo/revm-inspectors

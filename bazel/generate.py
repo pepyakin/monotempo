@@ -130,6 +130,10 @@ class Project:
     # test's name or "crate" for the unit tests. `manual` keeps a test out of
     # `bazel test //...`.
     test_tags: dict[str, list[str] | dict[str, list[str]]]
+    # Named groups of fixture globs exported by a crate to other packages.
+    filegroups: dict[str, dict[str, list[str]]] = field(default_factory=dict)
+    # Runtime environment required by a crate's tests.
+    test_env: dict[str, dict[str, str]] = field(default_factory=dict)
 
     def tags_for(self, crate: str, target: str) -> list[str] | None:
         tags = self.test_tags.get(crate)
@@ -171,6 +175,8 @@ class Project:
             "exported_files",
             "process_per_test",
             "test_tags",
+            "filegroups",
+            "test_env",
         }
         unknown = set(cfg) - known
         if unknown:
@@ -191,6 +197,8 @@ class Project:
             exported_files=cfg.get("exported_files", {}),
             process_per_test=cfg.get("process_per_test", []),
             test_tags=cfg.get("test_tags", {}),
+            filegroups=cfg.get("filegroups", {}),
+            test_env=cfg.get("test_env", {}),
         )
 
 
@@ -238,6 +246,7 @@ class Crate:
     normal: list[Dep] = field(default_factory=list)
     dev: list[Dep] = field(default_factory=list)
     build: list[Dep] = field(default_factory=list)
+    version: str | None = None  # override when not inherited from the workspace
 
     @property
     def lib_target(self) -> str:
@@ -387,9 +396,9 @@ def git_source(source: str) -> dict:
 @dataclass
 class DerivedManifest:
     text: str
-    # Children of the real crate directory the manifest refers to (`src`,
-    # `build.rs`, `tests`, ...), to be symlinked next to it.
-    children: set[str]
+    # Derived-package paths mapped to their real sources (`src`, `build.rs`,
+    # `tests`, ...), including targets outside the package directory.
+    children: dict[str, Path]
 
 
 def colliding_renames(members: list[Member]) -> set[tuple[str, str]]:
@@ -428,11 +437,18 @@ def derive_manifest(member: Member, by_dir: dict[Path, Member], unrenamed: set[t
     Dependencies in `unrenamed` (see colliding_renames) lose their rename.
     """
     pkg, project = member.pkg, member.project
-    children: set[str] = set()
+    children: dict[str, Path] = {}
 
     def rel(path: str) -> str:
-        p = Path(path).relative_to(member.real_dir)
-        children.add(p.parts[0])
+        source = Path(path).resolve()
+        if not source.is_relative_to(member.real_dir):
+            # RLP's example is ../../examples/enum.rs. Never symlink `..`:
+            # that is the derived package's parent directory, not an input.
+            p = Path("__workspace__") / source.relative_to(project.root)
+            children[p.as_posix()] = source
+            return p.as_posix()
+        p = source.relative_to(member.real_dir)
+        children[p.parts[0]] = member.real_dir / p.parts[0]
         return p.as_posix()
 
     package = {
@@ -611,9 +627,9 @@ def shadow_workspace(projects: list[Project], roots: dict[str, dict], members: l
         manifests[member.shadow_dir / "Cargo.toml"] = derived.text
         digest.update(member.shadow_dir.relative_to(SHADOW_ROOT).as_posix().encode() + b"\0")
         digest.update(derived.text.encode() + b"\0")
-        for child in derived.children:
+        for child, source in derived.children.items():
             link = member.shadow_dir / child
-            links[link] = relative_link(link, member.real_dir / child)
+            links[link] = relative_link(link, source)
     manifests[SHADOW_ROOT / "Cargo.toml"] = render_shadow_root_manifest(projects, roots, members, digest.hexdigest())
     return ShadowWorkspace(manifests=manifests, links=links)
 
@@ -751,6 +767,7 @@ def build_crates(projects: list[Project], members: list[Member], meta: dict, *, 
     nodes = {n["id"]: n for n in meta["resolve"]["nodes"]}
     member_ids = set(meta["workspace_members"])
     by_shadow_dir = {m.shadow_dir if derived else m.real_dir: m for m in members}
+    versions = {p.name: workspace_table(load_root_manifest(p))["package"].get("version") for p in projects}
 
     def lib_target(pkg: dict) -> dict | None:
         for t in pkg["targets"]:
@@ -785,6 +802,7 @@ def build_crates(projects: list[Project], members: list[Member], meta: dict, *, 
         crate = Crate(
             project=member.project,
             name=pkg["name"],
+            version=pkg["version"] if pkg["version"] != versions[member.project.name] else None,
             ident=crate_name_to_ident(pkg["name"]),
             package_path=member.package_path,
             features=sorted(nodes[member_id]["features"]),
@@ -1057,6 +1075,12 @@ def render_build_file(crate: Crate, crates: dict[str, Crate], *, cargo_test_name
     if crate.name in project.exported_files:
         exported = project.exported_files[crate.name]
         out.append(f"exports_files({render_list([starlark_str(f) for f in exported], 0)})\n\n")
+    for name, patterns in project.filegroups.get(crate.name, {}).items():
+        out.append(render_rule("filegroup", [
+            ("name", starlark_str(name)),
+            ("srcs", f"glob({render_list([starlark_str(p) for p in patterns])})"),
+            ("visibility", '["//visibility:public"]'),
+        ]) + "\n")
     out.append("crate_cargo_toml_env_vars(WORKSPACE)\n\n")
 
     build_script_label = None
@@ -1072,6 +1096,7 @@ def render_build_file(crate: Crate, crates: dict[str, Crate], *, cargo_test_name
                 [
                     ("name", starlark_str(f"{crate.ident}_build_script")),
                     ("workspace", "WORKSPACE"),
+                    ("version", starlark_str(crate.version) if crate.version else None),
                     ("crate_features", "FEATURES"),
                     ("deps", render_deps(crate.build, proc_macro=False)),
                     ("proc_macro_deps", render_deps(crate.build, proc_macro=True)),
@@ -1086,6 +1111,7 @@ def render_build_file(crate: Crate, crates: dict[str, Crate], *, cargo_test_name
     extra_compile_data = project.compile_data.get(crate.name, {})
     normal_attrs = [
         ("workspace", "WORKSPACE"),
+        ("version", starlark_str(crate.version) if crate.version else None),
         ("crate_features", "FEATURES"),
         ("declared_features", "DECLARED_FEATURES"),
         ("workspace_lints", None if crate.workspace_lints else "False"),
@@ -1128,6 +1154,7 @@ def render_build_file(crate: Crate, crates: dict[str, Crate], *, cargo_test_name
                 [
                     ("name", starlark_str(f"{crate.ident}_test")),
                     ("workspace", "WORKSPACE"),
+                    ("version", starlark_str(crate.version) if crate.version else None),
                     ("crate", starlark_str(f":{unit_test_crate}")),
                     ("crate_features", "FEATURES"),
                     ("declared_features", "DECLARED_FEATURES"),
@@ -1135,6 +1162,8 @@ def render_build_file(crate: Crate, crates: dict[str, Crate], *, cargo_test_name
                     ("deps", render_deps(crate.dev, proc_macro=False)),
                     ("proc_macro_deps", render_deps(crate.dev, proc_macro=True)),
                     ("aliases", render_aliases(crate.dev)),
+                    ("data", render_list([starlark_str(l) for l in extra_compile_data["crate"]]) if "crate" in extra_compile_data else None),
+                    ("env", render_dict(list(project.test_env[crate.name].items()), 4) if crate.name in project.test_env else None),
                     ("test_fuzz", test_fuzz),
                     ("process_per_test", process_per_test),
                     ("tags", render_tags(project.tags_for(crate.name, "crate"))),
@@ -1160,6 +1189,7 @@ def render_build_file(crate: Crate, crates: dict[str, Crate], *, cargo_test_name
                     ("name", starlark_str(f"{crate.ident}_{crate_name_to_ident(t.name)}_test")),
                     ("crate_name", starlark_str(crate_name_to_ident(t.name)) if cargo_test_names else None),
                     ("workspace", "WORKSPACE"),
+                    ("version", starlark_str(crate.version) if crate.version else None),
                     ("crate_root", starlark_str(t.src_path)),
                     ("crate_features", "FEATURES"),
                     ("declared_features", "DECLARED_FEATURES"),
@@ -1169,6 +1199,7 @@ def render_build_file(crate: Crate, crates: dict[str, Crate], *, cargo_test_name
                     ("aliases", render_aliases(deps)),
                     ("compile_data", render_list([starlark_str(l) for l in test_compile_data]) if test_compile_data else None),
                     ("data", render_list(bin_data) if bin_data else None),
+                    ("env", render_dict(list(project.test_env[crate.name].items()), 4) if crate.name in project.test_env else None),
                     ("test_fuzz", test_fuzz),
                     ("process_per_test", process_per_test),
                     ("tags", render_tags(project.tags_for(crate.name, t.name))),
@@ -1243,7 +1274,7 @@ def render_workspace_bzl(project: Project, root: dict) -> str:
         f"    manifest = {starlark_str(project.label('', 'Cargo.toml')) if 'workspace' in root else 'None'},\n",
         f"    lints = {starlark_str(project.label('bazel', 'lints'))},\n",
         f"    edition = {starlark_str(pkg['edition'])},\n",
-        f"    version = {starlark_str(pkg['version'])},\n",
+        f"    version = {starlark_str(pkg['version']) if 'version' in pkg else 'None'},\n",
         ")\n\n",
         "# `[workspace.lints.*]`, each in Cargo's application order.\n",
         f"RUSTC_LINTS = {render_dict(lint_levels(rust_lints))}\n\n",
