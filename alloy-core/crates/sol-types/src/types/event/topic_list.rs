@@ -1,0 +1,108 @@
+use crate::{
+    Error, Result, SolType,
+    abi::{AbiDecoderConfig, token::WordToken},
+};
+use alloc::borrow::Cow;
+
+#[allow(unknown_lints, unnameable_types)]
+mod sealed {
+    pub trait Sealed {}
+}
+use sealed::Sealed;
+
+/// A list of Solidity event topics.
+///
+/// This trait is implemented only on tuples of arity up to 4. The tuples must
+/// contain only [`SolType`]s where the token is a [`WordToken`], and as such
+/// it is sealed to prevent prevent incorrect downstream implementations.
+///
+/// See the [Solidity event ABI specification][solevent] for more details on how
+/// events' topics are encoded.
+///
+/// [solevent]: https://docs.soliditylang.org/en/latest/abi-spec.html#events
+///
+/// # Implementer's Guide
+///
+/// It should not be necessary to implement this trait manually. Instead, use
+/// the [`sol!`](crate::sol!) procedural macro to parse Solidity syntax into
+/// types that implement this trait.
+pub trait TopicList: SolType + Sealed {
+    /// The number of topics.
+    const COUNT: usize;
+
+    /// Detokenize the topics into a tuple of rust types.
+    ///
+    /// This function accepts an iterator of `WordToken`.
+    fn detokenize<I, D>(topics: I) -> Result<Self::RustType>
+    where
+        I: IntoIterator<Item = D>,
+        D: Into<WordToken>,
+    {
+        Self::detokenize_with_config(topics, AbiDecoderConfig::default())
+    }
+
+    /// Detokenize the topics into a tuple of Rust types with a decoder configuration.
+    fn detokenize_with_config<I, D>(topics: I, config: AbiDecoderConfig) -> Result<Self::RustType>
+    where
+        I: IntoIterator<Item = D>,
+        D: Into<WordToken>;
+}
+
+macro_rules! impl_topic_list_tuples {
+    ($($c:literal => $($lt:lifetime $t:ident),*;)+) => {$(
+        impl<$($t,)*> Sealed for ($($t,)*) {}
+        impl<$($lt,)* $($t: SolType<Token<$lt> = WordToken>,)*> TopicList for ($($t,)*) {
+            const COUNT: usize = $c;
+
+            fn detokenize_with_config<I, D>(topics: I, config: AbiDecoderConfig) -> Result<Self::RustType>
+            where
+                I: IntoIterator<Item = D>,
+                D: Into<WordToken>
+            {
+                let mut iter = topics.into_iter();
+                let topics = ($(
+                    {
+                        let topic = iter.next().ok_or_else(length_mismatch)?.into();
+                        if config.get_validate() {
+                            <$t>::type_check(&topic)?;
+                        }
+                        <$t>::detokenize(topic)
+                    },
+                )*);
+                if iter.next().is_some() {
+                    return Err(length_mismatch());
+                }
+                Ok(topics)
+            }
+        }
+    )+};
+}
+
+impl Sealed for () {}
+impl TopicList for () {
+    const COUNT: usize = 0;
+
+    #[inline]
+    fn detokenize_with_config<I, D>(topics: I, _config: AbiDecoderConfig) -> Result<Self::RustType>
+    where
+        I: IntoIterator<Item = D>,
+        D: Into<WordToken>,
+    {
+        if topics.into_iter().next().is_some() {
+            return Err(length_mismatch());
+        }
+        Ok(())
+    }
+}
+
+impl_topic_list_tuples! {
+    1 => 'a T;
+    2 => 'a T, 'b U;
+    3 => 'a T, 'b U, 'c V;
+    4 => 'a T, 'b U, 'c V, 'd W;
+}
+
+#[cold]
+const fn length_mismatch() -> Error {
+    Error::Other(Cow::Borrowed("topic list length mismatch"))
+}

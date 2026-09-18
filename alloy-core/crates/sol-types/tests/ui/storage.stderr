@@ -1,0 +1,5 @@
+error: No fail cases
+ --> tests/ui/storage.rs:3:1
+  |
+3 | compile_error!("No fail cases");
+  | ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^

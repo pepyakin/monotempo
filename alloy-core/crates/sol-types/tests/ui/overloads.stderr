@@ -1,0 +1,89 @@
+error: function `overloadTaken` is overloaded, but the generated name `overloadTaken_0` is already in use
+
+         = note: other declaration is here
+
+  --> tests/ui/overloads.rs:15:18
+   |
+15 |         function overloadTaken();
+   |                  ^^^^^^^^^^^^^
+
+error: function `overloadTaken` is overloaded, but the generated name `overloadTaken_1` is already in use
+
+         = note: other declaration is here
+
+  --> tests/ui/overloads.rs:16:18
+   |
+16 |         function overloadTaken(uint256);
+   |                  ^^^^^^^^^^^^^
+
+error: function with same name and parameter types defined twice
+
+         = note: other declaration is here
+
+  --> tests/ui/overloads.rs:23:18
+   |
+23 |         function sameOverload();
+   |                  ^^^^^^^^^^^^
+
+error: function with same name and parameter types defined twice
+
+         = note: other declaration is here
+
+  --> tests/ui/overloads.rs:28:18
+   |
+28 |         function sameTysOverload1(uint256[]memory a);
+   |                  ^^^^^^^^^^^^^^^^
+
+error: function with same name and parameter types defined twice
+
+         = note: other declaration is here
+
+  --> tests/ui/overloads.rs:33:18
+   |
+33 |         function sameTysOverload2(string memory,string storage);
+   |                  ^^^^^^^^^^^^^^^^
+
+error: event `overloadTaken` is overloaded, but the generated name `overloadTaken_0` is already in use
+
+         = note: other declaration is here
+
+  --> tests/ui/overloads.rs:50:15
+   |
+50 |         event overloadTaken();
+   |               ^^^^^^^^^^^^^
+
+error: event `overloadTaken` is overloaded, but the generated name `overloadTaken_1` is already in use
+
+         = note: other declaration is here
+
+  --> tests/ui/overloads.rs:51:15
+   |
+51 |         event overloadTaken(uint256);
+   |               ^^^^^^^^^^^^^
+
+error: event with same name and parameter types defined twice
+
+         = note: other declaration is here
+
+  --> tests/ui/overloads.rs:58:15
+   |
+58 |         event sameOverload();
+   |               ^^^^^^^^^^^^
+
+error: event with same name and parameter types defined twice
+
+         = note: other declaration is here
+
+  --> tests/ui/overloads.rs:63:15
+   |
+63 |         event sameTysOverload1(uint256[] a);
+   |               ^^^^^^^^^^^^^^^^
+
+error: event with same name and parameter types defined twice
+
+         = note: other declaration is here
+
+  --> tests/ui/overloads.rs:68:15
+   |
+68 |         event sameTysOverload2(string, string);
+   |               ^^^^^^^^^^^^^^^^
