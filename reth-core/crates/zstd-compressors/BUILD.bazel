@@ -37,4 +37,8 @@ crate_unit_test(
     crate = ":reth_zstd_compressors",
     crate_features = FEATURES,
     declared_features = DECLARED_FEATURES,
+    data = [
+        "receipt_dictionary.bin",
+        "transaction_dictionary.bin",
+    ],
 )

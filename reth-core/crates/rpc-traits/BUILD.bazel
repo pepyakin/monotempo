@@ -23,12 +23,12 @@ crate_library(
     crate_features = FEATURES,
     declared_features = DECLARED_FEATURES,
     deps = [
+        "//alloy-core/crates/primitives:alloy_primitives",
         "//alloy/crates/consensus:alloy_consensus",
         "//alloy/crates/network:alloy_network",
         "//alloy/crates/rpc-types-eth:alloy_rpc_types_eth",
         "//alloy/crates/signer:alloy_signer",
         "//reth-core/crates/primitives-traits:reth_primitives_traits",
-        "@crates//:alloy-primitives",
         "@crates//:thiserror",
     ],
 )
