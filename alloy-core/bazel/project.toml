@@ -1,0 +1,23 @@
+# Cross-crate ABI fixtures used by the macro unit tests and sol! expansions.
+[filegroups.alloy-json-abi]
+abi_fixtures = ["tests/abi/**"]
+
+[filegroups.alloy-sol-macro]
+doctests = ["doctests/**"]
+
+[exported_files]
+syn-solidity = ["tests/contracts/Multicall.sol"]
+
+[compile_data]
+alloy-sol-macro.crate = [":doctests"]
+alloy-sol-macro-input.crate = ["//alloy-core/crates/json-abi:abi_fixtures"]
+alloy-sol-types.macros = ["//alloy-core/crates/json-abi:abi_fixtures", "//alloy-core/crates/syn-solidity:tests/contracts/Multicall.sol"]
+
+[test_env.alloy-sol-macro-input]
+CARGO_PKG_NAME = "alloy-sol-macro-input"
+
+[test_tags]
+# trybuild invokes Cargo/rustc; keep this on the upstream Cargo test path.
+alloy-sol-types.compiletest = ["manual"]
+# Applies and reverts Git patches to its fixture checkout.
+syn-solidity.contracts = ["manual"]

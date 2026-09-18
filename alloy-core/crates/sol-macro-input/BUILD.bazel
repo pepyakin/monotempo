@@ -1,0 +1,57 @@
+# GENERATED FILE - DO NOT EDIT.
+#
+# Regenerate with `python3 bazel/generate.py` after changing Cargo.toml.
+
+load("//bazel:rust.bzl", "crate_cargo_toml_env_vars", "crate_library", "crate_unit_test")
+load("//alloy-core/bazel:workspace.bzl", "WORKSPACE")
+
+FEATURES = [
+    "json",
+]
+
+DECLARED_FEATURES = [
+    "json",
+]
+
+crate_cargo_toml_env_vars(WORKSPACE)
+
+crate_library(
+    name = "alloy_sol_macro_input",
+    workspace = WORKSPACE,
+    crate_features = FEATURES,
+    declared_features = DECLARED_FEATURES,
+    workspace_lints = False,
+    deps = [
+        "//alloy-core/crates/json-abi:alloy_json_abi",
+        "//alloy-core/crates/syn-solidity:syn_solidity",
+        "@crates//:dunce",
+        "@crates//:heck",
+        "@crates//:hex",
+        "@crates//:macro-string",
+        "@crates//:proc-macro2",
+        "@crates//:quote",
+        "@crates//:serde_json",
+        "@crates//:syn",
+    ],
+    aliases = {
+        "@crates//:hex": "hex",
+    },
+    compile_data = [
+        "//alloy-core/crates/json-abi:abi_fixtures",
+    ],
+)
+
+crate_unit_test(
+    name = "alloy_sol_macro_input_test",
+    workspace = WORKSPACE,
+    crate = ":alloy_sol_macro_input",
+    crate_features = FEATURES,
+    declared_features = DECLARED_FEATURES,
+    workspace_lints = False,
+    data = [
+        "//alloy-core/crates/json-abi:abi_fixtures",
+    ],
+    env = {
+        "CARGO_PKG_NAME": "alloy-sol-macro-input",
+    },
+)

@@ -1,0 +1,45 @@
+# GENERATED FILE - DO NOT EDIT.
+#
+# Regenerate with `python3 bazel/generate.py` after changing Cargo.toml.
+
+load("//bazel:rust.bzl", "crate_cargo_toml_env_vars", "crate_library", "crate_unit_test")
+load("//alloy-core/bazel:workspace.bzl", "WORKSPACE")
+
+FEATURES = [
+    "default",
+    "eip712",
+    "serde",
+    "std",
+]
+
+DECLARED_FEATURES = [
+    "debug",
+    "default",
+    "eip712",
+    "serde",
+    "std",
+]
+
+crate_cargo_toml_env_vars(WORKSPACE)
+
+crate_library(
+    name = "alloy_sol_type_parser",
+    workspace = WORKSPACE,
+    crate_features = FEATURES,
+    declared_features = DECLARED_FEATURES,
+    deps = [
+        "@crates//:serde",
+        "@crates//:winnow",
+    ],
+)
+
+crate_unit_test(
+    name = "alloy_sol_type_parser_test",
+    workspace = WORKSPACE,
+    crate = ":alloy_sol_type_parser",
+    crate_features = FEATURES,
+    declared_features = DECLARED_FEATURES,
+    deps = [
+        "@crates//:serde_json",
+    ],
+)

@@ -1,0 +1,113 @@
+# GENERATED FILE - DO NOT EDIT.
+#
+# Regenerate with `python3 bazel/generate.py` after changing Cargo.toml.
+
+load("//bazel:rust.bzl", "crate_cargo_toml_env_vars", "crate_library", "crate_unit_test")
+load("//alloy-core/bazel:workspace.bzl", "WORKSPACE")
+
+FEATURES = [
+    "arbitrary",
+    "asm-keccak",
+    "default",
+    "getrandom",
+    "k256",
+    "keccak-cache",
+    "keccak-cache-global",
+    "map",
+    "map-foldhash",
+    "map-indexmap",
+    "rand",
+    "rlp",
+    "secp256k1",
+    "serde",
+    "std",
+]
+
+DECLARED_FEATURES = [
+    "allocative",
+    "arbitrary",
+    "asm-keccak",
+    "borsh",
+    "default",
+    "diesel",
+    "getrandom",
+    "hex-compat",
+    "k256",
+    "keccak-cache",
+    "keccak-cache-global",
+    "keccak-cache-stats",
+    "map",
+    "map-foldhash",
+    "map-fxhash",
+    "map-hashbrown",
+    "map-indexmap",
+    "map-rapidhash",
+    "native-keccak",
+    "nightly",
+    "postgres",
+    "rand",
+    "rayon",
+    "rkyv",
+    "rlp",
+    "schemars",
+    "secp256k1",
+    "serde",
+    "sha3-keccak",
+    "sqlx",
+    "sqlx-postgres",
+    "std",
+    "tiny-keccak",
+]
+
+crate_cargo_toml_env_vars(WORKSPACE)
+
+crate_library(
+    name = "alloy_primitives",
+    workspace = WORKSPACE,
+    crate_features = FEATURES,
+    declared_features = DECLARED_FEATURES,
+    deps = [
+        "//alloy-rlp/crates/rlp:alloy_rlp",
+        "@crates//:arbitrary",
+        "@crates//:bytes",
+        "@crates//:cfg-if",
+        "@crates//:derive_more",
+        "@crates//:fixed-cache",
+        "@crates//:foldhash",
+        "@crates//:getrandom",
+        "@crates//:hashbrown",
+        "@crates//:hex",
+        "@crates//:indexmap",
+        "@crates//:itoa",
+        "@crates//:k256",
+        "@crates//:keccak-asm",
+        "@crates//:proptest",
+        "@crates//:rand-0.9.4",
+        "@crates//:rapidhash",
+        "@crates//:ruint",
+        "@crates//:secp256k1-0.31.1",
+        "@crates//:serde",
+        "@crates//:sha3",
+    ],
+    proc_macro_deps = [
+        "@crates//:paste",
+        "@crates//:proptest-derive-0.8.0",
+    ],
+    aliases = {
+        "@crates//:hex": "hex",
+    },
+)
+
+crate_unit_test(
+    name = "alloy_primitives_test",
+    workspace = WORKSPACE,
+    crate = ":alloy_primitives",
+    crate_features = FEATURES,
+    declared_features = DECLARED_FEATURES,
+    deps = [
+        "@crates//:bcs",
+        "@crates//:bincode-1.3.3",
+        "@crates//:criterion-0.7.0",
+        "@crates//:serde_json",
+    ],
+)

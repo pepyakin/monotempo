@@ -1,0 +1,53 @@
+# GENERATED FILE - DO NOT EDIT.
+#
+# Regenerate with `python3 bazel/generate.py` after changing Cargo.toml.
+
+load("//bazel:rust.bzl", "crate_cargo_toml_env_vars", "crate_library", "crate_unit_test")
+load("//alloy-core/bazel:workspace.bzl", "WORKSPACE")
+
+FEATURES = [
+    "default",
+    "eip712",
+    "std",
+]
+
+DECLARED_FEATURES = [
+    "arbitrary",
+    "debug",
+    "default",
+    "eip712",
+    "std",
+]
+
+crate_cargo_toml_env_vars(WORKSPACE)
+
+crate_library(
+    name = "alloy_dyn_abi",
+    workspace = WORKSPACE,
+    crate_features = FEATURES,
+    declared_features = DECLARED_FEATURES,
+    deps = [
+        "//alloy-core/crates/json-abi:alloy_json_abi",
+        "//alloy-core/crates/primitives:alloy_primitives",
+        "//alloy-core/crates/sol-type-parser:alloy_sol_type_parser",
+        "//alloy-core/crates/sol-types:alloy_sol_types",
+        "@crates//:derive_more",
+        "@crates//:itoa",
+        "@crates//:serde",
+        "@crates//:serde_json",
+        "@crates//:winnow",
+    ],
+)
+
+crate_unit_test(
+    name = "alloy_dyn_abi_test",
+    workspace = WORKSPACE,
+    crate = ":alloy_dyn_abi",
+    crate_features = FEATURES,
+    declared_features = DECLARED_FEATURES,
+    deps = [
+        "@crates//:criterion-0.7.0",
+        "@crates//:ethabi",
+        "@crates//:rand-0.9.4",
+    ],
+)

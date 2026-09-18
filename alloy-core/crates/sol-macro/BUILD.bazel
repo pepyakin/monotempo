@@ -1,0 +1,53 @@
+# GENERATED FILE - DO NOT EDIT.
+#
+# Regenerate with `python3 bazel/generate.py` after changing Cargo.toml.
+
+load("//bazel:rust.bzl", "crate_cargo_toml_env_vars", "crate_proc_macro", "crate_unit_test")
+load("//alloy-core/bazel:workspace.bzl", "WORKSPACE")
+
+FEATURES = [
+    "json",
+]
+
+DECLARED_FEATURES = [
+    "json",
+]
+
+filegroup(
+    name = "doctests",
+    srcs = glob([
+        "doctests/**",
+    ]),
+    visibility = ["//visibility:public"],
+)
+
+crate_cargo_toml_env_vars(WORKSPACE)
+
+crate_proc_macro(
+    name = "alloy_sol_macro",
+    workspace = WORKSPACE,
+    crate_features = FEATURES,
+    declared_features = DECLARED_FEATURES,
+    deps = [
+        "//alloy-core/crates/sol-macro-expander:alloy_sol_macro_expander",
+        "//alloy-core/crates/sol-macro-input:alloy_sol_macro_input",
+        "@crates//:proc-macro-error3",
+        "@crates//:proc-macro2",
+        "@crates//:quote",
+        "@crates//:syn",
+    ],
+    compile_data = [
+        ":doctests",
+    ],
+)
+
+crate_unit_test(
+    name = "alloy_sol_macro_test",
+    workspace = WORKSPACE,
+    crate = ":alloy_sol_macro",
+    crate_features = FEATURES,
+    declared_features = DECLARED_FEATURES,
+    data = [
+        ":doctests",
+    ],
+)

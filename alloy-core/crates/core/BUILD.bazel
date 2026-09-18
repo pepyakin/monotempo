@@ -1,0 +1,92 @@
+# GENERATED FILE - DO NOT EDIT.
+#
+# Regenerate with `python3 bazel/generate.py` after changing Cargo.toml.
+
+load("//bazel:rust.bzl", "crate_cargo_toml_env_vars", "crate_integration_test", "crate_library", "crate_unit_test")
+load("//alloy-core/bazel:workspace.bzl", "WORKSPACE")
+
+FEATURES = [
+    "default",
+    "dyn-abi",
+    "json",
+    "json-abi",
+    "map",
+    "rlp",
+    "serde",
+    "sol-types",
+    "std",
+]
+
+DECLARED_FEATURES = [
+    "arbitrary",
+    "asm-keccak",
+    "default",
+    "dyn-abi",
+    "eip712",
+    "getrandom",
+    "json",
+    "json-abi",
+    "k256",
+    "keccak-cache",
+    "keccak-cache-global",
+    "map",
+    "map-foldhash",
+    "map-fxhash",
+    "map-hashbrown",
+    "map-indexmap",
+    "map-rapidhash",
+    "more-tuple-impls",
+    "native-keccak",
+    "nightly",
+    "postgres",
+    "rand",
+    "rayon",
+    "rkyv",
+    "rlp",
+    "secp256k1",
+    "serde",
+    "sha3-keccak",
+    "sol-types",
+    "std",
+    "tiny-keccak",
+]
+
+crate_cargo_toml_env_vars(WORKSPACE)
+
+crate_library(
+    name = "alloy_core",
+    workspace = WORKSPACE,
+    crate_features = FEATURES,
+    declared_features = DECLARED_FEATURES,
+    deps = [
+        "//alloy-core/crates/dyn-abi:alloy_dyn_abi",
+        "//alloy-core/crates/json-abi:alloy_json_abi",
+        "//alloy-core/crates/primitives:alloy_primitives",
+        "//alloy-core/crates/sol-types:alloy_sol_types",
+        "//alloy-rlp/crates/rlp:alloy_rlp",
+    ],
+)
+
+crate_unit_test(
+    name = "alloy_core_test",
+    workspace = WORKSPACE,
+    crate = ":alloy_core",
+    crate_features = FEATURES,
+    declared_features = DECLARED_FEATURES,
+)
+
+crate_integration_test(
+    name = "alloy_core_sol_test",
+    workspace = WORKSPACE,
+    crate_root = "tests/sol.rs",
+    crate_features = FEATURES,
+    declared_features = DECLARED_FEATURES,
+    deps = [
+        "//alloy-core/crates/dyn-abi:alloy_dyn_abi",
+        "//alloy-core/crates/json-abi:alloy_json_abi",
+        "//alloy-core/crates/primitives:alloy_primitives",
+        "//alloy-core/crates/sol-types:alloy_sol_types",
+        "//alloy-rlp/crates/rlp:alloy_rlp",
+        ":alloy_core",
+    ],
+)

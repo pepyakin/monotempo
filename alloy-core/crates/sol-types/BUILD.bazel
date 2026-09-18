@@ -1,0 +1,167 @@
+# GENERATED FILE - DO NOT EDIT.
+#
+# Regenerate with `python3 bazel/generate.py` after changing Cargo.toml.
+
+load("//bazel:rust.bzl", "crate_cargo_toml_env_vars", "crate_integration_test", "crate_library", "crate_unit_test")
+load("//alloy-core/bazel:workspace.bzl", "WORKSPACE")
+
+FEATURES = [
+    "arbitrary",
+    "default",
+    "eip712-serde",
+    "json",
+    "std",
+]
+
+DECLARED_FEATURES = [
+    "arbitrary",
+    "default",
+    "eip712-serde",
+    "json",
+    "more-tuple-impls",
+    "std",
+]
+
+crate_cargo_toml_env_vars(WORKSPACE)
+
+crate_library(
+    name = "alloy_sol_types",
+    workspace = WORKSPACE,
+    crate_features = FEATURES,
+    declared_features = DECLARED_FEATURES,
+    deps = [
+        "//alloy-core/crates/json-abi:alloy_json_abi",
+        "//alloy-core/crates/primitives:alloy_primitives",
+        "@crates//:serde",
+    ],
+    proc_macro_deps = [
+        "//alloy-core/crates/sol-macro:alloy_sol_macro",
+    ],
+)
+
+crate_unit_test(
+    name = "alloy_sol_types_test",
+    workspace = WORKSPACE,
+    crate = ":alloy_sol_types",
+    crate_features = FEATURES,
+    declared_features = DECLARED_FEATURES,
+    deps = [
+        "//alloy-rlp/crates/rlp:alloy_rlp",
+        "@crates//:derive_more",
+        "@crates//:pretty_assertions",
+        "@crates//:proptest",
+        "@crates//:serde_json",
+        "@crates//:trybuild",
+    ],
+    proc_macro_deps = [
+        "@crates//:paste",
+        "@crates//:rustversion",
+    ],
+)
+
+crate_integration_test(
+    name = "alloy_sol_types_compiletest_test",
+    workspace = WORKSPACE,
+    crate_root = "tests/compiletest.rs",
+    crate_features = FEATURES,
+    declared_features = DECLARED_FEATURES,
+    deps = [
+        "//alloy-core/crates/json-abi:alloy_json_abi",
+        "//alloy-core/crates/primitives:alloy_primitives",
+        "//alloy-rlp/crates/rlp:alloy_rlp",
+        ":alloy_sol_types",
+        "@crates//:derive_more",
+        "@crates//:pretty_assertions",
+        "@crates//:proptest",
+        "@crates//:serde",
+        "@crates//:serde_json",
+        "@crates//:trybuild",
+    ],
+    proc_macro_deps = [
+        "//alloy-core/crates/sol-macro:alloy_sol_macro",
+        "@crates//:paste",
+        "@crates//:rustversion",
+    ],
+    tags = [
+        "manual",
+    ],
+)
+
+crate_integration_test(
+    name = "alloy_sol_types_derives_test",
+    workspace = WORKSPACE,
+    crate_root = "tests/derives.rs",
+    crate_features = FEATURES,
+    declared_features = DECLARED_FEATURES,
+    deps = [
+        "//alloy-core/crates/json-abi:alloy_json_abi",
+        "//alloy-core/crates/primitives:alloy_primitives",
+        "//alloy-rlp/crates/rlp:alloy_rlp",
+        ":alloy_sol_types",
+        "@crates//:derive_more",
+        "@crates//:pretty_assertions",
+        "@crates//:proptest",
+        "@crates//:serde",
+        "@crates//:serde_json",
+        "@crates//:trybuild",
+    ],
+    proc_macro_deps = [
+        "//alloy-core/crates/sol-macro:alloy_sol_macro",
+        "@crates//:paste",
+        "@crates//:rustversion",
+    ],
+)
+
+crate_integration_test(
+    name = "alloy_sol_types_doctests_test",
+    workspace = WORKSPACE,
+    crate_root = "tests/doctests.rs",
+    crate_features = FEATURES,
+    declared_features = DECLARED_FEATURES,
+    deps = [
+        "//alloy-core/crates/json-abi:alloy_json_abi",
+        "//alloy-core/crates/primitives:alloy_primitives",
+        "//alloy-rlp/crates/rlp:alloy_rlp",
+        ":alloy_sol_types",
+        "@crates//:derive_more",
+        "@crates//:pretty_assertions",
+        "@crates//:proptest",
+        "@crates//:serde",
+        "@crates//:serde_json",
+        "@crates//:trybuild",
+    ],
+    proc_macro_deps = [
+        "//alloy-core/crates/sol-macro:alloy_sol_macro",
+        "@crates//:paste",
+        "@crates//:rustversion",
+    ],
+)
+
+crate_integration_test(
+    name = "alloy_sol_types_macros_test",
+    workspace = WORKSPACE,
+    crate_root = "tests/macros/main.rs",
+    crate_features = FEATURES,
+    declared_features = DECLARED_FEATURES,
+    deps = [
+        "//alloy-core/crates/json-abi:alloy_json_abi",
+        "//alloy-core/crates/primitives:alloy_primitives",
+        "//alloy-rlp/crates/rlp:alloy_rlp",
+        ":alloy_sol_types",
+        "@crates//:derive_more",
+        "@crates//:pretty_assertions",
+        "@crates//:proptest",
+        "@crates//:serde",
+        "@crates//:serde_json",
+        "@crates//:trybuild",
+    ],
+    proc_macro_deps = [
+        "//alloy-core/crates/sol-macro:alloy_sol_macro",
+        "@crates//:paste",
+        "@crates//:rustversion",
+    ],
+    compile_data = [
+        "//alloy-core/crates/json-abi:abi_fixtures",
+        "//alloy-core/crates/syn-solidity:tests/contracts/Multicall.sol",
+    ],
+)

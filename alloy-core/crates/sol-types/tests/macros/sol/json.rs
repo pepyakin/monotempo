@@ -10,7 +10,7 @@ fn large_array() {
         #[sol(abi)]
         #[derive(Debug)]
         LargeArray,
-        concat!(env!("CARGO_MANIFEST_DIR"), "/../json-abi/tests/abi/LargeArray.json")
+        concat!("../json-abi/tests/abi/", "LargeArray.json")
     );
 
     let call = LargeArray::callWithLongArrayCall { longArray: [0; 128] };

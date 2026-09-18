@@ -69,7 +69,7 @@ fn test_constructor() {
 #[cfg_attr(miri, ignore = "no fs")]
 fn from_reader() {
     let path = "abi/Abiencoderv2Test.json";
-    let file_path: String = format!("tests/{path}");
+    let file_path = format!("{}/tests/{path}", env!("CARGO_MANIFEST_DIR"));
     let file: File = File::open(file_path).unwrap();
     let buffer: BufReader<File> = BufReader::new(file);
 

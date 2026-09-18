@@ -1,0 +1,94 @@
+# GENERATED FILE - DO NOT EDIT.
+#
+# Regenerate with `python3 bazel/generate.py` after changing Cargo.toml.
+
+load("//bazel:rust.bzl", "crate_cargo_toml_env_vars", "crate_integration_test", "crate_library", "crate_unit_test")
+load("//alloy-core/bazel:workspace.bzl", "WORKSPACE")
+
+FEATURES = [
+    "default",
+    "serde_json",
+    "std",
+]
+
+DECLARED_FEATURES = [
+    "default",
+    "serde_json",
+    "std",
+]
+
+filegroup(
+    name = "abi_fixtures",
+    srcs = glob([
+        "tests/abi/**",
+    ]),
+    visibility = ["//visibility:public"],
+)
+
+crate_cargo_toml_env_vars(WORKSPACE)
+
+crate_library(
+    name = "alloy_json_abi",
+    workspace = WORKSPACE,
+    crate_features = FEATURES,
+    declared_features = DECLARED_FEATURES,
+    workspace_lints = False,
+    deps = [
+        "//alloy-core/crates/primitives:alloy_primitives",
+        "//alloy-core/crates/sol-type-parser:alloy_sol_type_parser",
+        "@crates//:serde",
+        "@crates//:serde_json",
+    ],
+)
+
+crate_unit_test(
+    name = "alloy_json_abi_test",
+    workspace = WORKSPACE,
+    crate = ":alloy_json_abi",
+    crate_features = FEATURES,
+    declared_features = DECLARED_FEATURES,
+    workspace_lints = False,
+    deps = [
+        "@crates//:criterion-0.7.0",
+        "@crates//:ethabi",
+        "@crates//:pretty_assertions",
+    ],
+)
+
+crate_integration_test(
+    name = "alloy_json_abi_abi_test",
+    workspace = WORKSPACE,
+    crate_root = "tests/abi.rs",
+    crate_features = FEATURES,
+    declared_features = DECLARED_FEATURES,
+    workspace_lints = False,
+    deps = [
+        "//alloy-core/crates/primitives:alloy_primitives",
+        "//alloy-core/crates/sol-type-parser:alloy_sol_type_parser",
+        ":alloy_json_abi",
+        "@crates//:criterion-0.7.0",
+        "@crates//:ethabi",
+        "@crates//:pretty_assertions",
+        "@crates//:serde",
+        "@crates//:serde_json",
+    ],
+)
+
+crate_integration_test(
+    name = "alloy_json_abi_it_test",
+    workspace = WORKSPACE,
+    crate_root = "tests/it/main.rs",
+    crate_features = FEATURES,
+    declared_features = DECLARED_FEATURES,
+    workspace_lints = False,
+    deps = [
+        "//alloy-core/crates/primitives:alloy_primitives",
+        "//alloy-core/crates/sol-type-parser:alloy_sol_type_parser",
+        ":alloy_json_abi",
+        "@crates//:criterion-0.7.0",
+        "@crates//:ethabi",
+        "@crates//:pretty_assertions",
+        "@crates//:serde",
+        "@crates//:serde_json",
+    ],
+)

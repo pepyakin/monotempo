@@ -1,0 +1,69 @@
+# GENERATED FILE - DO NOT EDIT.
+#
+# Regenerate with `python3 bazel/generate.py` after changing Cargo.toml.
+
+load("//bazel:rust.bzl", "crate_cargo_toml_env_vars", "crate_integration_test", "crate_library", "crate_unit_test")
+load("//alloy-core/bazel:workspace.bzl", "WORKSPACE")
+
+FEATURES = [
+    "visit",
+    "visit-mut",
+]
+
+DECLARED_FEATURES = [
+    "visit",
+    "visit-mut",
+]
+
+exports_files([
+    "tests/contracts/Multicall.sol",
+])
+
+crate_cargo_toml_env_vars(WORKSPACE)
+
+crate_library(
+    name = "syn_solidity",
+    workspace = WORKSPACE,
+    crate_features = FEATURES,
+    declared_features = DECLARED_FEATURES,
+    deps = [
+        "@crates//:proc-macro2",
+        "@crates//:quote",
+        "@crates//:syn",
+    ],
+    proc_macro_deps = [
+        "@crates//:paste",
+    ],
+)
+
+crate_unit_test(
+    name = "syn_solidity_test",
+    workspace = WORKSPACE,
+    crate = ":syn_solidity",
+    crate_features = FEATURES,
+    declared_features = DECLARED_FEATURES,
+    deps = [
+        "@crates//:pretty_assertions",
+    ],
+)
+
+crate_integration_test(
+    name = "syn_solidity_contracts_test",
+    workspace = WORKSPACE,
+    crate_root = "tests/contracts.rs",
+    crate_features = FEATURES,
+    declared_features = DECLARED_FEATURES,
+    deps = [
+        ":syn_solidity",
+        "@crates//:pretty_assertions",
+        "@crates//:proc-macro2",
+        "@crates//:quote",
+        "@crates//:syn",
+    ],
+    proc_macro_deps = [
+        "@crates//:paste",
+    ],
+    tags = [
+        "manual",
+    ],
+)
