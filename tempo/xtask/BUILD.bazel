@@ -2,16 +2,18 @@
 #
 # Regenerate with `python3 tempo/scripts/bazel/generate.py` after changing Cargo.toml.
 
-load("//tempo/bazel:rust.bzl", "tempo_binary", "tempo_cargo_toml_env_vars", "tempo_unit_test")
+load("//tempo/bazel:rust.bzl", "crate_binary", "crate_cargo_toml_env_vars", "crate_unit_test")
+load("//tempo/bazel:workspace.bzl", "WORKSPACE")
 
 FEATURES = []
 
 DECLARED_FEATURES = []
 
-tempo_cargo_toml_env_vars()
+crate_cargo_toml_env_vars(WORKSPACE)
 
-tempo_binary(
+crate_binary(
     name = "tempo-xtask",
+    workspace = WORKSPACE,
     crate_features = FEATURES,
     declared_features = DECLARED_FEATURES,
     deps = [
@@ -69,8 +71,9 @@ tempo_binary(
     ],
 )
 
-tempo_unit_test(
+crate_unit_test(
     name = "tempo_xtask_test",
+    workspace = WORKSPACE,
     crate = ":tempo-xtask",
     crate_features = FEATURES,
     declared_features = DECLARED_FEATURES,

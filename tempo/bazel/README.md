@@ -22,13 +22,13 @@ CARGO_BAZEL_REPIN=1 CARGO_BAZEL_REPIN_ONLY=tempo_crates bazel mod deps
 python3 tempo/scripts/bazel/generate.py --check
 ```
 
-The generator reuses reth's metadata resolver and BUILD renderer. All member
+The generator reuses the shared `bazel/generate.py` resolver and renderer. All member
 manifests are explicit crate_universe inputs so dependency edits invalidate
 `Cargo.Bazel.lock`. Unlike reth, Tempo needs no shadow Cargo workspace.
 
 Tempo currently consumes its locked upstream reth Git revision, **not the
 local `reth/` targets**. The two workspaces pin different revisions and resolve
-their external crates independently (`@tempo_crates` versus `@reth_crates`).
+their external crates independently (`@tempo_crates` versus `@crates`).
 Aligning those versions and sharing the dependency graph is a separate change;
 simply replacing labels can link incompatible versions of Rust types.
 

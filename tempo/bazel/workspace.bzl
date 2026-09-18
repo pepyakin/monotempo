@@ -2,11 +2,16 @@
 #
 # Regenerate with `python3 tempo/scripts/bazel/generate.py` after changing Cargo.toml.
 
-"""Workspace-wide values derived from the root Cargo.toml."""
+"""Workspace-wide values of the tempo project, derived from its root Cargo.toml."""
 
-WORKSPACE_VERSION = "1.14.0"
-
-RUST_EDITION = "2024"
+# What every crate of the project inherits; see //bazel:rust.bzl.
+WORKSPACE = struct(
+    name = "tempo",
+    manifest = "//tempo:Cargo.toml",
+    lints = "//tempo/bazel:lints",
+    edition = "2024",
+    version = "1.14.0",
+)
 
 # `[workspace.lints.*]`, each in Cargo's application order.
 RUSTC_LINTS = {

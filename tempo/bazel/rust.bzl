@@ -2,14 +2,14 @@
 
 load("@rules_rust//cargo:defs.bzl", "cargo_build_script", "cargo_toml_env_vars")
 load("@rules_rust//rust:defs.bzl", "rust_binary", "rust_library", "rust_proc_macro", "rust_test")
-load("//reth/bazel:process_per_test.bzl", _process_per_test = "process_per_test")
-load(":workspace.bzl", "PACKAGE_VERSIONS", "RUST_EDITION")
+load("//bazel:process_per_test.bzl", _process_per_test = "process_per_test")
+load(":workspace.bzl", "PACKAGE_VERSIONS")
 
-def tempo_cargo_toml_env_vars():
+def crate_cargo_toml_env_vars(workspace):
     cargo_toml_env_vars(
         name = "cargo_toml_env_vars",
         src = "Cargo.toml",
-        workspace = "//tempo:Cargo.toml",
+        workspace = workspace.manifest,
     )
 
 def _data():
@@ -19,9 +19,9 @@ def _data():
         allow_empty = True,
     )
 
-def _common(crate_features, declared_features, workspace_lints):
+def _common(workspace, crate_features, declared_features, workspace_lints):
     return dict(
-        edition = RUST_EDITION,
+        edition = workspace.edition,
         version = PACKAGE_VERSIONS[native.package_name()],
         crate_features = crate_features,
         rustc_env_files = [":cargo_toml_env_vars"],
@@ -29,11 +29,11 @@ def _common(crate_features, declared_features, workspace_lints):
             "--check-cfg=cfg(docsrs,test)",
             "--check-cfg=cfg(feature, values(%s))" % ", ".join(['"%s"' % f for f in declared_features]),
         ],
-        lint_config = "//tempo/bazel:lints" if workspace_lints else None,
+        lint_config = workspace.lints if workspace_lints else None,
     )
 
-def _compile(rule, name, crate_root, crate_features, declared_features, workspace_lints, deps, compile_data, build_script, **kwargs):
-    common = _common(crate_features, declared_features, workspace_lints)
+def _compile(rule, workspace, name, crate_root, crate_features, declared_features, workspace_lints, deps, compile_data, build_script, **kwargs):
+    common = _common(workspace, crate_features, declared_features, workspace_lints)
     common["rustc_flags"] += kwargs.pop("rustc_flags", [])
     common.update(kwargs)
     rule(
@@ -46,18 +46,18 @@ def _compile(rule, name, crate_root, crate_features, declared_features, workspac
         **common
     )
 
-def tempo_library(name, crate_root = "src/lib.rs", crate_features = [], declared_features = [], workspace_lints = True, deps = [], compile_data = [], build_script = None, **kwargs):
-    _compile(rust_library, name, crate_root, crate_features, declared_features, workspace_lints, deps, compile_data, build_script, **kwargs)
+def crate_library(workspace, name, crate_root = "src/lib.rs", crate_features = [], declared_features = [], workspace_lints = True, deps = [], compile_data = [], build_script = None, **kwargs):
+    _compile(rust_library, workspace, name, crate_root, crate_features, declared_features, workspace_lints, deps, compile_data, build_script, **kwargs)
 
-def tempo_proc_macro(name, crate_root = "src/lib.rs", crate_features = [], declared_features = [], workspace_lints = True, deps = [], compile_data = [], build_script = None, **kwargs):
+def crate_proc_macro(workspace, name, crate_root = "src/lib.rs", crate_features = [], declared_features = [], workspace_lints = True, deps = [], compile_data = [], build_script = None, **kwargs):
     # Bazel builds host tools in opt mode, but this macro generates the storage
     # layout constants used by tests only when *it* has debug assertions enabled.
-    _compile(rust_proc_macro, name, crate_root, crate_features, declared_features, workspace_lints, deps, compile_data, build_script, rustc_flags = ["-Cdebug-assertions=yes"], **kwargs)
+    _compile(rust_proc_macro, workspace, name, crate_root, crate_features, declared_features, workspace_lints, deps, compile_data, build_script, rustc_flags = ["-Cdebug-assertions=yes"], **kwargs)
 
-def tempo_binary(name, crate_root = "src/main.rs", crate_features = [], declared_features = [], workspace_lints = True, deps = [], compile_data = [], build_script = None, **kwargs):
-    _compile(rust_binary, name, crate_root, crate_features, declared_features, workspace_lints, deps, compile_data, build_script, **kwargs)
+def crate_binary(workspace, name, crate_root = "src/main.rs", crate_features = [], declared_features = [], workspace_lints = True, deps = [], compile_data = [], build_script = None, **kwargs):
+    _compile(rust_binary, workspace, name, crate_root, crate_features, declared_features, workspace_lints, deps, compile_data, build_script, **kwargs)
 
-def _test(name, crate_features, declared_features, workspace_lints, process_per_test, tags, data, compile_data, **kwargs):
+def _test(workspace, name, crate_features, declared_features, workspace_lints, process_per_test, tags, data, compile_data, **kwargs):
     # CLI tests initialize global defaults. Match nextest's process isolation
     # so one test cannot initialize a OnceLock before another test configures it.
     process_per_test = process_per_test or native.package_name() == "tempo/bin/tempo"
@@ -75,31 +75,31 @@ def _test(name, crate_features, declared_features, workspace_lints, process_per_
             "RUST_TEST_THREADS": "8",
             # A multi-node e2e test alone can retain over 10 GiB. Bazel can run
             # suites in parallel, but fan-out within each suite exhausts RAM.
-            "RETH_TEST_PROCESSES": "1",
+            "TEST_PROCESSES": "1",
             "INSTA_WORKSPACE_ROOT": ".",
             "INSTA_UPDATE": "no",
         },
-        **dict(_common(crate_features, declared_features, workspace_lints), **kwargs)
+        **dict(_common(workspace, crate_features, declared_features, workspace_lints), **kwargs)
     )
     if process_per_test:
         _process_per_test(name = name, test = ":" + name + "_bin", size = size, tags = tags)
 
-def tempo_unit_test(name, crate, crate_features = [], declared_features = [], workspace_lints = True, process_per_test = False, tags = [], data = [], **kwargs):
-    _test(name, crate_features, declared_features, workspace_lints, process_per_test, tags, data, [], crate = crate, **kwargs)
+def crate_unit_test(workspace, name, crate, crate_features = [], declared_features = [], workspace_lints = True, process_per_test = False, tags = [], data = [], **kwargs):
+    _test(workspace, name, crate_features, declared_features, workspace_lints, process_per_test, tags, data, [], crate = crate, **kwargs)
 
-def tempo_integration_test(name, crate_root, crate_features = [], declared_features = [], workspace_lints = True, process_per_test = False, tags = [], data = [], compile_data = [], **kwargs):
+def crate_integration_test(workspace, name, crate_root, crate_features = [], declared_features = [], workspace_lints = True, process_per_test = False, tags = [], data = [], compile_data = [], **kwargs):
     _test(
-        name, crate_features, declared_features, workspace_lints, process_per_test, tags, data, compile_data,
+        workspace, name, crate_features, declared_features, workspace_lints, process_per_test, tags, data, compile_data,
         crate_root = crate_root,
         srcs = native.glob(["tests/**/*.rs"]),
         **kwargs
     )
 
-def tempo_build_script(name, **kwargs):
+def crate_build_script(workspace, name, **kwargs):
     cargo_build_script(
         name = name,
         srcs = ["build.rs"],
-        edition = RUST_EDITION,
+        edition = workspace.edition,
         version = PACKAGE_VERSIONS[native.package_name()],
         rustc_env_files = [":cargo_toml_env_vars"],
         **kwargs

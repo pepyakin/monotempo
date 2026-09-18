@@ -2,7 +2,8 @@
 #
 # Regenerate with `python3 tempo/scripts/bazel/generate.py` after changing Cargo.toml.
 
-load("//tempo/bazel:rust.bzl", "tempo_cargo_toml_env_vars", "tempo_integration_test", "tempo_library", "tempo_unit_test")
+load("//tempo/bazel:rust.bzl", "crate_cargo_toml_env_vars", "crate_integration_test", "crate_library", "crate_unit_test")
+load("//tempo/bazel:workspace.bzl", "WORKSPACE")
 
 FEATURES = [
     "default",
@@ -16,10 +17,11 @@ DECLARED_FEATURES = [
     "rpc",
 ]
 
-tempo_cargo_toml_env_vars()
+crate_cargo_toml_env_vars(WORKSPACE)
 
-tempo_library(
+crate_library(
     name = "tempo_evm",
+    workspace = WORKSPACE,
     crate_features = FEATURES,
     declared_features = DECLARED_FEATURES,
     deps = [
@@ -53,8 +55,9 @@ tempo_library(
     ],
 )
 
-tempo_unit_test(
+crate_unit_test(
     name = "tempo_evm_test",
+    workspace = WORKSPACE,
     crate = ":tempo_evm",
     crate_features = FEATURES,
     declared_features = DECLARED_FEATURES,
@@ -83,9 +86,10 @@ tempo_unit_test(
     },
 )
 
-tempo_integration_test(
+crate_integration_test(
     name = "tempo_evm_reexports_test",
     crate_name = "reexports",
+    workspace = WORKSPACE,
     crate_root = "tests/reexports.rs",
     crate_features = FEATURES,
     declared_features = DECLARED_FEATURES,

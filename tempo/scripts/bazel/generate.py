@@ -2,7 +2,7 @@
 """Generate Tempo's Bazel targets from its unchanged Cargo workspace.
 
 Run from the monorepo root, with --check to verify instead of writing.
-The metadata resolver and BUILD renderer are shared with reth; only project
+The metadata resolver and BUILD renderer are shared from /bazel; only project
 configuration and the crate_universe manifest list live here.
 """
 
@@ -16,67 +16,70 @@ import sys
 
 ROOT = Path(__file__).resolve().parents[2]
 WORKSPACE = ROOT.parent
-sys.path.insert(0, str(WORKSPACE / "reth/scripts/bazel"))
+sys.path.insert(0, str(WORKSPACE / "bazel"))
 import generate as renderer
 
 
-def configure() -> None:
-    renderer.REPO_ROOT = ROOT
-    renderer.PREFIX = "tempo"
+def configure() -> renderer.Project:
     renderer.CRATES_REPO = "@tempo_crates"
-    renderer.RULE_PREFIX = "tempo"
+    renderer.RUST_BZL = "//tempo/bazel:rust.bzl"
     renderer.GENERATOR = "tempo/scripts/bazel/generate.py"
     renderer.HEADER = (
         "# GENERATED FILE - DO NOT EDIT.\n#\n"
         f"# Regenerate with `python3 {renderer.GENERATOR}` after changing Cargo.toml.\n"
     )
-    renderer.BUILD_SCRIPT_DATA = {}
-    renderer.BUILD_SCRIPT_ENV = {"tempo-node": {"VERGEN_IDEMPOTENT": "1"}}
-    renderer.EXPORTED_FILES = {
+    exported_files = {
         "tempo-node": ["tests/assets/test-genesis.json"],
         "tempo-chainspec": ["src/genesis/dev.json", "src/genesis/moderato.json", "src/genesis/presto.json"],
         "tempo-nitro-attestation": ["testdata/aws_attestation_2026_01_03.b64"],
     }
-    renderer.EXTRA_COMPILE_DATA = {
+    compile_data = {
         "tempo-xtask": {"crate": [
-            '"//tempo/crates/chainspec:src/genesis/dev.json"',
-            '"//tempo/crates/chainspec:src/genesis/moderato.json"',
-            '"//tempo/crates/chainspec:src/genesis/presto.json"',
-            '"//tempo:.github/workflows/bench.yml"',
+            "//tempo/crates/chainspec:src/genesis/dev.json",
+            "//tempo/crates/chainspec:src/genesis/moderato.json",
+            "//tempo/crates/chainspec:src/genesis/presto.json",
+            "//tempo:.github/workflows/bench.yml",
         ]},
-        "tempo-e2e": {"crate": ['"//tempo/crates/node:tests/assets/test-genesis.json"']},
+        "tempo-e2e": {"crate": ["//tempo/crates/node:tests/assets/test-genesis.json"]},
         "tempo-node": {"it": [
-            '"//tempo/crates/chainspec:src/genesis/moderato.json"',
-            '"//tempo/crates/chainspec:src/genesis/presto.json"',
+            "//tempo/crates/chainspec:src/genesis/moderato.json",
+            "//tempo/crates/chainspec:src/genesis/presto.json",
         ]},
         "tempo-precompiles": {"crate": [
-            '"//tempo/crates/nitro-attestation:testdata/aws_attestation_2026_01_03.b64"',
+            "//tempo/crates/nitro-attestation:testdata/aws_attestation_2026_01_03.b64",
         ]},
     }
-    renderer.E2E_TEST_UTILS = "tempo-e2e"
-    renderer.E2E_TEST_UTILS_LABEL = "//tempo/crates/e2e:tempo_e2e"
-    renderer.TEST_TAGS = {}
+    return renderer.Project(
+        root=ROOT,
+        disabled_features={},
+        build_scripts={"tempo-node": renderer.BuildScript([], [], {"VERGEN_IDEMPOTENT": "1"})},
+        exported_files=exported_files,
+        compile_data=compile_data,
+        process_per_test=["tempo-e2e"],
+        test_tags={},
+    )
 
 
 def main() -> int:
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("--check", action="store_true")
     args = parser.parse_args()
-    configure()
-    root = renderer.load_root_manifest()
+    project = configure()
+    root = renderer.load_root_manifest(project)
     result = subprocess.run(
         ["cargo", "metadata", "--locked", "--format-version", "1"],
         cwd=ROOT, check=True, capture_output=True, text=True,
     )
     metadata = json.loads(result.stdout)
-    crates = renderer.build_crates(metadata)
+    members = renderer.collect_members(project, metadata)
+    crates = renderer.build_crates([project], members, metadata, derived=False)
     packages = {p["id"]: p for p in metadata["packages"]}
     versions = sorted(
         (f"tempo/{crate.package_path}", packages[id]["version"])
         for id, crate in crates.items()
     )
     outputs = {ROOT / "bazel/workspace.bzl": (
-        renderer.render_workspace_bzl(root)
+        renderer.render_workspace_bzl(project, root)
         + "\n# Published crates may have versions independent of the node.\n"
         + "PACKAGE_VERSIONS = " + renderer.render_dict(versions) + "\n"
     )}
@@ -84,7 +87,7 @@ def main() -> int:
         # Every member manifest is an explicit crate_universe input, so editing
         # a member dependency invalidates the lock even if the root is unchanged.
         outputs[ROOT / crate.package_path / "BUILD.bazel"] = (
-            renderer.render_build_file(crate, cargo_test_names=True)
+            renderer.render_build_file(crate, crates, cargo_test_names=True)
             + '\nexports_files(["Cargo.toml"])\n'
         )
     outputs[ROOT / "BUILD.bazel"] = renderer.HEADER + '''

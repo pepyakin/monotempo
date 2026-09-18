@@ -2,7 +2,8 @@
 #
 # Regenerate with `python3 tempo/scripts/bazel/generate.py` after changing Cargo.toml.
 
-load("//tempo/bazel:rust.bzl", "tempo_build_script", "tempo_cargo_toml_env_vars", "tempo_integration_test", "tempo_library", "tempo_unit_test")
+load("//tempo/bazel:rust.bzl", "crate_build_script", "crate_cargo_toml_env_vars", "crate_integration_test", "crate_library", "crate_unit_test")
+load("//tempo/bazel:workspace.bzl", "WORKSPACE")
 
 FEATURES = [
     "asm-keccak",
@@ -33,10 +34,11 @@ exports_files([
     "tests/assets/test-genesis.json",
 ])
 
-tempo_cargo_toml_env_vars()
+crate_cargo_toml_env_vars(WORKSPACE)
 
-tempo_build_script(
+crate_build_script(
     name = "tempo_node_build_script",
+    workspace = WORKSPACE,
     crate_features = FEATURES,
     deps = [
         "@tempo_crates//:vergen",
@@ -47,8 +49,9 @@ tempo_build_script(
     },
 )
 
-tempo_library(
+crate_library(
     name = "tempo_node",
+    workspace = WORKSPACE,
     crate_features = FEATURES,
     declared_features = DECLARED_FEATURES,
     deps = [
@@ -115,8 +118,9 @@ tempo_library(
     build_script = ":tempo_node_build_script",
 )
 
-tempo_unit_test(
+crate_unit_test(
     name = "tempo_node_test",
+    workspace = WORKSPACE,
     crate = ":tempo_node",
     crate_features = FEATURES,
     declared_features = DECLARED_FEATURES,
@@ -141,9 +145,10 @@ tempo_unit_test(
     process_per_test = True,
 )
 
-tempo_integration_test(
+crate_integration_test(
     name = "tempo_node_it_test",
     crate_name = "it",
+    workspace = WORKSPACE,
     crate_root = "tests/it/main.rs",
     crate_features = FEATURES,
     declared_features = DECLARED_FEATURES,
