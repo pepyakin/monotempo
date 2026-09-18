@@ -1,0 +1,47 @@
+# GENERATED FILE - DO NOT EDIT.
+#
+# Regenerate with `python3 tempo/scripts/bazel/generate.py` after changing Cargo.toml.
+
+tempo_crate = use_extension("@rules_rust//crate_universe:extensions.bzl", "crate")
+tempo_crate.from_cargo(
+    name = "tempo_crates",
+    cargo_config = "//tempo:.cargo/config.toml",
+    cargo_lockfile = "//tempo:Cargo.lock",
+    lockfile = "//tempo:Cargo.Bazel.lock",
+    manifests = [
+        "//tempo:Cargo.toml",
+        "//tempo/bin/tempo-sidecar:Cargo.toml",
+        "//tempo/bin/tempo:Cargo.toml",
+        "//tempo/crates/alloy:Cargo.toml",
+        "//tempo/crates/chainspec:Cargo.toml",
+        "//tempo/crates/consensus-config:Cargo.toml",
+        "//tempo/crates/consensus:Cargo.toml",
+        "//tempo/crates/contracts:Cargo.toml",
+        "//tempo/crates/dkg-onchain-artifacts:Cargo.toml",
+        "//tempo/crates/e2e:Cargo.toml",
+        "//tempo/crates/evm:Cargo.toml",
+        "//tempo/crates/ext:Cargo.toml",
+        "//tempo/crates/eyre:Cargo.toml",
+        "//tempo/crates/faucet:Cargo.toml",
+        "//tempo/crates/hardfork:Cargo.toml",
+        "//tempo/crates/nitro-attestation:Cargo.toml",
+        "//tempo/crates/node:Cargo.toml",
+        "//tempo/crates/payload/builder:Cargo.toml",
+        "//tempo/crates/payload/types:Cargo.toml",
+        "//tempo/crates/precompiles-macros:Cargo.toml",
+        "//tempo/crates/precompiles:Cargo.toml",
+        "//tempo/crates/primitives:Cargo.toml",
+        "//tempo/crates/revm:Cargo.toml",
+        "//tempo/crates/telemetry-util:Cargo.toml",
+        "//tempo/crates/transaction-pool:Cargo.toml",
+        "//tempo/crates/validator-config:Cargo.toml",
+        "//tempo/xtask:Cargo.toml",
+    ],
+    supported_platform_triples = [
+        "aarch64-apple-darwin",
+        "aarch64-unknown-linux-gnu",
+        "x86_64-apple-darwin",
+        "x86_64-unknown-linux-gnu",
+    ],
+)
+use_repo(tempo_crate, "tempo_crates")

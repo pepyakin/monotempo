@@ -1,0 +1,83 @@
+# GENERATED FILE - DO NOT EDIT.
+#
+# Regenerate with `python3 tempo/scripts/bazel/generate.py` after changing Cargo.toml.
+
+load("//tempo/bazel:rust.bzl", "tempo_cargo_toml_env_vars", "tempo_library", "tempo_unit_test")
+
+FEATURES = []
+
+DECLARED_FEATURES = []
+
+tempo_cargo_toml_env_vars()
+
+tempo_library(
+    name = "tempo_e2e",
+    crate_features = FEATURES,
+    declared_features = DECLARED_FEATURES,
+    deps = [
+        "//tempo/crates/chainspec:tempo_chainspec",
+        "//tempo/crates/consensus:tempo_consensus",
+        "//tempo/crates/dkg-onchain-artifacts:tempo_dkg_onchain_artifacts",
+        "//tempo/crates/evm:tempo_evm",
+        "//tempo/crates/node:tempo_node",
+        "//tempo/crates/precompiles:tempo_precompiles",
+        "@tempo_crates//:alloy",
+        "@tempo_crates//:alloy-evm",
+        "@tempo_crates//:alloy-genesis",
+        "@tempo_crates//:alloy-primitives",
+        "@tempo_crates//:commonware-codec",
+        "@tempo_crates//:commonware-consensus",
+        "@tempo_crates//:commonware-cryptography",
+        "@tempo_crates//:commonware-math",
+        "@tempo_crates//:commonware-p2p",
+        "@tempo_crates//:commonware-runtime",
+        "@tempo_crates//:commonware-utils",
+        "@tempo_crates//:eyre",
+        "@tempo_crates//:futures",
+        "@tempo_crates//:itertools",
+        "@tempo_crates//:rand_core",
+        "@tempo_crates//:reth-chainspec",
+        "@tempo_crates//:reth-config",
+        "@tempo_crates//:reth-db",
+        "@tempo_crates//:reth-downloaders",
+        "@tempo_crates//:reth-ethereum",
+        "@tempo_crates//:reth-node-builder",
+        "@tempo_crates//:reth-node-core",
+        "@tempo_crates//:reth-node-metrics",
+        "@tempo_crates//:reth-prune-types",
+        "@tempo_crates//:reth-rpc-builder",
+        "@tempo_crates//:reth-stages",
+        "@tempo_crates//:reth-static-file",
+        "@tempo_crates//:serde_json",
+        "@tempo_crates//:tempfile",
+        "@tempo_crates//:tokio",
+        "@tempo_crates//:tracing",
+    ],
+    compile_data = [
+        "//tempo/crates/node:tests/assets/test-genesis.json",
+    ],
+)
+
+tempo_unit_test(
+    name = "tempo_e2e_test",
+    crate = ":tempo_e2e",
+    crate_features = FEATURES,
+    declared_features = DECLARED_FEATURES,
+    deps = [
+        "//tempo/crates/eyre:tempo_eyre",
+        "//tempo/crates/primitives:tempo_primitives",
+        "@tempo_crates//:alloy-network",
+        "@tempo_crates//:commonware-macros",
+        "@tempo_crates//:commonware-parallel",
+        "@tempo_crates//:jsonrpsee",
+        "@tempo_crates//:rand-0.10.2",
+        "@tempo_crates//:rand_08-0.8.6",
+        "@tempo_crates//:tracing-subscriber",
+    ],
+    aliases = {
+        "@tempo_crates//:rand_08-0.8.6": "rand_08",
+    },
+    process_per_test = True,
+)
+
+exports_files(["Cargo.toml"])

@@ -1,0 +1,41 @@
+# GENERATED FILE - DO NOT EDIT.
+#
+# Regenerate with `python3 tempo/scripts/bazel/generate.py` after changing Cargo.toml.
+
+load("//tempo/bazel:rust.bzl", "tempo_cargo_toml_env_vars", "tempo_library", "tempo_unit_test")
+
+FEATURES = []
+
+DECLARED_FEATURES = []
+
+tempo_cargo_toml_env_vars()
+
+tempo_library(
+    name = "tempo_consensus_config",
+    crate_features = FEATURES,
+    declared_features = DECLARED_FEATURES,
+    deps = [
+        "@tempo_crates//:age",
+        "@tempo_crates//:commonware-codec",
+        "@tempo_crates//:commonware-cryptography",
+        "@tempo_crates//:commonware-math",
+        "@tempo_crates//:const-hex",
+        "@tempo_crates//:rand_core",
+        "@tempo_crates//:secrecy",
+        "@tempo_crates//:thiserror",
+    ],
+)
+
+tempo_unit_test(
+    name = "tempo_consensus_config_test",
+    crate = ":tempo_consensus_config",
+    crate_features = FEATURES,
+    declared_features = DECLARED_FEATURES,
+    deps = [
+        "@tempo_crates//:commonware-utils",
+        "@tempo_crates//:rand-0.10.2",
+        "@tempo_crates//:tempfile",
+    ],
+)
+
+exports_files(["Cargo.toml"])

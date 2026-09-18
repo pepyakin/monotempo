@@ -1,0 +1,102 @@
+# GENERATED FILE - DO NOT EDIT.
+#
+# Regenerate with `python3 tempo/scripts/bazel/generate.py` after changing Cargo.toml.
+
+load("//tempo/bazel:rust.bzl", "tempo_cargo_toml_env_vars", "tempo_library", "tempo_unit_test")
+
+FEATURES = [
+    "default",
+]
+
+DECLARED_FEATURES = [
+    "bal",
+    "default",
+]
+
+tempo_cargo_toml_env_vars()
+
+tempo_library(
+    name = "tempo_consensus",
+    crate_features = FEATURES,
+    declared_features = DECLARED_FEATURES,
+    deps = [
+        "//tempo/crates/alloy:tempo_alloy",
+        "//tempo/crates/chainspec:tempo_chainspec",
+        "//tempo/crates/consensus-config:tempo_consensus_config",
+        "//tempo/crates/dkg-onchain-artifacts:tempo_dkg_onchain_artifacts",
+        "//tempo/crates/evm:tempo_evm",
+        "//tempo/crates/node:tempo_node",
+        "//tempo/crates/payload/types:tempo_payload_types",
+        "//tempo/crates/precompiles:tempo_precompiles",
+        "//tempo/crates/primitives:tempo_primitives",
+        "//tempo/crates/telemetry-util:tempo_telemetry_util",
+        "@tempo_crates//:alloy-consensus",
+        "@tempo_crates//:alloy-primitives",
+        "@tempo_crates//:alloy-provider",
+        "@tempo_crates//:alloy-rlp",
+        "@tempo_crates//:alloy-rpc-client",
+        "@tempo_crates//:alloy-rpc-types-engine",
+        "@tempo_crates//:alloy-rpc-types-eth",
+        "@tempo_crates//:alloy-transport",
+        "@tempo_crates//:axum",
+        "@tempo_crates//:bytes",
+        "@tempo_crates//:clap",
+        "@tempo_crates//:commonware-actor",
+        "@tempo_crates//:commonware-broadcast",
+        "@tempo_crates//:commonware-codec",
+        "@tempo_crates//:commonware-consensus",
+        "@tempo_crates//:commonware-cryptography",
+        "@tempo_crates//:commonware-macros",
+        "@tempo_crates//:commonware-math",
+        "@tempo_crates//:commonware-p2p",
+        "@tempo_crates//:commonware-parallel",
+        "@tempo_crates//:commonware-resolver",
+        "@tempo_crates//:commonware-runtime",
+        "@tempo_crates//:commonware-storage",
+        "@tempo_crates//:commonware-utils",
+        "@tempo_crates//:eyre",
+        "@tempo_crates//:futures",
+        "@tempo_crates//:governor",
+        "@tempo_crates//:jiff",
+        "@tempo_crates//:jsonrpsee",
+        "@tempo_crates//:parking_lot",
+        "@tempo_crates//:pin-project",
+        "@tempo_crates//:prometheus-client",
+        "@tempo_crates//:rand-0.10.2",
+        "@tempo_crates//:rand_08-0.8.6",
+        "@tempo_crates//:rand_core",
+        "@tempo_crates//:reth-consensus",
+        "@tempo_crates//:reth-consensus-common",
+        "@tempo_crates//:reth-engine-primitives",
+        "@tempo_crates//:reth-ethereum",
+        "@tempo_crates//:reth-network-api",
+        "@tempo_crates//:reth-network-p2p",
+        "@tempo_crates//:reth-node-builder",
+        "@tempo_crates//:reth-node-core",
+        "@tempo_crates//:reth-primitives-traits",
+        "@tempo_crates//:reth-provider",
+        "@tempo_crates//:thiserror",
+        "@tempo_crates//:tokio",
+        "@tempo_crates//:tokio-stream",
+        "@tempo_crates//:tracing",
+        "@tempo_crates//:url",
+    ],
+    aliases = {
+        "@tempo_crates//:rand_08-0.8.6": "rand_08",
+    },
+)
+
+tempo_unit_test(
+    name = "tempo_consensus_test",
+    crate = ":tempo_consensus",
+    crate_features = FEATURES,
+    declared_features = DECLARED_FEATURES,
+    deps = [
+        "@tempo_crates//:age",
+        "@tempo_crates//:reth-ethereum-engine-primitives",
+        "@tempo_crates//:tempfile",
+        "@tempo_crates//:tracing-subscriber",
+    ],
+)
+
+exports_files(["Cargo.toml"])

@@ -1,0 +1,12 @@
+# GENERATED FILE - DO NOT EDIT.
+#
+# Regenerate with `python3 tempo/scripts/bazel/generate.py` after changing Cargo.toml.
+
+package(default_visibility = ["//visibility:public"])
+
+exports_files(["Cargo.toml", "Cargo.lock", "Cargo.Bazel.lock", ".cargo/config.toml", ".github/workflows/bench.yml"])
+
+alias(
+    name = "tempo",
+    actual = "//tempo/bin/tempo:tempo",
+)

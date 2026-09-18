@@ -1,0 +1,144 @@
+# GENERATED FILE - DO NOT EDIT.
+#
+# Regenerate with `python3 tempo/scripts/bazel/generate.py` after changing Cargo.toml.
+
+load("//tempo/bazel:rust.bzl", "tempo_cargo_toml_env_vars", "tempo_integration_test", "tempo_library", "tempo_unit_test")
+
+FEATURES = [
+    "default",
+    "engine",
+    "rpc",
+]
+
+DECLARED_FEATURES = [
+    "default",
+    "engine",
+    "rpc",
+]
+
+tempo_cargo_toml_env_vars()
+
+tempo_library(
+    name = "tempo_evm",
+    crate_features = FEATURES,
+    declared_features = DECLARED_FEATURES,
+    deps = [
+        "//tempo/crates/chainspec:tempo_chainspec",
+        "//tempo/crates/contracts:tempo_contracts",
+        "//tempo/crates/dkg-onchain-artifacts:tempo_dkg_onchain_artifacts",
+        "//tempo/crates/payload/types:tempo_payload_types",
+        "//tempo/crates/precompiles:tempo_precompiles",
+        "//tempo/crates/primitives:tempo_primitives",
+        "//tempo/crates/revm:tempo_revm",
+        "@tempo_crates//:alloy-consensus",
+        "@tempo_crates//:alloy-evm",
+        "@tempo_crates//:alloy-primitives",
+        "@tempo_crates//:alloy-rlp",
+        "@tempo_crates//:alloy-rpc-types-eth",
+        "@tempo_crates//:alloy-sol-types",
+        "@tempo_crates//:commonware-codec",
+        "@tempo_crates//:derive_more",
+        "@tempo_crates//:rayon",
+        "@tempo_crates//:reth-chainspec",
+        "@tempo_crates//:reth-consensus",
+        "@tempo_crates//:reth-consensus-common",
+        "@tempo_crates//:reth-ethereum-consensus",
+        "@tempo_crates//:reth-evm",
+        "@tempo_crates//:reth-evm-ethereum",
+        "@tempo_crates//:reth-primitives-traits",
+        "@tempo_crates//:reth-revm",
+        "@tempo_crates//:reth-rpc-eth-api",
+        "@tempo_crates//:thiserror",
+        "@tempo_crates//:tracing",
+    ],
+)
+
+tempo_unit_test(
+    name = "tempo_evm_test",
+    crate = ":tempo_evm",
+    crate_features = FEATURES,
+    declared_features = DECLARED_FEATURES,
+    deps = [
+        "@tempo_crates//:alloy-eips",
+        "@tempo_crates//:alloy-genesis",
+        "@tempo_crates//:alloy-signer",
+        "@tempo_crates//:alloy-signer-local",
+        "@tempo_crates//:commonware-cryptography",
+        "@tempo_crates//:commonware-math",
+        "@tempo_crates//:commonware-utils",
+        "@tempo_crates//:criterion",
+        "@tempo_crates//:eyre",
+        "@tempo_crates//:indexmap",
+        "@tempo_crates//:insta",
+        "@tempo_crates//:rand-0.10.2",
+        "@tempo_crates//:reth-execution-cache",
+        "@tempo_crates//:reth-storage-api",
+        "@tempo_crates//:reth-trie",
+        "@tempo_crates//:revm",
+        "@tempo_crates//:serde_json",
+        "@tempo_crates//:tikv-jemallocator",
+    ],
+    aliases = {
+        "@tempo_crates//:criterion": "criterion",
+    },
+)
+
+tempo_integration_test(
+    name = "tempo_evm_reexports_test",
+    crate_root = "tests/reexports.rs",
+    crate_features = FEATURES,
+    declared_features = DECLARED_FEATURES,
+    deps = [
+        "//tempo/crates/chainspec:tempo_chainspec",
+        "//tempo/crates/contracts:tempo_contracts",
+        "//tempo/crates/dkg-onchain-artifacts:tempo_dkg_onchain_artifacts",
+        "//tempo/crates/payload/types:tempo_payload_types",
+        "//tempo/crates/precompiles:tempo_precompiles",
+        "//tempo/crates/primitives:tempo_primitives",
+        "//tempo/crates/revm:tempo_revm",
+        ":tempo_evm",
+        "@tempo_crates//:alloy-consensus",
+        "@tempo_crates//:alloy-eips",
+        "@tempo_crates//:alloy-evm",
+        "@tempo_crates//:alloy-genesis",
+        "@tempo_crates//:alloy-primitives",
+        "@tempo_crates//:alloy-rlp",
+        "@tempo_crates//:alloy-rpc-types-eth",
+        "@tempo_crates//:alloy-signer",
+        "@tempo_crates//:alloy-signer-local",
+        "@tempo_crates//:alloy-sol-types",
+        "@tempo_crates//:commonware-codec",
+        "@tempo_crates//:commonware-cryptography",
+        "@tempo_crates//:commonware-math",
+        "@tempo_crates//:commonware-utils",
+        "@tempo_crates//:criterion",
+        "@tempo_crates//:derive_more",
+        "@tempo_crates//:eyre",
+        "@tempo_crates//:indexmap",
+        "@tempo_crates//:insta",
+        "@tempo_crates//:rand-0.10.2",
+        "@tempo_crates//:rayon",
+        "@tempo_crates//:reth-chainspec",
+        "@tempo_crates//:reth-consensus",
+        "@tempo_crates//:reth-consensus-common",
+        "@tempo_crates//:reth-ethereum-consensus",
+        "@tempo_crates//:reth-evm",
+        "@tempo_crates//:reth-evm-ethereum",
+        "@tempo_crates//:reth-execution-cache",
+        "@tempo_crates//:reth-primitives-traits",
+        "@tempo_crates//:reth-revm",
+        "@tempo_crates//:reth-rpc-eth-api",
+        "@tempo_crates//:reth-storage-api",
+        "@tempo_crates//:reth-trie",
+        "@tempo_crates//:revm",
+        "@tempo_crates//:serde_json",
+        "@tempo_crates//:thiserror",
+        "@tempo_crates//:tikv-jemallocator",
+        "@tempo_crates//:tracing",
+    ],
+    aliases = {
+        "@tempo_crates//:criterion": "criterion",
+    },
+)
+
+exports_files(["Cargo.toml"])

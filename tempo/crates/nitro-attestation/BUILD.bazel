@@ -1,0 +1,38 @@
+# GENERATED FILE - DO NOT EDIT.
+#
+# Regenerate with `python3 tempo/scripts/bazel/generate.py` after changing Cargo.toml.
+
+load("//tempo/bazel:rust.bzl", "tempo_cargo_toml_env_vars", "tempo_library", "tempo_unit_test")
+
+FEATURES = []
+
+DECLARED_FEATURES = []
+
+exports_files([
+    "testdata/aws_attestation_2026_01_03.b64",
+])
+
+tempo_cargo_toml_env_vars()
+
+tempo_library(
+    name = "tempo_nitro_attestation",
+    crate_features = FEATURES,
+    declared_features = DECLARED_FEATURES,
+    deps = [
+        "@tempo_crates//:arrayvec",
+        "@tempo_crates//:minicbor",
+        "@tempo_crates//:minicbor-serde",
+        "@tempo_crates//:serde",
+        "@tempo_crates//:serde_with",
+        "@tempo_crates//:x509-cert",
+    ],
+)
+
+tempo_unit_test(
+    name = "tempo_nitro_attestation_test",
+    crate = ":tempo_nitro_attestation",
+    crate_features = FEATURES,
+    declared_features = DECLARED_FEATURES,
+)
+
+exports_files(["Cargo.toml"])

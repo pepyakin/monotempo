@@ -1,0 +1,85 @@
+# GENERATED FILE - DO NOT EDIT.
+#
+# Regenerate with `python3 tempo/scripts/bazel/generate.py` after changing Cargo.toml.
+
+load("//tempo/bazel:rust.bzl", "tempo_cargo_toml_env_vars", "tempo_library", "tempo_unit_test")
+
+FEATURES = [
+    "arbitrary",
+    "default",
+    "evm",
+    "reth",
+    "reth-codec",
+    "rpc",
+    "serde",
+    "serde-bincode-compat",
+    "std",
+    "test-utils",
+]
+
+DECLARED_FEATURES = [
+    "arbitrary",
+    "default",
+    "evm",
+    "reth",
+    "reth-codec",
+    "rpc",
+    "serde",
+    "serde-bincode-compat",
+    "std",
+    "test-utils",
+]
+
+tempo_cargo_toml_env_vars()
+
+tempo_library(
+    name = "tempo_primitives",
+    crate_features = FEATURES,
+    declared_features = DECLARED_FEATURES,
+    deps = [
+        "//tempo/crates/contracts:tempo_contracts",
+        "@tempo_crates//:alloy-consensus",
+        "@tempo_crates//:alloy-eips",
+        "@tempo_crates//:alloy-evm",
+        "@tempo_crates//:alloy-network",
+        "@tempo_crates//:alloy-primitives",
+        "@tempo_crates//:alloy-rlp",
+        "@tempo_crates//:alloy-rpc-types-eth",
+        "@tempo_crates//:alloy-serde",
+        "@tempo_crates//:arbitrary",
+        "@tempo_crates//:aws-lc-rs",
+        "@tempo_crates//:base64",
+        "@tempo_crates//:commonware-cryptography",
+        "@tempo_crates//:derive_more",
+        "@tempo_crates//:modular-bitfield",
+        "@tempo_crates//:once_cell",
+        "@tempo_crates//:p256",
+        "@tempo_crates//:reth-codecs",
+        "@tempo_crates//:reth-db-api",
+        "@tempo_crates//:reth-ethereum-primitives",
+        "@tempo_crates//:reth-primitives-traits",
+        "@tempo_crates//:reth-rpc-convert",
+        "@tempo_crates//:revm",
+        "@tempo_crates//:serde",
+        "@tempo_crates//:serde_json",
+        "@tempo_crates//:sha2",
+    ],
+)
+
+tempo_unit_test(
+    name = "tempo_primitives_test",
+    crate = ":tempo_primitives",
+    crate_features = FEATURES,
+    declared_features = DECLARED_FEATURES,
+    deps = [
+        "@tempo_crates//:alloy-signer",
+        "@tempo_crates//:alloy-signer-local",
+        "@tempo_crates//:alloy-sol-types",
+        "@tempo_crates//:proptest",
+        "@tempo_crates//:proptest-arbitrary-interop",
+        "@tempo_crates//:rand-0.9.4",
+        "@tempo_crates//:tracing-subscriber",
+    ],
+)
+
+exports_files(["Cargo.toml"])

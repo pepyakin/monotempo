@@ -1,0 +1,47 @@
+# GENERATED FILE - DO NOT EDIT.
+#
+# Regenerate with `python3 tempo/scripts/bazel/generate.py` after changing Cargo.toml.
+
+load("//tempo/bazel:rust.bzl", "tempo_cargo_toml_env_vars", "tempo_library", "tempo_unit_test")
+
+FEATURES = [
+    "default",
+    "rpc",
+    "serde",
+    "std",
+]
+
+DECLARED_FEATURES = [
+    "default",
+    "rpc",
+    "serde",
+    "std",
+]
+
+tempo_cargo_toml_env_vars()
+
+tempo_library(
+    name = "tempo_contracts",
+    crate_features = FEATURES,
+    declared_features = DECLARED_FEATURES,
+    deps = [
+        "//tempo/crates/hardfork:tempo_hardfork",
+        "@tempo_crates//:alloy-contract",
+        "@tempo_crates//:alloy-primitives",
+        "@tempo_crates//:alloy-sol-types",
+        "@tempo_crates//:serde",
+    ],
+)
+
+tempo_unit_test(
+    name = "tempo_contracts_test",
+    crate = ":tempo_contracts",
+    crate_features = FEATURES,
+    declared_features = DECLARED_FEATURES,
+    deps = [
+        "@tempo_crates//:alloy-provider",
+        "@tempo_crates//:tokio",
+    ],
+)
+
+exports_files(["Cargo.toml"])

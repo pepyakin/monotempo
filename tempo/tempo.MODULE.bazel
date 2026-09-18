@@ -1,0 +1,55 @@
+"""Tempo's pinned dependencies, independent of reth's Cargo resolution."""
+
+include("//tempo/bazel:cargo.MODULE.bazel")
+
+tempo_annotations = use_extension("@rules_rust//crate_universe:extensions.bzl", "crate")
+tempo_annotations.annotation(
+    crate = "tikv-jemalloc-sys",
+    repositories = ["tempo_crates"],
+    build_script_use_default_shell_env = "on",
+)
+
+# Tempo's Cargo.lock pins an upstream reth revision rather than ./reth.
+# Its MDBX and RocksDB build scripts need the same hermetic clang as reth.
+tempo_annotations.annotation(
+    crate = "reth-mdbx-sys",
+    repositories = ["tempo_crates"],
+    build_script_data = [
+        "@llvm_toolchain_llvm//:libclang",
+        "@llvm_toolchain_llvm//:lib/clang/20/include",
+    ],
+    build_script_env = {
+        "BINDGEN_EXTRA_CLANG_ARGS": "-resource-dir=$(execpath @llvm_toolchain_llvm//:lib/clang/20/include)/..",
+        "LIBCLANG_PATH": "$(execpath @llvm_toolchain_llvm//:libclang)",
+    },
+    label_injections = {"@llvm_toolchain_llvm": "@llvm_toolchain_llvm"},
+)
+tempo_annotations.annotation(
+    crate = "librocksdb-sys",
+    repositories = ["tempo_crates"],
+    build_script_data = [
+        "@llvm_toolchain_llvm//:libclang",
+        "@llvm_toolchain_llvm//:lib/clang/20/include",
+    ],
+    build_script_env = {
+        "BINDGEN_EXTRA_CLANG_ARGS": "-resource-dir=$(execpath @llvm_toolchain_llvm//:lib/clang/20/include)/..",
+        "LIBCLANG_PATH": "$(execpath @llvm_toolchain_llvm//:libclang)",
+        "NUM_JOBS": "8",
+    },
+    label_injections = {"@llvm_toolchain_llvm": "@llvm_toolchain_llvm"},
+    patch_args = ["-p1"],
+    patches = ["//reth/bazel/patches:librocksdb-sys-snappy-build-file.patch"],
+)
+tempo_annotations.annotation(
+    crate = "reth-node-core",
+    repositories = ["tempo_crates"],
+    build_script_env = {"VERGEN_IDEMPOTENT": "1"},
+)
+
+# Separate metadata and library compilations of age produce incompatible crate
+# hashes (E0460 in downstream binaries). Use a single compilation for this crate.
+tempo_annotations.annotation(
+    crate = "age",
+    repositories = ["tempo_crates"],
+    disable_pipelining = True,
+)

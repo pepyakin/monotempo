@@ -1,0 +1,66 @@
+# GENERATED FILE - DO NOT EDIT.
+#
+# Regenerate with `python3 tempo/scripts/bazel/generate.py` after changing Cargo.toml.
+
+load("//tempo/bazel:rust.bzl", "tempo_cargo_toml_env_vars", "tempo_integration_test", "tempo_library", "tempo_unit_test")
+
+FEATURES = []
+
+DECLARED_FEATURES = []
+
+tempo_cargo_toml_env_vars()
+
+tempo_library(
+    name = "tempo_ext",
+    crate_features = FEATURES,
+    declared_features = DECLARED_FEATURES,
+    deps = [
+        "@tempo_crates//:clap",
+        "@tempo_crates//:dirs-next",
+        "@tempo_crates//:minisign-verify",
+        "@tempo_crates//:reqwest",
+        "@tempo_crates//:semver",
+        "@tempo_crates//:serde",
+        "@tempo_crates//:serde_json",
+        "@tempo_crates//:sha2",
+        "@tempo_crates//:tempfile",
+        "@tempo_crates//:thiserror",
+        "@tempo_crates//:tracing",
+        "@tempo_crates//:url",
+    ],
+)
+
+tempo_unit_test(
+    name = "tempo_ext_test",
+    crate = ":tempo_ext",
+    crate_features = FEATURES,
+    declared_features = DECLARED_FEATURES,
+    deps = [
+        "@tempo_crates//:minisign",
+    ],
+)
+
+tempo_integration_test(
+    name = "tempo_ext_lifecycle_test",
+    crate_root = "tests/lifecycle.rs",
+    crate_features = FEATURES,
+    declared_features = DECLARED_FEATURES,
+    deps = [
+        ":tempo_ext",
+        "@tempo_crates//:clap",
+        "@tempo_crates//:dirs-next",
+        "@tempo_crates//:minisign",
+        "@tempo_crates//:minisign-verify",
+        "@tempo_crates//:reqwest",
+        "@tempo_crates//:semver",
+        "@tempo_crates//:serde",
+        "@tempo_crates//:serde_json",
+        "@tempo_crates//:sha2",
+        "@tempo_crates//:tempfile",
+        "@tempo_crates//:thiserror",
+        "@tempo_crates//:tracing",
+        "@tempo_crates//:url",
+    ],
+)
+
+exports_files(["Cargo.toml"])

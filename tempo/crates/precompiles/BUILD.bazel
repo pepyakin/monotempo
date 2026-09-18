@@ -1,0 +1,139 @@
+# GENERATED FILE - DO NOT EDIT.
+#
+# Regenerate with `python3 tempo/scripts/bazel/generate.py` after changing Cargo.toml.
+
+load("//tempo/bazel:rust.bzl", "tempo_cargo_toml_env_vars", "tempo_integration_test", "tempo_library", "tempo_unit_test")
+
+FEATURES = [
+    "default",
+    "rpc",
+    "test-utils",
+]
+
+DECLARED_FEATURES = [
+    "default",
+    "rpc",
+    "test-utils",
+]
+
+tempo_cargo_toml_env_vars()
+
+tempo_library(
+    name = "tempo_precompiles",
+    crate_features = FEATURES,
+    declared_features = DECLARED_FEATURES,
+    deps = [
+        "//tempo/crates/chainspec:tempo_chainspec",
+        "//tempo/crates/contracts:tempo_contracts",
+        "//tempo/crates/nitro-attestation:tempo_nitro_attestation",
+        "//tempo/crates/primitives:tempo_primitives",
+        "@tempo_crates//:alloy",
+        "@tempo_crates//:alloy-evm",
+        "@tempo_crates//:alloy-json-abi",
+        "@tempo_crates//:alloy-primitives",
+        "@tempo_crates//:aws-lc-rs",
+        "@tempo_crates//:bitflags",
+        "@tempo_crates//:commonware-codec",
+        "@tempo_crates//:commonware-cryptography",
+        "@tempo_crates//:derive_more",
+        "@tempo_crates//:itertools",
+        "@tempo_crates//:keccak-const",
+        "@tempo_crates//:revm",
+        "@tempo_crates//:scoped-tls",
+        "@tempo_crates//:serde",
+        "@tempo_crates//:serde_json",
+        "@tempo_crates//:thiserror",
+        "@tempo_crates//:tracing",
+    ],
+    proc_macro_deps = [
+        "//tempo/crates/precompiles-macros:tempo_precompiles_macros",
+        "@tempo_crates//:paste",
+    ],
+    compile_data = [
+        "//tempo/crates/nitro-attestation:testdata/aws_attestation_2026_01_03.b64",
+    ],
+)
+
+tempo_unit_test(
+    name = "tempo_precompiles_test",
+    crate = ":tempo_precompiles",
+    crate_features = FEATURES,
+    declared_features = DECLARED_FEATURES,
+    deps = [
+        "//tempo/crates/alloy:tempo_alloy",
+        "//tempo/crates/evm:tempo_evm",
+        "//tempo/crates/revm:tempo_revm",
+        "@tempo_crates//:alloy-signer",
+        "@tempo_crates//:alloy-signer-local",
+        "@tempo_crates//:base64",
+        "@tempo_crates//:criterion",
+        "@tempo_crates//:eyre",
+        "@tempo_crates//:minicbor",
+        "@tempo_crates//:p256",
+        "@tempo_crates//:p384",
+        "@tempo_crates//:proptest",
+        "@tempo_crates//:rand_08-0.8.6",
+        "@tempo_crates//:sha2",
+        "@tempo_crates//:x509-cert",
+    ],
+    aliases = {
+        "@tempo_crates//:criterion": "criterion",
+        "@tempo_crates//:rand_08-0.8.6": "rand_08",
+    },
+)
+
+tempo_integration_test(
+    name = "tempo_precompiles_storage_test",
+    crate_root = "tests/storage.rs",
+    crate_features = FEATURES,
+    declared_features = DECLARED_FEATURES,
+    deps = [
+        "//tempo/crates/alloy:tempo_alloy",
+        "//tempo/crates/chainspec:tempo_chainspec",
+        "//tempo/crates/contracts:tempo_contracts",
+        "//tempo/crates/evm:tempo_evm",
+        "//tempo/crates/nitro-attestation:tempo_nitro_attestation",
+        "//tempo/crates/primitives:tempo_primitives",
+        "//tempo/crates/revm:tempo_revm",
+        ":tempo_precompiles",
+        "@tempo_crates//:alloy",
+        "@tempo_crates//:alloy-evm",
+        "@tempo_crates//:alloy-json-abi",
+        "@tempo_crates//:alloy-primitives",
+        "@tempo_crates//:alloy-signer",
+        "@tempo_crates//:alloy-signer-local",
+        "@tempo_crates//:aws-lc-rs",
+        "@tempo_crates//:base64",
+        "@tempo_crates//:bitflags",
+        "@tempo_crates//:commonware-codec",
+        "@tempo_crates//:commonware-cryptography",
+        "@tempo_crates//:criterion",
+        "@tempo_crates//:derive_more",
+        "@tempo_crates//:eyre",
+        "@tempo_crates//:itertools",
+        "@tempo_crates//:keccak-const",
+        "@tempo_crates//:minicbor",
+        "@tempo_crates//:p256",
+        "@tempo_crates//:p384",
+        "@tempo_crates//:proptest",
+        "@tempo_crates//:rand_08-0.8.6",
+        "@tempo_crates//:revm",
+        "@tempo_crates//:scoped-tls",
+        "@tempo_crates//:serde",
+        "@tempo_crates//:serde_json",
+        "@tempo_crates//:sha2",
+        "@tempo_crates//:thiserror",
+        "@tempo_crates//:tracing",
+        "@tempo_crates//:x509-cert",
+    ],
+    proc_macro_deps = [
+        "//tempo/crates/precompiles-macros:tempo_precompiles_macros",
+        "@tempo_crates//:paste",
+    ],
+    aliases = {
+        "@tempo_crates//:criterion": "criterion",
+        "@tempo_crates//:rand_08-0.8.6": "rand_08",
+    },
+)
+
+exports_files(["Cargo.toml"])

@@ -1,0 +1,32 @@
+# GENERATED FILE - DO NOT EDIT.
+#
+# Regenerate with `python3 tempo/scripts/bazel/generate.py` after changing Cargo.toml.
+
+load("//tempo/bazel:rust.bzl", "tempo_cargo_toml_env_vars", "tempo_proc_macro", "tempo_unit_test")
+
+FEATURES = []
+
+DECLARED_FEATURES = []
+
+tempo_cargo_toml_env_vars()
+
+tempo_proc_macro(
+    name = "tempo_precompiles_macros",
+    crate_features = FEATURES,
+    declared_features = DECLARED_FEATURES,
+    deps = [
+        "@tempo_crates//:alloy",
+        "@tempo_crates//:proc-macro2",
+        "@tempo_crates//:quote",
+        "@tempo_crates//:syn",
+    ],
+)
+
+tempo_unit_test(
+    name = "tempo_precompiles_macros_test",
+    crate = ":tempo_precompiles_macros",
+    crate_features = FEATURES,
+    declared_features = DECLARED_FEATURES,
+)
+
+exports_files(["Cargo.toml"])
