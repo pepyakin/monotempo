@@ -1,6 +1,6 @@
 # GENERATED FILE - DO NOT EDIT.
 #
-# Regenerate with `python3 tempo/scripts/bazel/generate.py` after changing Cargo.toml.
+# Regenerate with `python3 bazel/generate.py` after changing Cargo.toml.
 
 load("//tempo/bazel:rust.bzl", "crate_cargo_toml_env_vars", "crate_library", "crate_unit_test")
 load("//tempo/bazel:workspace.bzl", "WORKSPACE")
@@ -17,15 +17,15 @@ crate_library(
     crate_features = FEATURES,
     declared_features = DECLARED_FEATURES,
     deps = [
+        "//alloy/crates/alloy:alloy",
+        "//reth/crates/rpc/rpc-server-types:reth_rpc_server_types",
         "//tempo/crates/alloy:tempo_alloy",
         "//tempo/crates/precompiles:tempo_precompiles",
-        "@tempo_crates//:alloy",
-        "@tempo_crates//:clap",
-        "@tempo_crates//:jsonrpsee",
-        "@tempo_crates//:reth-rpc-server-types",
+        "@crates//:clap",
+        "@crates//:jsonrpsee",
     ],
     proc_macro_deps = [
-        "@tempo_crates//:async-trait",
+        "@crates//:async-trait",
     ],
 )
 
@@ -36,5 +36,3 @@ crate_unit_test(
     crate_features = FEATURES,
     declared_features = DECLARED_FEATURES,
 )
-
-exports_files(["Cargo.toml"])

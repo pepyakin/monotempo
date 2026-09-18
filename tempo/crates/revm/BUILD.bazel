@@ -1,6 +1,6 @@
 # GENERATED FILE - DO NOT EDIT.
 #
-# Regenerate with `python3 tempo/scripts/bazel/generate.py` after changing Cargo.toml.
+# Regenerate with `python3 bazel/generate.py` after changing Cargo.toml.
 
 load("//tempo/bazel:rust.bzl", "crate_cargo_toml_env_vars", "crate_library", "crate_unit_test")
 load("//tempo/bazel:workspace.bzl", "WORKSPACE")
@@ -22,23 +22,23 @@ crate_library(
     crate_features = FEATURES,
     declared_features = DECLARED_FEATURES,
     deps = [
+        "//alloy-core/crates/primitives:alloy_primitives",
+        "//alloy-core/crates/sol-types:alloy_sol_types",
+        "//alloy-evm/crates/evm:alloy_evm",
+        "//alloy/crates/consensus:alloy_consensus",
+        "//reth/crates/evm/evm:reth_evm",
+        "//reth/crates/storage/storage-api:reth_storage_api",
         "//tempo/crates/chainspec:tempo_chainspec",
         "//tempo/crates/contracts:tempo_contracts",
         "//tempo/crates/precompiles:tempo_precompiles",
         "//tempo/crates/primitives:tempo_primitives",
-        "@tempo_crates//:alloy-consensus",
-        "@tempo_crates//:alloy-evm",
-        "@tempo_crates//:alloy-primitives",
-        "@tempo_crates//:alloy-sol-types",
-        "@tempo_crates//:derive_more",
-        "@tempo_crates//:reth-evm",
-        "@tempo_crates//:reth-storage-api",
-        "@tempo_crates//:revm",
-        "@tempo_crates//:thiserror",
-        "@tempo_crates//:tracing",
+        "@crates//:derive_more",
+        "@crates//:revm",
+        "@crates//:thiserror",
+        "@crates//:tracing",
     ],
     proc_macro_deps = [
-        "@tempo_crates//:auto_impl",
+        "@crates//:auto_impl",
     ],
 )
 
@@ -49,18 +49,16 @@ crate_unit_test(
     crate_features = FEATURES,
     declared_features = DECLARED_FEATURES,
     deps = [
+        "//alloy-rlp/crates/rlp:alloy_rlp",
+        "//alloy/crates/eips:alloy_eips",
+        "//alloy/crates/signer-local:alloy_signer_local",
+        "//alloy/crates/signer:alloy_signer",
         "//tempo/crates/evm:tempo_evm",
-        "@tempo_crates//:alloy-eips",
-        "@tempo_crates//:alloy-rlp",
-        "@tempo_crates//:alloy-signer",
-        "@tempo_crates//:alloy-signer-local",
-        "@tempo_crates//:base64",
-        "@tempo_crates//:eyre",
-        "@tempo_crates//:p256",
-        "@tempo_crates//:proptest",
-        "@tempo_crates//:sha2",
-        "@tempo_crates//:test-case",
+        "@crates//:base64",
+        "@crates//:eyre",
+        "@crates//:p256",
+        "@crates//:proptest",
+        "@crates//:sha2",
+        "@crates//:test-case",
     ],
 )
-
-exports_files(["Cargo.toml"])

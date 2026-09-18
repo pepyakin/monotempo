@@ -27,7 +27,7 @@ json = ["dep:alloy-json-abi", "dep:serde_json", "alloy-json-abi/serde_json"]
 alloy-json-abi = { path = "../json-abi", optional = true, default-features = false }
 dunce = { version = "^1.0.4" }
 heck = { version = "^0.5.0" }
-hex = { package = "const-hex", version = "^1.14", features = ["alloc", "core-error"], default-features = false }
+const-hex = { version = "^1.14", features = ["alloc", "core-error"], default-features = false }
 macro-string = { version = "^0.2" }
 proc-macro2 = { version = "^1.0" }
 quote = { version = "^1.0" }

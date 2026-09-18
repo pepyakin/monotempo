@@ -134,6 +134,9 @@ class Project:
     filegroups: dict[str, dict[str, list[str]]] = field(default_factory=dict)
     # Runtime environment required by a crate's tests.
     test_env: dict[str, dict[str, str]] = field(default_factory=dict)
+    # Projects with specialized build/test policy can supply their own macros.
+    rust_bzl: str | None = None
+    cargo_test_names: bool = False
 
     def tags_for(self, crate: str, target: str) -> list[str] | None:
         tags = self.test_tags.get(crate)
@@ -177,6 +180,8 @@ class Project:
             "test_tags",
             "filegroups",
             "test_env",
+            "rust_bzl",
+            "cargo_test_names",
         }
         unknown = set(cfg) - known
         if unknown:
@@ -199,6 +204,8 @@ class Project:
             test_tags=cfg.get("test_tags", {}),
             filegroups=cfg.get("filegroups", {}),
             test_env=cfg.get("test_env", {}),
+            rust_bzl=cfg.get("rust_bzl"),
+            cargo_test_names=cfg.get("cargo_test_names", False),
         )
 
 
@@ -511,6 +518,21 @@ def derive_manifest(member: Member, by_dir: dict[Path, Member], unrenamed: set[t
         if unknown:
             sys.exit(f"{pkg['name']}: disabled_features lists non-default features {sorted(unknown)}")
         features["default"] = [f for f in default if f not in disabled]
+    original_feature_values = list(itertools.chain.from_iterable(features.values()))
+    for dep in pkg["dependencies"]:
+        name, rename = dep["name"], dep["rename"]
+        if (name, rename) not in unrenamed:
+            continue
+        # Preserve the public feature names while rewriting dependency references.
+        # An optional dependency's implicit feature needs an explicit alias now.
+        if dep["optional"] and rename not in features and f"dep:{rename}" not in original_feature_values:
+            features[rename] = [f"dep:{name}"]
+        for feature, entries in features.items():
+            features[feature] = [
+                f"dep:{name}" if entry == f"dep:{rename}" else
+                name + entry[len(rename):] if entry.startswith((f"{rename}/", f"{rename}?/")) else
+                entry for entry in entries
+            ]
     if features:
         out.append(toml_table("features", features))
 
@@ -521,9 +543,6 @@ def derive_manifest(member: Member, by_dir: dict[Path, Member], unrenamed: set[t
         spec: dict = {}
         rename = dep["rename"]
         if (dep["name"], rename) in unrenamed:
-            referenced = [f for f in itertools.chain.from_iterable(features.values()) if f.split("/")[0].removeprefix("dep:").rstrip("?") == rename]
-            if referenced:
-                sys.exit(f"{pkg['name']}: cannot drop the rename {rename!r} of {dep['name']}: features refer to it as {referenced}")
             rename = None
         if rename:
             spec["package"] = dep["name"]
@@ -1038,6 +1057,7 @@ def render_build_file(crate: Crate, crates: dict[str, Crate], *, cargo_test_name
     # Tempo's snapshots require Cargo's module names. Keep other projects'
     # existing Bazel test names until they opt into the same convention.
     project = crate.project
+    cargo_test_names = cargo_test_names or project.cargo_test_names
     lib = crate.lib
     lib_rule = "crate_proc_macro" if lib and lib.kind == "proc-macro" else "crate_library"
     bins = [t for t in crate.targets if t.kind == "bin" and set(t.required_features) <= set(crate.features)]
@@ -1066,7 +1086,7 @@ def render_build_file(crate: Crate, crates: dict[str, Crate], *, cargo_test_name
         loads.append("crate_build_script")
 
     out = [HEADER, "\n"]
-    out.append(f'load("{RUST_BZL}", {", ".join(starlark_str(l) for l in sorted(loads))})\n')
+    out.append(f'load("{project.rust_bzl or RUST_BZL}", {", ".join(starlark_str(l) for l in sorted(loads))})\n')
     out.append(f'load("{project.label("bazel", "workspace.bzl")}", "WORKSPACE")\n\n')
     out.append(f"FEATURES = {render_list([starlark_str(f) for f in crate.features], 0)}\n\n")
     out.append(

@@ -3,7 +3,6 @@
 load("@rules_rust//cargo:defs.bzl", "cargo_build_script", "cargo_toml_env_vars")
 load("@rules_rust//rust:defs.bzl", "rust_binary", "rust_library", "rust_proc_macro", "rust_test")
 load("//bazel:process_per_test.bzl", _process_per_test = "process_per_test")
-load(":workspace.bzl", "PACKAGE_VERSIONS")
 
 def crate_cargo_toml_env_vars(workspace):
     cargo_toml_env_vars(
@@ -22,7 +21,7 @@ def _data():
 def _common(workspace, crate_features, declared_features, workspace_lints):
     return dict(
         edition = workspace.edition,
-        version = PACKAGE_VERSIONS[native.package_name()],
+        version = workspace.version,
         crate_features = crate_features,
         rustc_env_files = [":cargo_toml_env_vars"],
         rustc_flags = [
@@ -95,12 +94,12 @@ def crate_integration_test(workspace, name, crate_root, crate_features = [], dec
         **kwargs
     )
 
-def crate_build_script(workspace, name, **kwargs):
+def crate_build_script(workspace, name, version = None, **kwargs):
     cargo_build_script(
         name = name,
         srcs = ["build.rs"],
         edition = workspace.edition,
-        version = PACKAGE_VERSIONS[native.package_name()],
+        version = version if version != None else workspace.version,
         rustc_env_files = [":cargo_toml_env_vars"],
         **kwargs
     )

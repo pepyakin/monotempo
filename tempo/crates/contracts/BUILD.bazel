@@ -1,6 +1,6 @@
 # GENERATED FILE - DO NOT EDIT.
 #
-# Regenerate with `python3 tempo/scripts/bazel/generate.py` after changing Cargo.toml.
+# Regenerate with `python3 bazel/generate.py` after changing Cargo.toml.
 
 load("//tempo/bazel:rust.bzl", "crate_cargo_toml_env_vars", "crate_library", "crate_unit_test")
 load("//tempo/bazel:workspace.bzl", "WORKSPACE")
@@ -28,11 +28,11 @@ crate_library(
     crate_features = FEATURES,
     declared_features = DECLARED_FEATURES,
     deps = [
+        "//alloy-core/crates/primitives:alloy_primitives",
+        "//alloy-core/crates/sol-types:alloy_sol_types",
+        "//alloy/crates/contract:alloy_contract",
         "//tempo/crates/hardfork:tempo_hardfork",
-        "@tempo_crates//:alloy-contract",
-        "@tempo_crates//:alloy-primitives",
-        "@tempo_crates//:alloy-sol-types",
-        "@tempo_crates//:serde",
+        "@crates//:serde",
     ],
 )
 
@@ -44,9 +44,7 @@ crate_unit_test(
     crate_features = FEATURES,
     declared_features = DECLARED_FEATURES,
     deps = [
-        "@tempo_crates//:alloy-provider",
-        "@tempo_crates//:tokio",
+        "//alloy/crates/provider:alloy_provider",
+        "@crates//:tokio",
     ],
 )
-
-exports_files(["Cargo.toml"])

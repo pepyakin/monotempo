@@ -1,0 +1,148 @@
+# GENERATED FILE - DO NOT EDIT. Regenerate with `python3 bazel/generate.py`.
+#
+# Bazel-only derivation of `tempo/crates/node/Cargo.toml`: the same
+# package as `cargo metadata` describes it in the tempo workspace, with
+# workspace inheritance resolved. Cargo builds are unaffected.
+
+[package]
+name = "tempo-node"
+version = "1.14.0"
+edition = "2024"
+rust-version = "1.95.0"
+build = "build.rs"
+autolib = false
+autobins = false
+autoexamples = false
+autotests = false
+autobenches = false
+
+[lib]
+name = "tempo_node"
+path = "src/lib.rs"
+
+[[test]]
+name = "it"
+path = "tests/it/main.rs"
+
+[features]
+default = []
+bal = ["tempo-payload-builder/bal"]
+asm-keccak = [
+    "alloy/asm-keccak",
+    "alloy-evm/asm-keccak",
+    "alloy-primitives/asm-keccak",
+    "reth-node-core/asm-keccak",
+    "reth-node-ethereum/asm-keccak",
+    "tempo-alloy/asm-keccak",
+]
+otlp = ["reth-ethereum/otlp", "reth-node-core/otlp"]
+js-tracer = [
+    "reth-ethereum/js-tracer",
+    "reth-node-builder/js-tracer",
+    "reth-node-ethereum/js-tracer",
+    "reth-rpc/js-tracer",
+    "reth-rpc-eth-api/js-tracer",
+    "reth-rpc-eth-types/js-tracer",
+]
+jemalloc = [
+    "reth-ethereum/jemalloc",
+    "reth-node-core/jemalloc",
+    "reth-node-metrics/jemalloc",
+    "reth-provider/jemalloc",
+]
+jemalloc-prof = ["reth-ethereum/jemalloc-prof", "reth-node-metrics/jemalloc-prof"]
+jemalloc-symbols = ["jemalloc-prof", "reth-ethereum/jemalloc-symbols", "reth-node-metrics/jemalloc-symbols"]
+tracy = ["reth-node-core/tracy"]
+min-error-logs = ["reth-node-core/min-error-logs"]
+min-warn-logs = ["reth-node-core/min-warn-logs"]
+min-info-logs = ["reth-node-core/min-info-logs"]
+min-debug-logs = ["reth-node-core/min-debug-logs"]
+min-trace-logs = ["reth-node-core/min-trace-logs"]
+trie-debug = ["reth-node-builder/trie-debug", "reth-node-core/trie-debug", "tempo-payload-builder/trie-debug"]
+
+[build-dependencies]
+vergen = { version = "^10.0.1", features = ["build", "cargo", "emit_and_set"] }
+vergen-git2 = { version = "^10.0.1" }
+
+[dependencies]
+alloy = { version = "^2.4.2", default-features = false }
+alloy-eips = { version = "^2.4.2", default-features = false }
+alloy-evm = { version = "^0.39.0", default-features = false }
+alloy-primitives = { version = "^1.7.3", default-features = false }
+alloy-rpc-types-admin = { version = "^2.4.2" }
+alloy-rpc-types-eth = { version = "^2.4.2" }
+alloy-serde = { version = "^2.4.2", default-features = false }
+async-trait = { version = "^0.1" }
+clap = { version = "^4.5.57", features = ["derive", "env"] }
+commonware-codec = { version = "^2026.9.0" }
+commonware-consensus = { version = "^2026.9.0" }
+commonware-cryptography = { version = "^2026.9.0", default-features = false }
+commonware-runtime = { version = "^2026.9.0", features = ["external"] }
+eyre = { version = "^0.6.12" }
+futures = { version = "^0.3.31" }
+governor = { version = "^0.10.4" }
+jiff = { version = "^0.2.18", features = ["std"], default-features = false }
+jsonrpsee = { version = "^0.26.0", features = ["server", "client", "macros"] }
+metrics = { version = "^0.24.3" }
+reqwest = { version = "^0.13", features = ["rustls-no-provider"], default-features = false }
+reth-chainspec = { path = "../../../reth/crates/chainspec", default-features = false }
+reth-errors = { path = "../../../reth/crates/errors" }
+reth-ethereum = { path = "../../../reth/crates/ethereum/reth", features = ["node", "rpc"] }
+reth-evm = { path = "../../../reth/crates/evm/evm" }
+reth-metrics = { path = "../../../reth/crates/metrics" }
+reth-network-api = { path = "../../../reth/crates/net/network-api" }
+reth-node-api = { path = "../../../reth/crates/node/api" }
+reth-node-builder = { path = "../../../reth/crates/node/builder" }
+reth-node-core = { path = "../../../reth/crates/node/core" }
+reth-node-ethereum = { path = "../../../reth/crates/ethereum/node" }
+reth-node-metrics = { path = "../../../reth/crates/node/metrics" }
+reth-primitives-traits = { version = "^0.7.1", features = ["secp256k1", "rayon"], default-features = false }
+reth-provider = { path = "../../../reth/crates/storage/provider" }
+reth-rpc = { path = "../../../reth/crates/rpc/rpc" }
+reth-rpc-api = { path = "../../../reth/crates/rpc/rpc-api" }
+reth-rpc-builder = { path = "../../../reth/crates/rpc/rpc-builder" }
+reth-rpc-eth-api = { path = "../../../reth/crates/rpc/rpc-eth-api" }
+reth-rpc-eth-types = { path = "../../../reth/crates/rpc/rpc-eth-types" }
+reth-storage-api = { path = "../../../reth/crates/storage/storage-api" }
+reth-tracing = { path = "../../../reth/crates/tracing" }
+reth-transaction-pool = { path = "../../../reth/crates/transaction-pool" }
+serde = { version = "^1.0.228", features = ["derive"], default-features = false }
+serde_json = { version = "^1.0.149", features = ["alloc", "raw_value"], default-features = false }
+sysinfo = { version = "^0.38.4", features = ["disk", "system"], default-features = false }
+tempo-alloy = { path = "../alloy", features = ["reth"] }
+tempo-chainspec = { path = "../chainspec", features = ["reth"], default-features = false }
+tempo-evm = { path = "../evm", features = ["rpc", "engine"], default-features = false }
+tempo-payload-builder = { path = "../payload/builder", default-features = false }
+tempo-payload-types = { path = "../payload/types", default-features = false }
+tempo-precompiles = { path = "../precompiles", default-features = false }
+tempo-primitives = { path = "../primitives", features = ["default"], default-features = false }
+tempo-revm = { path = "../revm", default-features = false }
+tempo-transaction-pool = { path = "../transaction-pool", default-features = false }
+thiserror = { version = "^2.0.18" }
+tokio = { version = "^1.49.0", features = ["full"] }
+tokio-stream = { version = "^0.1.18", features = ["sync"] }
+url = { version = "^2.5" }
+
+[dev-dependencies]
+alloy = { version = "^2.4.2", features = ["full", "providers", "signers", "signer-mnemonic-all-languages"], default-features = false }
+alloy-network = { version = "^2.4.2", default-features = false }
+alloy-rlp = { version = "^0.3.16", default-features = false }
+alloy-rpc-types-engine = { version = "^2.4.2" }
+base64 = { version = "^0.22", features = ["alloc"], default-features = false }
+futures = { version = "^0.3.31" }
+indexmap = { version = "^2.13.0" }
+insta = { version = "^1", features = ["yaml"] }
+p256 = { version = "^0.13", features = ["ecdsa"], default-features = false }
+rand_09 = { package = "rand", version = "^0.9" }
+reth-e2e-test-utils = { path = "../../../reth/crates/e2e-test-utils" }
+reth-ethereum = { path = "../../../reth/crates/ethereum/reth", features = ["node", "test-utils", "pool"] }
+reth-node-core = { path = "../../../reth/crates/node/core" }
+reth-node-metrics = { path = "../../../reth/crates/node/metrics" }
+serde_json = { version = "^1.0.149", features = ["alloc", "raw_value"], default-features = false }
+sha2 = { version = "^0.10", default-features = false }
+tempo-contracts = { path = "../contracts", features = ["serde"], default-features = false }
+tempo-e2e = { path = "../e2e" }
+tempo-precompiles = { path = "../precompiles", default-features = false }
+tempo-transaction-pool = { path = "../transaction-pool", features = ["test-utils"], default-features = false }
+test-case = { version = "^3" }
+tokio = { version = "^1.49.0", features = ["full", "rt", "rt-multi-thread", "macros"] }

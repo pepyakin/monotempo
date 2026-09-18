@@ -14,17 +14,6 @@ crate = use_extension("@rules_rust//crate_universe:extensions.bzl", "crate")
 
 crate.annotation(
     deps = [
-        "@@//alloy-chains:alloy_chains",
-        "@@//alloy-core/crates/primitives:alloy_primitives",
-        "@@//alloy-eips/crates/eip2124:alloy_eip2124",
-    ],
-    crate = "alloy-hardforks",
-    repositories = ["crates"],
-    version = "=0.2.13",
-)
-
-crate.annotation(
-    deps = [
         "@@//alloy-rlp/crates/rlp:alloy_rlp",
     ],
     crate = "discv5",

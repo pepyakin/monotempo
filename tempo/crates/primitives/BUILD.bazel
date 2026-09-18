@@ -1,6 +1,6 @@
 # GENERATED FILE - DO NOT EDIT.
 #
-# Regenerate with `python3 tempo/scripts/bazel/generate.py` after changing Cargo.toml.
+# Regenerate with `python3 bazel/generate.py` after changing Cargo.toml.
 
 load("//tempo/bazel:rust.bzl", "crate_cargo_toml_env_vars", "crate_library", "crate_unit_test")
 load("//tempo/bazel:workspace.bzl", "WORKSPACE")
@@ -40,32 +40,32 @@ crate_library(
     crate_features = FEATURES,
     declared_features = DECLARED_FEATURES,
     deps = [
+        "//alloy-core/crates/primitives:alloy_primitives",
+        "//alloy-evm/crates/evm:alloy_evm",
+        "//alloy-rlp/crates/rlp:alloy_rlp",
+        "//alloy/crates/consensus:alloy_consensus",
+        "//alloy/crates/eips:alloy_eips",
+        "//alloy/crates/network:alloy_network",
+        "//alloy/crates/rpc-types-eth:alloy_rpc_types_eth",
+        "//alloy/crates/serde:alloy_serde",
+        "//reth-core/crates/codecs:reth_codecs",
+        "//reth-core/crates/primitives-traits:reth_primitives_traits",
+        "//reth/crates/ethereum/primitives:reth_ethereum_primitives",
+        "//reth/crates/rpc/rpc-convert:reth_rpc_convert",
+        "//reth/crates/storage/db-api:reth_db_api",
         "//tempo/crates/contracts:tempo_contracts",
-        "@tempo_crates//:alloy-consensus",
-        "@tempo_crates//:alloy-eips",
-        "@tempo_crates//:alloy-evm",
-        "@tempo_crates//:alloy-network",
-        "@tempo_crates//:alloy-primitives",
-        "@tempo_crates//:alloy-rlp",
-        "@tempo_crates//:alloy-rpc-types-eth",
-        "@tempo_crates//:alloy-serde",
-        "@tempo_crates//:arbitrary",
-        "@tempo_crates//:aws-lc-rs",
-        "@tempo_crates//:base64",
-        "@tempo_crates//:commonware-cryptography",
-        "@tempo_crates//:derive_more",
-        "@tempo_crates//:modular-bitfield",
-        "@tempo_crates//:once_cell",
-        "@tempo_crates//:p256",
-        "@tempo_crates//:reth-codecs",
-        "@tempo_crates//:reth-db-api",
-        "@tempo_crates//:reth-ethereum-primitives",
-        "@tempo_crates//:reth-primitives-traits",
-        "@tempo_crates//:reth-rpc-convert",
-        "@tempo_crates//:revm",
-        "@tempo_crates//:serde",
-        "@tempo_crates//:serde_json",
-        "@tempo_crates//:sha2",
+        "@crates//:arbitrary",
+        "@crates//:aws-lc-rs",
+        "@crates//:base64",
+        "@crates//:commonware-cryptography",
+        "@crates//:derive_more",
+        "@crates//:modular-bitfield",
+        "@crates//:once_cell",
+        "@crates//:p256",
+        "@crates//:revm",
+        "@crates//:serde",
+        "@crates//:serde_json",
+        "@crates//:sha2",
     ],
 )
 
@@ -77,14 +77,12 @@ crate_unit_test(
     crate_features = FEATURES,
     declared_features = DECLARED_FEATURES,
     deps = [
-        "@tempo_crates//:alloy-signer",
-        "@tempo_crates//:alloy-signer-local",
-        "@tempo_crates//:alloy-sol-types",
-        "@tempo_crates//:proptest",
-        "@tempo_crates//:proptest-arbitrary-interop",
-        "@tempo_crates//:rand-0.9.4",
-        "@tempo_crates//:tracing-subscriber",
+        "//alloy-core/crates/sol-types:alloy_sol_types",
+        "//alloy/crates/signer-local:alloy_signer_local",
+        "//alloy/crates/signer:alloy_signer",
+        "@crates//:proptest",
+        "@crates//:proptest-arbitrary-interop",
+        "@crates//:rand-0.9.4",
+        "@crates//:tracing-subscriber",
     ],
 )
-
-exports_files(["Cargo.toml"])

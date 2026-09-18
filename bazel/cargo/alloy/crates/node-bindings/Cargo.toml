@@ -26,7 +26,7 @@ path = "tests/it/main.rs"
 
 [dependencies]
 alloy-genesis = { path = "../genesis", default-features = false }
-alloy-hardforks = { version = "^0.2.0" }
+alloy-hardforks = { version = "^0.4.8" }
 alloy-network = { path = "../network", default-features = false }
 alloy-primitives = { version = "^1.6.0", features = ["std", "k256", "serde"], default-features = false }
 alloy-signer = { path = "../signer", default-features = false }

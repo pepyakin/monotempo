@@ -1,0 +1,137 @@
+# GENERATED FILE - DO NOT EDIT. Regenerate with `python3 bazel/generate.py`.
+#
+# Bazel-only derivation of `tempo/crates/alloy/Cargo.toml`: the same
+# package as `cargo metadata` describes it in the tempo workspace, with
+# workspace inheritance resolved. Cargo builds are unaffected.
+
+[package]
+name = "tempo-alloy"
+version = "1.11.0"
+edition = "2024"
+rust-version = "1.95.0"
+build = false
+autolib = false
+autobins = false
+autoexamples = false
+autotests = false
+autobenches = false
+
+[lib]
+name = "tempo_alloy"
+path = "src/lib.rs"
+
+[[example]]
+name = "batch_payments"
+path = "examples/batch_payments.rs"
+
+[[example]]
+name = "burn_tokens"
+path = "examples/burn_tokens.rs"
+
+[[example]]
+name = "configure_provider"
+path = "examples/configure_provider.rs"
+
+[[example]]
+name = "get_balance"
+path = "examples/get_balance.rs"
+
+[[example]]
+name = "get_block_number"
+path = "examples/get_block_number.rs"
+
+[[example]]
+name = "mint_fee_liquidity"
+path = "examples/mint_fee_liquidity.rs"
+
+[[example]]
+name = "mint_tokens"
+path = "examples/mint_tokens.rs"
+
+[[example]]
+name = "sponsored_transaction"
+path = "examples/sponsored_transaction.rs"
+
+[[example]]
+name = "transfer"
+path = "examples/transfer.rs"
+
+[[example]]
+name = "transfer_with_memo"
+path = "examples/transfer_with_memo.rs"
+
+[[example]]
+name = "watch_transfers"
+path = "examples/watch_transfers.rs"
+
+[[example]]
+name = "watch_transfers_with_memo"
+path = "examples/watch_transfers_with_memo.rs"
+
+[[test]]
+name = "relay_transport"
+path = "tests/relay_transport.rs"
+
+[features]
+default = []
+revm = ["dep:tempo-revm"]
+reth = [
+    "revm",
+    "dep:tempo-evm",
+    "dep:reth-evm",
+    "dep:reth-primitives-traits",
+    "dep:reth-rpc-convert",
+    "dep:reth-rpc-eth-types",
+    "tempo-primitives/rpc",
+    "tempo-chainspec/reth",
+]
+asm-keccak = ["alloy-primitives/asm-keccak", "alloy/asm-keccak"]
+
+[dependencies]
+alloy-consensus = { version = "^2.4.2", default-features = false }
+alloy-contract = { version = "^2.4.2", default-features = false }
+alloy-eips = { version = "^2.4.2", default-features = false }
+alloy-json-rpc = { version = "^2.4.2" }
+alloy-network = { version = "^2.4.2", default-features = false }
+alloy-primitives = { version = "^1.7.3", features = ["rand"], default-features = false }
+alloy-provider = { version = "^2.4.2", default-features = false }
+alloy-rlp = { version = "^0.3.16", default-features = false }
+alloy-rpc-client = { version = "^2.4.2", features = ["reqwest"], default-features = false }
+alloy-rpc-types-eth = { version = "^2.4.2" }
+alloy-serde = { version = "^2.4.2", default-features = false }
+alloy-signer = { version = "^2.4.2" }
+alloy-signer-local = { version = "^2.4.2" }
+alloy-sol-types = { version = "^1.7.3", default-features = false }
+alloy-transport = { version = "^2.4.2" }
+async-trait = { version = "^0.1" }
+base64 = { version = "^0.22", features = ["alloc"], default-features = false }
+dashmap = { version = "^6" }
+derive_more = { version = "^2.1.1", default-features = false }
+dirs-next = { version = "^2.0.0" }
+futures = { version = "^0.3.31" }
+http = { version = "^1.4.0" }
+p256 = { version = "^0.13", features = ["ecdsa"], default-features = false }
+reqwest = { version = "^0.13", features = ["rustls-no-provider"], default-features = false }
+reth-evm = { path = "../../../reth/crates/evm/evm", optional = true }
+reth-primitives-traits = { version = "^0.7.1", optional = true, default-features = false }
+reth-rpc-convert = { path = "../../../reth/crates/rpc/rpc-convert", optional = true }
+reth-rpc-eth-types = { path = "../../../reth/crates/rpc/rpc-eth-types", optional = true }
+serde = { version = "^1.0.228", features = ["derive"], default-features = false }
+serde_json = { version = "^1.0.149", features = ["alloc", "raw_value"], default-features = false }
+sha2 = { version = "^0.10", default-features = false }
+tempo-chainspec = { path = "../chainspec", default-features = false }
+tempo-contracts = { path = "../contracts", features = ["serde", "rpc"], default-features = false }
+tempo-evm = { path = "../evm", optional = true, default-features = false }
+tempo-primitives = { path = "../primitives", features = ["serde"], default-features = false }
+tempo-revm = { path = "../revm", optional = true, default-features = false }
+thiserror = { version = "^2.0.18" }
+tower = { version = "^0.5", default-features = false }
+tracing = { version = "^0.1.44" }
+
+[dev-dependencies]
+alloy = { version = "^2.4.2", features = ["providers", "reqwest", "rpc-client", "rpc-types-eth", "signers", "signer-local", "sol-types", "transport-http"], default-features = false }
+eyre = { version = "^0.6.12" }
+serde_json = { version = "^1.0.149", features = ["alloc", "raw_value"], default-features = false }
+test-case = { version = "^3" }
+tokio = { version = "^1.49.0", features = ["full"] }
+tower = { version = "^0.5", features = ["util"], default-features = false }

@@ -8,8 +8,10 @@ bazel test //tempo/crates/hardfork/...
 bazel test //tempo/...
 ```
 
-Tempo remains its own Cargo workspace. `Cargo.toml` and `Cargo.lock` are
-unchanged from upstream; Bazel uses the default workspace feature resolution.
+Tempo remains its own Cargo workspace. Its reth dependencies point into
+`../reth`, and `[patch.crates-io]` redirects Alloy, reth-core, alloy-evm,
+revm-inspectors and the Alloy foundations to their local sources, including
+transitive dependencies. Bazel shares the monorepo's unified feature resolution.
 Optional binaries such as `tempo-localnet` are omitted when their required
 features are disabled. Examples and benchmarks are not generated as Bazel
 targets.
@@ -17,20 +19,22 @@ targets.
 After changing a manifest, regenerate and repin:
 
 ```sh
-python3 tempo/scripts/bazel/generate.py
-CARGO_BAZEL_REPIN=1 CARGO_BAZEL_REPIN_ONLY=tempo_crates bazel mod deps
-python3 tempo/scripts/bazel/generate.py --check
+python3 bazel/generate.py
+CARGO_BAZEL_REPIN=1 bazel mod deps
+python3 bazel/generate.py --check
 ```
 
-The generator reuses the shared `bazel/generate.py` resolver and renderer. All member
-manifests are explicit crate_universe inputs so dependency edits invalidate
-`Cargo.Bazel.lock`. Unlike reth, Tempo needs no shadow Cargo workspace.
+`tempo/bazel/project.toml` registers Tempo with the shared generator. Its
+derived manifests live in `bazel/cargo/tempo/`; all projects resolve together
+through `@crates`, pinned by the root `Cargo.Bazel.lock`. Tempo's Rust macros
+remain project-specific to preserve its snapshot names and test policies.
 
-Tempo currently consumes its locked upstream reth Git revision, **not the
-local `reth/` targets**. The two workspaces pin different revisions and resolve
-their external crates independently (`@tempo_crates` versus `@crates`).
-Aligning those versions and sharing the dependency graph is a separate change;
-simply replacing labels can link incompatible versions of Rust types.
+To inspect the local dependency chain:
+
+```sh
+bazel query 'somepath(//tempo, //reth/crates/node/builder:reth_node_builder)'
+bazel query 'somepath(//tempo, //alloy-core/crates/primitives:alloy_primitives)'
+```
 
 Build scripts use the root's Rust/LLVM toolchains. Version metadata uses
 `VERGEN_IDEMPOTENT=1`, as in reth, rather than depending on `.git` or the clock.

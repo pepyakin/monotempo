@@ -1,6 +1,6 @@
 # GENERATED FILE - DO NOT EDIT.
 #
-# Regenerate with `python3 tempo/scripts/bazel/generate.py` after changing Cargo.toml.
+# Regenerate with `python3 bazel/generate.py` after changing Cargo.toml.
 
 load("//tempo/bazel:rust.bzl", "crate_cargo_toml_env_vars", "crate_library", "crate_unit_test")
 load("//tempo/bazel:workspace.bzl", "WORKSPACE")
@@ -17,19 +17,19 @@ crate_library(
     crate_features = FEATURES,
     declared_features = DECLARED_FEATURES,
     deps = [
+        "//alloy-core/crates/primitives:alloy_primitives",
+        "//alloy-rlp/crates/rlp:alloy_rlp",
+        "//alloy/crates/eips:alloy_eips",
+        "//alloy/crates/rpc-types-engine:alloy_rpc_types_engine",
+        "//alloy/crates/rpc-types-eth:alloy_rpc_types_eth",
+        "//reth-core/crates/primitives-traits:reth_primitives_traits",
+        "//reth/crates/ethereum/engine-primitives:reth_ethereum_engine_primitives",
+        "//reth/crates/node/api:reth_node_api",
+        "//reth/crates/payload/primitives:reth_payload_primitives",
         "//tempo/crates/primitives:tempo_primitives",
-        "@tempo_crates//:alloy-eips",
-        "@tempo_crates//:alloy-primitives",
-        "@tempo_crates//:alloy-rlp",
-        "@tempo_crates//:alloy-rpc-types-engine",
-        "@tempo_crates//:alloy-rpc-types-eth",
-        "@tempo_crates//:derive_more",
-        "@tempo_crates//:reth-ethereum-engine-primitives",
-        "@tempo_crates//:reth-node-api",
-        "@tempo_crates//:reth-payload-primitives",
-        "@tempo_crates//:reth-primitives-traits",
-        "@tempo_crates//:serde",
-        "@tempo_crates//:tracing",
+        "@crates//:derive_more",
+        "@crates//:serde",
+        "@crates//:tracing",
     ],
 )
 
@@ -40,8 +40,6 @@ crate_unit_test(
     crate_features = FEATURES,
     declared_features = DECLARED_FEATURES,
     deps = [
-        "@tempo_crates//:serde_json",
+        "@crates//:serde_json",
     ],
 )
-
-exports_files(["Cargo.toml"])

@@ -1,0 +1,29 @@
+# GENERATED FILE - DO NOT EDIT. Regenerate with `python3 bazel/generate.py`.
+#
+# Bazel-only derivation of `tempo/crates/validator-config/Cargo.toml`: the same
+# package as `cargo metadata` describes it in the tempo workspace, with
+# workspace inheritance resolved. Cargo builds are unaffected.
+
+[package]
+name = "tempo-validator-config"
+version = "1.14.0"
+edition = "2024"
+rust-version = "1.95.0"
+build = false
+autolib = false
+autobins = false
+autoexamples = false
+autotests = false
+autobenches = false
+
+[lib]
+name = "tempo_validator_config"
+path = "src/lib.rs"
+
+[dependencies]
+alloy-primitives = { version = "^1.7.3", default-features = false }
+commonware-codec = { version = "^2026.9.0" }
+commonware-cryptography = { version = "^2026.9.0", default-features = false }
+tempo-contracts = { path = "../contracts", features = ["serde"], default-features = false }
+tempo-precompiles = { path = "../precompiles", default-features = false }
+thiserror = { version = "^2.0.18" }

@@ -1,0 +1,96 @@
+# GENERATED FILE - DO NOT EDIT. Regenerate with `python3 bazel/generate.py`.
+#
+# Bazel-only derivation of `tempo/crates/consensus/Cargo.toml`: the same
+# package as `cargo metadata` describes it in the tempo workspace, with
+# workspace inheritance resolved. Cargo builds are unaffected.
+
+[package]
+name = "tempo-consensus"
+version = "1.14.0"
+edition = "2024"
+rust-version = "1.95.0"
+build = false
+autolib = false
+autobins = false
+autoexamples = false
+autotests = false
+autobenches = false
+
+[lib]
+name = "tempo_consensus"
+path = "src/lib.rs"
+
+[features]
+default = []
+bal = []
+
+[dependencies]
+alloy-consensus = { version = "^2.4.2", default-features = false }
+alloy-primitives = { version = "^1.7.3", default-features = false }
+alloy-provider = { version = "^2.4.2", default-features = false }
+alloy-rlp = { version = "^0.3.16", default-features = false }
+alloy-rpc-client = { version = "^2.4.2", features = ["ws-base"], default-features = false }
+alloy-rpc-types-engine = { version = "^2.4.2" }
+alloy-rpc-types-eth = { version = "^2.4.2" }
+alloy-transport = { version = "^2.4.2" }
+axum = { version = "^0.8.8" }
+bytes = { version = "^1.11.1" }
+clap = { version = "^4.5.57", features = ["derive", "env"] }
+commonware-actor = { version = "^2026.9.0" }
+commonware-broadcast = { version = "^2026.9.0" }
+commonware-codec = { version = "^2026.9.0" }
+commonware-consensus = { version = "^2026.9.0" }
+commonware-cryptography = { version = "^2026.9.0", default-features = false }
+commonware-macros = { version = "^2026.9.0" }
+commonware-math = { version = "^2026.9.0" }
+commonware-p2p = { version = "^2026.9.0" }
+commonware-parallel = { version = "^2026.9.0" }
+commonware-resolver = { version = "^2026.9.0" }
+commonware-runtime = { version = "^2026.9.0", features = ["external"] }
+commonware-storage = { version = "^2026.9.0" }
+commonware-utils = { version = "^2026.9.0" }
+eyre = { version = "^0.6.12" }
+futures = { version = "^0.3.31" }
+governor = { version = "^0.10.4" }
+jiff = { version = "^0.2.18", features = ["std"], default-features = false }
+jsonrpsee = { version = "^0.26.0", features = ["server", "client", "macros", "http-client", "ws-client"] }
+parking_lot = { version = "^0.12.5" }
+pin-project = { version = "^1.1.10" }
+prometheus-client = { version = "^0.25.1" }
+rand = { version = "^0.10" }
+rand_08 = { package = "rand", version = "^0.8.5" }
+rand_core = { version = "^0.10" }
+reth-consensus = { path = "../../../reth/crates/consensus/consensus" }
+reth-consensus-common = { path = "../../../reth/crates/consensus/common" }
+reth-engine-primitives = { path = "../../../reth/crates/engine/primitives" }
+reth-ethereum = { path = "../../../reth/crates/ethereum/reth" }
+reth-network-api = { path = "../../../reth/crates/net/network-api" }
+reth-network-p2p = { path = "../../../reth/crates/net/p2p" }
+reth-node-builder = { path = "../../../reth/crates/node/builder" }
+reth-node-core = { path = "../../../reth/crates/node/core" }
+reth-primitives-traits = { version = "^0.7.1", default-features = false }
+reth-provider = { path = "../../../reth/crates/storage/provider" }
+tempo-alloy = { path = "../alloy" }
+tempo-chainspec = { path = "../chainspec", features = ["reth"], default-features = false }
+tempo-consensus-config = { path = "../consensus-config", default-features = false }
+tempo-dkg-onchain-artifacts = { path = "../dkg-onchain-artifacts", features = ["commonware-consensus"], default-features = false }
+tempo-evm = { path = "../evm", default-features = false }
+tempo-node = { path = "../node" }
+tempo-payload-types = { path = "../payload/types", default-features = false }
+tempo-precompiles = { path = "../precompiles", default-features = false }
+tempo-primitives = { path = "../primitives", features = ["reth"], default-features = false }
+tempo-telemetry-util = { path = "../telemetry-util", default-features = false }
+thiserror = { version = "^2.0.18" }
+tokio = { version = "^1.49.0", features = ["full", "macros", "sync", "net", "rt", "time"] }
+tokio-stream = { version = "^0.1.18", features = ["sync"] }
+tracing = { version = "^0.1.44" }
+url = { version = "^2.5" }
+
+[dev-dependencies]
+age = { version = "^0.11", default-features = false }
+reth-ethereum-engine-primitives = { path = "../../../reth/crates/ethereum/engine-primitives" }
+reth-provider = { path = "../../../reth/crates/storage/provider", features = ["test-utils"] }
+tempfile = { version = "^3.24.0" }
+tempo-precompiles = { path = "../precompiles", features = ["test-utils"], default-features = false }
+tempo-primitives = { path = "../primitives", features = ["arbitrary", "test-utils"], default-features = false }
+tracing-subscriber = { version = "^0.3.22" }

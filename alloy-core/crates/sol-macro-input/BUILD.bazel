@@ -24,9 +24,9 @@ crate_library(
     deps = [
         "//alloy-core/crates/json-abi:alloy_json_abi",
         "//alloy-core/crates/syn-solidity:syn_solidity",
+        "@crates//:const-hex",
         "@crates//:dunce",
         "@crates//:heck",
-        "@crates//:hex",
         "@crates//:macro-string",
         "@crates//:proc-macro2",
         "@crates//:quote",
@@ -34,7 +34,7 @@ crate_library(
         "@crates//:syn",
     ],
     aliases = {
-        "@crates//:hex": "hex",
+        "@crates//:const-hex": "hex",
     },
     compile_data = [
         "//alloy-core/crates/json-abi:abi_fixtures",

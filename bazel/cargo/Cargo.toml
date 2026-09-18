@@ -220,6 +220,32 @@ members = [
     "reth-core/crates/rpc-traits",
     "reth-core/crates/zstd-compressors",
     "revm-inspectors",
+    "tempo/bin/tempo",
+    "tempo/bin/tempo-sidecar",
+    "tempo/crates/alloy",
+    "tempo/crates/chainspec",
+    "tempo/crates/consensus",
+    "tempo/crates/consensus-config",
+    "tempo/crates/contracts",
+    "tempo/crates/dkg-onchain-artifacts",
+    "tempo/crates/e2e",
+    "tempo/crates/evm",
+    "tempo/crates/ext",
+    "tempo/crates/eyre",
+    "tempo/crates/faucet",
+    "tempo/crates/hardfork",
+    "tempo/crates/nitro-attestation",
+    "tempo/crates/node",
+    "tempo/crates/payload/builder",
+    "tempo/crates/payload/types",
+    "tempo/crates/precompiles",
+    "tempo/crates/precompiles-macros",
+    "tempo/crates/primitives",
+    "tempo/crates/revm",
+    "tempo/crates/telemetry-util",
+    "tempo/crates/transaction-pool",
+    "tempo/crates/validator-config",
+    "tempo/xtask",
 ]
 
 # Union of the projects' `[patch.crates-io]` sections.
@@ -283,8 +309,13 @@ reth-primitives-traits = { path = "reth-core/crates/primitives-traits" }
 reth-rpc-traits = { path = "reth-core/crates/rpc-traits" }
 reth-zstd-compressors = { path = "reth-core/crates/zstd-compressors" }
 revm-inspectors = { path = "revm-inspectors" }
+alloy = { path = "alloy/crates/alloy" }
+alloy-signer-aws = { path = "alloy/crates/signer-aws" }
+alloy-signer-gcp = { path = "alloy/crates/signer-gcp" }
+alloy-signer-ledger = { path = "alloy/crates/signer-ledger" }
+alloy-signer-trezor = { path = "alloy/crates/signer-trezor" }
 
 # Digest of every member manifest. crate_universe only re-resolves when a
 # manifest it was given changes, and it is given this one alone.
 [workspace.metadata.bazel]
-members-digest = "09c537ca39ff06995c5ca76a7c3a6164ec01f62f24e369f604d67926ad0aad54"
+members-digest = "b240d73bef7ea0a990d9bd3e12ce1f7343ca9ab329b98e4cbae320cdb1faa51b"

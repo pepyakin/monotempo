@@ -1,12 +1,13 @@
 # GENERATED FILE - DO NOT EDIT.
 #
-# Regenerate with `python3 tempo/scripts/bazel/generate.py` after changing Cargo.toml.
+# Regenerate with `python3 bazel/generate.py` after changing Cargo.toml.
 
 load("@rules_rust//rust:defs.bzl", "rust_lint_config")
-load(":workspace.bzl", "CLIPPY_LINTS", "RUSTC_CHECK_CFG", "RUSTC_LINTS", "RUSTDOC_LINTS")
+load("//tempo/bazel:workspace.bzl", "CLIPPY_LINTS", "RUSTC_CHECK_CFG", "RUSTC_LINTS", "RUSTDOC_LINTS")
 
 package(default_visibility = ["//visibility:public"])
 
+# `[workspace.lints]` from tempo/Cargo.toml, applied to every crate with `[lints] workspace = true`.
 rust_lint_config(
     name = "lints",
     clippy = CLIPPY_LINTS,

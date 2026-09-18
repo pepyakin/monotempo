@@ -1,0 +1,172 @@
+# GENERATED FILE - DO NOT EDIT. Regenerate with `python3 bazel/generate.py`.
+#
+# Bazel-only derivation of `tempo/bin/tempo/Cargo.toml`: the same
+# package as `cargo metadata` describes it in the tempo workspace, with
+# workspace inheritance resolved. Cargo builds are unaffected.
+
+[package]
+name = "tempo"
+version = "1.14.0"
+edition = "2024"
+rust-version = "1.95.0"
+build = false
+autolib = false
+autobins = false
+autoexamples = false
+autotests = false
+autobenches = false
+
+[lib]
+name = "tempo"
+path = "src/lib.rs"
+
+[[bin]]
+name = "tempo"
+path = "src/main.rs"
+
+[[bin]]
+name = "tempo-localnet"
+path = "src/localnet.rs"
+required-features = ["localnet"]
+
+[features]
+default = ["asm-keccak", "jemalloc", "otlp", "keccak-cache-global"]
+localnet = ["dep:nix"]
+bal = ["tempo-consensus/bal", "tempo-node/bal"]
+asm-keccak = [
+    "alloy/asm-keccak",
+    "alloy-primitives/asm-keccak",
+    "tempo-alloy/asm-keccak",
+    "tempo-node/asm-keccak",
+    "reth-ethereum-cli/asm-keccak",
+    "revm/asm-keccak",
+]
+keccak-cache-global = ["alloy-primitives/keccak-cache-global", "reth-ethereum/keccak-cache-global"]
+otlp = [
+    "reth-ethereum-cli/otlp",
+    "reth-ethereum-cli/otlp-logs",
+    "reth-ethereum/otlp",
+    "tempo-node/otlp",
+    "dep:opentelemetry-otlp",
+    "opentelemetry-otlp/reqwest-rustls",
+]
+pyroscope = ["dep:pyroscope", "dep:pyroscope_pprofrs"]
+js-tracer = ["reth-node-builder/js-tracer", "reth-ethereum/js-tracer", "tempo-node/js-tracer"]
+jemalloc = [
+    "reth-cli-util/jemalloc",
+    "reth-ethereum-cli/jemalloc",
+    "reth-ethereum/jemalloc",
+    "reth-provider/jemalloc",
+    "tempo-node/jemalloc",
+]
+jemalloc-prof = [
+    "reth-cli-util/jemalloc",
+    "reth-cli-util/jemalloc-prof",
+    "reth-ethereum-cli/jemalloc-prof",
+    "tempo-node/jemalloc-prof",
+    "reth-ethereum/jemalloc-prof",
+]
+jemalloc-symbols = [
+    "jemalloc-prof",
+    "reth-ethereum-cli/jemalloc-symbols",
+    "tempo-node/jemalloc-symbols",
+    "reth-ethereum/jemalloc-symbols",
+]
+tracy = ["reth-ethereum-cli/tracy", "tempo-node/tracy", "dep:tracy-client", "tracy-client/ondemand"]
+tracy-allocator = ["reth-cli-util/tracy-allocator", "reth-ethereum-cli/tracy-allocator", "tracy"]
+min-error-logs = ["tracing/release_max_level_error", "reth-ethereum-cli/min-error-logs", "tempo-node/min-error-logs"]
+min-warn-logs = ["tracing/release_max_level_warn", "reth-ethereum-cli/min-warn-logs", "tempo-node/min-warn-logs"]
+min-info-logs = ["tracing/release_max_level_info", "reth-ethereum-cli/min-info-logs", "tempo-node/min-info-logs"]
+min-debug-logs = ["tracing/release_max_level_debug", "reth-ethereum-cli/min-debug-logs", "tempo-node/min-debug-logs"]
+min-trace-logs = ["reth-ethereum-cli/min-trace-logs", "tempo-node/min-trace-logs"]
+trie-debug = ["tempo-node/trie-debug"]
+
+[dependencies]
+alloy = { version = "^2.4.2", features = ["network", "rpc", "rpc-types", "transports", "providers", "provider-http", "provider-ws", "reqwest-rustls-tls"], default-features = false }
+alloy-consensus = { version = "^2.4.2", default-features = false }
+alloy-genesis = { version = "^2.4.2", default-features = false }
+alloy-network = { version = "^2.4.2", default-features = false }
+alloy-primitives = { version = "^1.7.3", default-features = false }
+alloy-provider = { version = "^2.4.2", features = ["reqwest", "reqwest-rustls-tls"], default-features = false }
+alloy-rlp = { version = "^0.3.16", default-features = false }
+alloy-rpc-types-eth = { version = "^2.4.2" }
+alloy-signer-aws = { version = "^2.4.2" }
+alloy-signer-gcp = { version = "^2.4.2" }
+alloy-signer-ledger = { version = "^2.4.2" }
+alloy-signer-local = { version = "^2.4.2", features = ["mnemonic"] }
+alloy-signer-trezor = { version = "^2.4.2" }
+alloy-sol-types = { version = "^1.7.3", default-features = false }
+base64 = { version = "^0.22", features = ["alloc"], default-features = false }
+blake3 = { version = "^1.8.5" }
+clap = { version = "^4.5.57", features = ["derive", "env"] }
+commonware-codec = { version = "^2026.9.0" }
+commonware-consensus = { version = "^2026.9.0" }
+commonware-cryptography = { version = "^2026.9.0", default-features = false }
+commonware-math = { version = "^2026.9.0" }
+commonware-runtime = { version = "^2026.9.0", features = ["external"] }
+commonware-utils = { version = "^2026.9.0" }
+eyre = { version = "^0.6.12" }
+futures = { version = "^0.3.31", features = ["executor"] }
+jiff = { version = "^0.2.18", default-features = false }
+opentelemetry-otlp = { version = "^0.31", optional = true, default-features = false }
+pyroscope = { version = "^0.5.8", optional = true }
+pyroscope_pprofrs = { version = "^0.2.10", optional = true }
+rand = { version = "^0.10" }
+reqwest = { version = "^0.13", features = ["rustls-no-provider", "stream"], default-features = false }
+reth-chainspec = { path = "../../../reth/crates/chainspec", default-features = false }
+reth-cli = { path = "../../../reth/crates/cli/cli" }
+reth-cli-commands = { path = "../../../reth/crates/cli/commands" }
+reth-cli-runner = { path = "../../../reth/crates/cli/runner" }
+reth-cli-util = { path = "../../../reth/crates/cli/util" }
+reth-codecs = { version = "^0.7.0", default-features = false }
+reth-db = { path = "../../../reth/crates/storage/db" }
+reth-db-api = { path = "../../../reth/crates/storage/db-api" }
+reth-discv5 = { path = "../../../reth/crates/net/discv5" }
+reth-eth-wire-types = { path = "../../../reth/crates/net/eth-wire-types" }
+reth-ethereum = { path = "../../../reth/crates/ethereum/reth", features = ["full", "cli", "network"] }
+reth-ethereum-cli = { path = "../../../reth/crates/ethereum/cli" }
+reth-etl = { path = "../../../reth/crates/etl" }
+reth-metrics = { path = "../../../reth/crates/metrics" }
+reth-network-api = { path = "../../../reth/crates/net/network-api" }
+reth-network-peers = { path = "../../../reth/crates/net/peers", default-features = false }
+reth-nippy-jar = { path = "../../../reth/crates/storage/nippy-jar" }
+reth-node-builder = { path = "../../../reth/crates/node/builder" }
+reth-primitives-traits = { version = "^0.7.1", default-features = false }
+reth-provider = { path = "../../../reth/crates/storage/provider" }
+reth-prune-types = { path = "../../../reth/crates/prune/types" }
+reth-rpc-server-types = { path = "../../../reth/crates/rpc/rpc-server-types" }
+reth-static-file-types = { path = "../../../reth/crates/static-file/types" }
+reth-storage-api = { path = "../../../reth/crates/storage/storage-api" }
+reth-trie = { path = "../../../reth/crates/trie/trie" }
+reth-trie-db = { path = "../../../reth/crates/trie/db" }
+revm = { version = "^43.0.2", features = ["optional_fee_charge"], default-features = false }
+rustls = { version = "^0.23", features = ["ring"], default-features = false }
+secp256k1 = { version = "^0.30.0", default-features = false }
+serde = { version = "^1.0.228", features = ["derive"], default-features = false }
+serde_json = { version = "^1.0.149", features = ["alloc", "raw_value"], default-features = false }
+tar = { version = "^0.4.46" }
+tempfile = { version = "^3.24.0" }
+tempo-alloy = { path = "../../crates/alloy", features = ["reth"] }
+tempo-chainspec = { path = "../../crates/chainspec", features = ["default"], default-features = false }
+tempo-consensus = { path = "../../crates/consensus", default-features = false }
+tempo-consensus-config = { path = "../../crates/consensus-config", default-features = false }
+tempo-contracts = { path = "../../crates/contracts", features = ["serde"], default-features = false }
+tempo-dkg-onchain-artifacts = { path = "../../crates/dkg-onchain-artifacts", default-features = false }
+tempo-evm = { path = "../../crates/evm", default-features = false }
+tempo-ext = { path = "../../crates/ext" }
+tempo-eyre = { path = "../../crates/eyre", default-features = false }
+tempo-faucet = { path = "../../crates/faucet", default-features = false }
+tempo-node = { path = "../../crates/node", features = ["default"] }
+tempo-precompiles = { path = "../../crates/precompiles", default-features = false }
+tempo-primitives = { path = "../../crates/primitives", features = ["reth"], default-features = false }
+tempo-telemetry-util = { path = "../../crates/telemetry-util", default-features = false }
+tempo-validator-config = { path = "../../crates/validator-config", default-features = false }
+tokio = { version = "^1.49.0", features = ["full"] }
+tokio-util = { version = "^0.7.18", features = ["io"] }
+tracing = { version = "^0.1.44" }
+tracy-client = { version = "^0.18.4", optional = true }
+url = { version = "^2.5" }
+zstd = { version = "^0.13.3" }
+
+[target.'cfg(unix)'.dependencies]
+nix = { version = "^0.30.1", features = ["signal"], optional = true }

@@ -2,12 +2,29 @@
 
 import tomllib
 import unittest
-from unittest.mock import patch
 
 import generate
 
 
 class RenderTargetsTest(unittest.TestCase):
+    def test_tempo_uses_shared_workspace_and_local_dependencies(self):
+        self.assertIn("tempo", {p.name for p in generate.discover_projects()})
+        for path in ("tempo/Cargo.lock", "bazel/cargo/Cargo.lock"):
+            with self.subTest(lockfile=path):
+                lock = tomllib.loads((generate.WORKSPACE_ROOT / path).read_text())
+                packages = {p["name"]: p for p in lock["package"]}
+                for name in ("reth-node-builder", "reth-primitives-traits", "alloy",
+                             "alloy-primitives", "alloy-sol-types", "alloy-evm",
+                             "alloy-rlp", "alloy-trie", "alloy-chains", "alloy-hardforks",
+                             "alloy-eip2930", "alloy-eip7702", "alloy-eip7928", "revm-inspectors"):
+                    self.assertIn(name, packages)
+                    self.assertNotIn("source", packages[name])
+                external = [
+                    p["name"] for p in lock["package"] if p.get("source") and
+                    p["name"].startswith(("reth", "alloy", "syn-solidity", "revm-inspectors"))
+                ]
+                self.assertEqual(external, [])
+
     def crate(self, targets, features=()):
         return generate.Crate(
             project=generate.Project(
@@ -23,17 +40,17 @@ class RenderTargetsTest(unittest.TestCase):
             workspace_lints=True,
             targets=targets,
             label="//tempo/crates/example:example",
-            normal=[generate.Dep("@tempo_crates//:reth-node-api", False, None, None)],
+            normal=[generate.Dep("//reth/crates/node/api:reth_node_api", False, None, None)],
         )
 
     def test_proc_macro_uses_host_rule_and_preserves_dependency_names(self):
         crate = self.crate([generate.Target("proc-macro", "example", "src/lib.rs", [])])
-        with patch.object(generate, "RUST_BZL", "//tempo/bazel:rust.bzl"):
-            output = generate.render_build_file(crate, {})
+        crate.project = generate.Project.load(generate.WORKSPACE_ROOT / "tempo/bazel/project.toml")
+        output = generate.render_build_file(crate, {})
         self.assertIn('load("//tempo/bazel:rust.bzl",', output)
         self.assertIn("crate_proc_macro(\n", output)
         self.assertIn("crate_unit_test(\n", output)
-        self.assertIn('"@tempo_crates//:reth-node-api"', output)
+        self.assertIn('"//reth/crates/node/api:reth_node_api"', output)
         self.assertNotIn("crate_library(\n", output)
 
     def test_cargo_integration_name_is_not_bazel_target_or_source_directory(self):
@@ -44,6 +61,8 @@ class RenderTargetsTest(unittest.TestCase):
         self.assertIn('name = "example_storage_test"', output)
         self.assertIn('crate_name = "storage"', output)
         self.assertNotIn('crate_name =', generate.render_build_file(crate, {}))
+        crate.project = generate.Project.load(generate.WORKSPACE_ROOT / "tempo/bazel/project.toml")
+        self.assertIn('crate_name = "storage"', generate.render_build_file(crate, {}))
 
     def test_required_features_gate_binary_and_integration_test_runfiles(self):
         targets = [
@@ -120,6 +139,38 @@ class RenderTargetsTest(unittest.TestCase):
             "src": package_dir / "src",
             "__workspace__/examples/enum.rs": project.root / "examples/enum.rs",
         })
+
+    def test_dependency_renames_preserve_public_features(self):
+        project = self.crate([]).project
+        dep = {
+            "name": "const-hex", "rename": "hex", "req": "^1", "source": None,
+            "features": [], "optional": True, "uses_default_features": False,
+            "kind": None, "target": None,
+        }
+        for explicit in (False, True):
+            with self.subTest(explicit=explicit):
+                features = {"std": ["hex/std"], "serde": ["hex?/serde"],
+                            "hex-compat": ["hex/hex"], "other": ["hex2/std"]}
+                if explicit:
+                    features["enabled"] = ["dep:hex"]
+                else:
+                    features["default"] = ["hex"]
+                member = generate.Member(project=project, manifest={"features": features}, pkg={
+                    "name": "example", "version": "1.0.0", "edition": "2021",
+                    "manifest_path": str(project.root / "crates/example/Cargo.toml"),
+                    "dependencies": [dep, dict(dep, target='cfg(unix)')], "targets": [],
+                })
+                derived = generate.derive_manifest(member, {}, {("const-hex", "hex")})
+                manifest = tomllib.loads(derived.text)
+                expected = {"std": ["const-hex/std"], "serde": ["const-hex?/serde"],
+                            "hex-compat": ["const-hex/hex"], "other": ["hex2/std"]}
+                if explicit:
+                    expected["enabled"] = ["dep:const-hex"]
+                else:
+                    expected.update({"default": ["hex"], "hex": ["dep:const-hex"]})
+                self.assertEqual(manifest["features"], expected)
+                self.assertEqual(list(manifest["dependencies"]), ["const-hex"])
+                self.assertEqual(features["std"], ["hex/std"])
 
 
 if __name__ == "__main__":

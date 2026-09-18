@@ -1,0 +1,42 @@
+# GENERATED FILE - DO NOT EDIT. Regenerate with `python3 bazel/generate.py`.
+#
+# Bazel-only derivation of `tempo/crates/ext/Cargo.toml`: the same
+# package as `cargo metadata` describes it in the tempo workspace, with
+# workspace inheritance resolved. Cargo builds are unaffected.
+
+[package]
+name = "tempo-ext"
+version = "1.14.0"
+edition = "2024"
+rust-version = "1.95.0"
+build = false
+autolib = false
+autobins = false
+autoexamples = false
+autotests = false
+autobenches = false
+
+[lib]
+name = "tempo_ext"
+path = "src/lib.rs"
+
+[[test]]
+name = "lifecycle"
+path = "tests/lifecycle.rs"
+
+[dependencies]
+clap = { version = "^4.5.57", features = ["derive", "env"] }
+dirs-next = { version = "^2.0.0" }
+minisign-verify = { version = "^0.2" }
+reqwest = { version = "^0.13", features = ["rustls-no-provider", "blocking"], default-features = false }
+semver = { version = "^1" }
+serde = { version = "^1.0.228", features = ["derive", "std"], default-features = false }
+serde_json = { version = "^1.0.149", features = ["alloc", "raw_value", "std"], default-features = false }
+sha2 = { version = "^0.10", default-features = false }
+tempfile = { version = "^3.24.0" }
+thiserror = { version = "^2.0.18" }
+tracing = { version = "^0.1.44" }
+url = { version = "^2.5" }
+
+[dev-dependencies]
+minisign = { version = "^0.8" }

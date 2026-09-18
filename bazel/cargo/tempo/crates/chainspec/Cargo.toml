@@ -1,0 +1,71 @@
+# GENERATED FILE - DO NOT EDIT. Regenerate with `python3 bazel/generate.py`.
+#
+# Bazel-only derivation of `tempo/crates/chainspec/Cargo.toml`: the same
+# package as `cargo metadata` describes it in the tempo workspace, with
+# workspace inheritance resolved. Cargo builds are unaffected.
+
+[package]
+name = "tempo-chainspec"
+version = "1.11.0"
+edition = "2024"
+rust-version = "1.95.0"
+build = false
+autolib = false
+autobins = false
+autoexamples = false
+autotests = false
+autobenches = false
+
+[lib]
+name = "tempo_chainspec"
+path = "src/lib.rs"
+
+[features]
+default = ["std", "serde", "reth", "cli"]
+std = [
+    "tempo-hardfork/std",
+    "alloy-eips/std",
+    "alloy-evm?/std",
+    "alloy-genesis/std",
+    "alloy-primitives/std",
+    "commonware-cryptography?/std",
+    "once_cell/std",
+    "reth-chainspec?/std",
+    "reth-network-peers?/std",
+    "serde/std",
+    "serde_json/std",
+    "tempo-primitives/std",
+]
+serde = ["tempo-hardfork/serde", "alloy-eips/serde", "alloy-primitives/serde", "tempo-primitives/serde"]
+evm = ["dep:alloy-evm", "tempo-hardfork/evm", "tempo-primitives/evm"]
+reth = [
+    "std",
+    "evm",
+    "dep:commonware-codec",
+    "dep:commonware-cryptography",
+    "dep:eyre",
+    "dep:reth-chainspec",
+    "dep:reth-network-peers",
+    "dep:tempo-dkg-onchain-artifacts",
+    "tempo-primitives/reth",
+]
+cli = ["reth", "dep:reth-cli", "dep:eyre", "tempo-primitives/reth-codec"]
+
+[dependencies]
+alloy-eips = { version = "^2.4.2", default-features = false }
+alloy-evm = { version = "^0.39.0", optional = true, default-features = false }
+alloy-genesis = { version = "^2.4.2", default-features = false }
+alloy-primitives = { version = "^1.7.3", default-features = false }
+commonware-codec = { version = "^2026.9.0", optional = true }
+commonware-cryptography = { version = "^2026.9.0", optional = true, default-features = false }
+eyre = { version = "^0.6.12", optional = true }
+once_cell = { version = "^1.19", features = ["critical-section"], default-features = false }
+paste = { version = "^1" }
+reth-chainspec = { path = "../../../reth/crates/chainspec", optional = true, default-features = false }
+reth-cli = { path = "../../../reth/crates/cli/cli", optional = true }
+reth-network-peers = { path = "../../../reth/crates/net/peers", optional = true, default-features = false }
+serde = { version = "^1.0.228", features = ["derive"], default-features = false }
+serde_json = { version = "^1.0.149", features = ["alloc", "raw_value"], default-features = false }
+tempo-dkg-onchain-artifacts = { path = "../dkg-onchain-artifacts", optional = true, default-features = false }
+tempo-hardfork = { path = "../hardfork", default-features = false }
+tempo-primitives = { path = "../primitives", default-features = false }

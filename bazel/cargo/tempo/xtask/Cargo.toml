@@ -1,0 +1,65 @@
+# GENERATED FILE - DO NOT EDIT. Regenerate with `python3 bazel/generate.py`.
+#
+# Bazel-only derivation of `tempo/xtask/Cargo.toml`: the same
+# package as `cargo metadata` describes it in the tempo workspace, with
+# workspace inheritance resolved. Cargo builds are unaffected.
+
+[package]
+name = "tempo-xtask"
+version = "1.14.0"
+edition = "2024"
+rust-version = "1.95.0"
+build = false
+autolib = false
+autobins = false
+autoexamples = false
+autotests = false
+autobenches = false
+
+[[bin]]
+name = "tempo-xtask"
+path = "src/main.rs"
+
+[dependencies]
+alloy = { version = "^2.4.2", features = ["genesis", "providers", "provider-ws", "reqwest", "reqwest-rustls-tls", "signers", "signer-local", "signer-mnemonic", "rand", "sol-types", "getrandom"], default-features = false }
+alloy-consensus = { version = "^2.4.2", default-features = false }
+alloy-eips = { version = "^2.4.2", default-features = false }
+alloy-json-abi = { version = "^1.7.3", default-features = false }
+alloy-primitives = { version = "^1.7.3", features = ["asm-keccak"], default-features = false }
+bytes = { version = "^1.11.1" }
+clap = { version = "^4.5.57", features = ["derive", "env", "derive"] }
+coins-bip32 = { version = "^0.12" }
+commonware-codec = { version = "^2026.9.0" }
+commonware-consensus = { version = "^2026.9.0" }
+commonware-cryptography = { version = "^2026.9.0", default-features = false }
+commonware-math = { version = "^2026.9.0" }
+commonware-runtime = { version = "^2026.9.0", features = ["external"] }
+commonware-storage = { version = "^2026.9.0" }
+commonware-utils = { version = "^2026.9.0" }
+const-hex = { version = "^1.17.0" }
+eyre = { version = "^0.6.12" }
+indicatif = { version = "^0.18", features = ["rayon"] }
+itertools = { version = "^0.14.0" }
+rand = { version = "^0.10" }
+rand_08 = { package = "rand", version = "^0.8.5" }
+rayon = { version = "^1.11" }
+reth-db = { path = "../../reth/crates/storage/db" }
+reth-db-api = { path = "../../reth/crates/storage/db-api" }
+reth-evm = { path = "../../reth/crates/evm/evm" }
+reth-network-peers = { path = "../../reth/crates/net/peers", features = ["secp256k1"], default-features = false }
+reth-primitives-traits = { version = "^0.7.1", default-features = false }
+reth-provider = { path = "../../reth/crates/storage/provider" }
+revm = { version = "^43.0.2", features = ["optional_fee_charge"], default-features = false }
+secp256k1 = { version = "^0.30.0", features = ["rand"], default-features = false }
+serde = { version = "^1.0.228", features = ["derive"], default-features = false }
+serde_json = { version = "^1.0.149", features = ["alloc", "raw_value"], default-features = false }
+tempo-chainspec = { path = "../crates/chainspec", features = ["default"], default-features = false }
+tempo-consensus-config = { path = "../crates/consensus-config", default-features = false }
+tempo-contracts = { path = "../crates/contracts", features = ["serde"], default-features = false }
+tempo-dkg-onchain-artifacts = { path = "../crates/dkg-onchain-artifacts", default-features = false }
+tempo-evm = { path = "../crates/evm", default-features = false }
+tempo-precompiles = { path = "../crates/precompiles", features = ["test-utils"], default-features = false }
+tempo-primitives = { path = "../crates/primitives", features = ["reth-codec"], default-features = false }
+tempo-revm = { path = "../crates/revm", default-features = false }
+tempo-validator-config = { path = "../crates/validator-config", default-features = false }
+tokio = { version = "^1.49.0", features = ["full"] }

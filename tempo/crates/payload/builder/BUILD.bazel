@@ -1,6 +1,6 @@
 # GENERATED FILE - DO NOT EDIT.
 #
-# Regenerate with `python3 tempo/scripts/bazel/generate.py` after changing Cargo.toml.
+# Regenerate with `python3 bazel/generate.py` after changing Cargo.toml.
 
 load("//tempo/bazel:rust.bzl", "crate_cargo_toml_env_vars", "crate_library", "crate_unit_test")
 load("//tempo/bazel:workspace.bzl", "WORKSPACE")
@@ -20,37 +20,37 @@ crate_library(
     crate_features = FEATURES,
     declared_features = DECLARED_FEATURES,
     deps = [
+        "//alloy-core/crates/primitives:alloy_primitives",
+        "//alloy-eips/crates/eip7928:alloy_eip7928",
+        "//alloy-rlp/crates/rlp:alloy_rlp",
+        "//alloy/crates/consensus:alloy_consensus",
+        "//alloy/crates/eips:alloy_eips",
+        "//reth-core/crates/primitives-traits:reth_primitives_traits",
+        "//reth/crates/chainspec:reth_chainspec",
+        "//reth/crates/consensus/common:reth_consensus_common",
+        "//reth/crates/engine/tree:reth_engine_tree",
+        "//reth/crates/errors:reth_errors",
+        "//reth/crates/evm/evm:reth_evm",
+        "//reth/crates/evm/execution-types:reth_execution_types",
+        "//reth/crates/metrics:reth_metrics",
+        "//reth/crates/payload/basic:reth_basic_payload_builder",
+        "//reth/crates/payload/builder:reth_payload_builder",
+        "//reth/crates/payload/primitives:reth_payload_primitives",
+        "//reth/crates/revm:reth_revm",
+        "//reth/crates/storage/storage-api:reth_storage_api",
+        "//reth/crates/tasks:reth_tasks",
+        "//reth/crates/transaction-pool:reth_transaction_pool",
+        "//reth/crates/trie/common:reth_trie_common",
         "//tempo/crates/chainspec:tempo_chainspec",
         "//tempo/crates/evm:tempo_evm",
         "//tempo/crates/payload/types:tempo_payload_types",
         "//tempo/crates/precompiles:tempo_precompiles",
         "//tempo/crates/primitives:tempo_primitives",
         "//tempo/crates/transaction-pool:tempo_transaction_pool",
-        "@tempo_crates//:alloy-consensus",
-        "@tempo_crates//:alloy-eip7928",
-        "@tempo_crates//:alloy-eips",
-        "@tempo_crates//:alloy-primitives",
-        "@tempo_crates//:alloy-rlp",
-        "@tempo_crates//:crossbeam-channel",
-        "@tempo_crates//:metrics",
-        "@tempo_crates//:reth-basic-payload-builder",
-        "@tempo_crates//:reth-chainspec",
-        "@tempo_crates//:reth-consensus-common",
-        "@tempo_crates//:reth-engine-tree",
-        "@tempo_crates//:reth-errors",
-        "@tempo_crates//:reth-evm",
-        "@tempo_crates//:reth-execution-types",
-        "@tempo_crates//:reth-metrics",
-        "@tempo_crates//:reth-payload-builder",
-        "@tempo_crates//:reth-payload-primitives",
-        "@tempo_crates//:reth-primitives-traits",
-        "@tempo_crates//:reth-revm",
-        "@tempo_crates//:reth-storage-api",
-        "@tempo_crates//:reth-tasks",
-        "@tempo_crates//:reth-transaction-pool",
-        "@tempo_crates//:reth-trie-common",
-        "@tempo_crates//:tokio",
-        "@tempo_crates//:tracing",
+        "@crates//:crossbeam-channel",
+        "@crates//:metrics",
+        "@crates//:tokio",
+        "@crates//:tracing",
     ],
 )
 
@@ -61,8 +61,6 @@ crate_unit_test(
     crate_features = FEATURES,
     declared_features = DECLARED_FEATURES,
     deps = [
-        "@tempo_crates//:proptest",
+        "@crates//:proptest",
     ],
 )
-
-exports_files(["Cargo.toml"])

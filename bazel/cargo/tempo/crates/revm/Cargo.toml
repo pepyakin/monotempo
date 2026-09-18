@@ -1,0 +1,67 @@
+# GENERATED FILE - DO NOT EDIT. Regenerate with `python3 bazel/generate.py`.
+#
+# Bazel-only derivation of `tempo/crates/revm/Cargo.toml`: the same
+# package as `cargo metadata` describes it in the tempo workspace, with
+# workspace inheritance resolved. Cargo builds are unaffected.
+
+[package]
+name = "tempo-revm"
+version = "1.14.0"
+edition = "2024"
+rust-version = "1.95.0"
+build = false
+autolib = false
+autobins = false
+autoexamples = false
+autotests = false
+autobenches = false
+
+[lib]
+name = "tempo_revm"
+path = "src/lib.rs"
+
+[features]
+reth = ["dep:reth-storage-api"]
+serde = [
+    "revm/serde",
+    "alloy-consensus/serde",
+    "alloy-eips/serde",
+    "alloy-primitives/serde",
+    "p256/serde",
+    "reth-storage-api?/serde",
+    "tempo-chainspec/serde",
+    "tempo-contracts/serde",
+    "tempo-primitives/serde",
+]
+
+[dependencies]
+alloy-consensus = { version = "^2.4.2", default-features = false }
+alloy-evm = { version = "^0.39.0", features = ["std"], default-features = false }
+alloy-primitives = { version = "^1.7.3", default-features = false }
+alloy-sol-types = { version = "^1.7.3", default-features = false }
+auto_impl = { version = "^1" }
+derive_more = { version = "^2.1.1", default-features = false }
+reth-evm = { path = "../../../reth/crates/evm/evm" }
+reth-storage-api = { path = "../../../reth/crates/storage/storage-api", optional = true }
+revm = { version = "^43.0.2", features = ["optional_fee_charge"], default-features = false }
+tempo-chainspec = { path = "../chainspec", default-features = false }
+tempo-contracts = { path = "../contracts", features = ["serde"], default-features = false }
+tempo-precompiles = { path = "../precompiles", default-features = false }
+tempo-primitives = { path = "../primitives", features = ["reth", "evm"], default-features = false }
+thiserror = { version = "^2.0.18" }
+tracing = { version = "^0.1.44" }
+
+[dev-dependencies]
+alloy-eips = { version = "^2.4.2", default-features = false }
+alloy-primitives = { version = "^1.7.3", features = ["rand"], default-features = false }
+alloy-rlp = { version = "^0.3.16", default-features = false }
+alloy-signer = { version = "^2.4.2" }
+alloy-signer-local = { version = "^2.4.2" }
+base64 = { version = "^0.22", features = ["alloc"], default-features = false }
+eyre = { version = "^0.6.12" }
+p256 = { version = "^0.13", default-features = false }
+proptest = { version = "^1.9" }
+sha2 = { version = "^0.10", default-features = false }
+tempo-evm = { path = "../evm", default-features = false }
+tempo-precompiles = { path = "../precompiles", features = ["test-utils"], default-features = false }
+test-case = { version = "^3" }

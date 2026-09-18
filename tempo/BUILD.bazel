@@ -1,10 +1,8 @@
-# GENERATED FILE - DO NOT EDIT.
-#
-# Regenerate with `python3 tempo/scripts/bazel/generate.py` after changing Cargo.toml.
+# Workspace exports and node entry point; crate targets are generated separately.
 
 package(default_visibility = ["//visibility:public"])
 
-exports_files(["Cargo.toml", "Cargo.lock", "Cargo.Bazel.lock", ".cargo/config.toml", ".github/workflows/bench.yml"])
+exports_files(["Cargo.toml", "Cargo.lock", ".github/workflows/bench.yml"])
 
 alias(
     name = "tempo",

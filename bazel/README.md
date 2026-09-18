@@ -106,6 +106,10 @@ written in full. Keys:
   shared across packages (for example alloy-core's ABI JSON files).
 * `test_env.<crate>.<variable> = "value"`: runtime environment for the
   crate's unit and integration tests.
+* `rust_bzl = "//project/bazel:rust.bzl"`: project-specific build/test macros;
+  defaults to the shared rules. Tempo uses this for storage macros and test budgets.
+* `cargo_test_names = true`: preserve Cargo integration-test crate names,
+  required by Tempo's snapshot filenames.
 * `process_per_test = [crates]`: tests of these crates and of their
   dependants run one process per test.
 * `test_tags.<crate> = [tags]`: tags for the crate's test targets (`manual`
@@ -196,8 +200,8 @@ different packages under the same name (reth's `criterion = { package =
 "codspeed-criterion-compat" }` next to revm-inspectors' real `criterion`).
 The generator drops the rename in the derived manifest of the renaming crate
 and restores it in its `BUILD.bazel` with `aliases`, so the sources still see
-`criterion`. It refuses if the crate's `[features]` refer to the renamed
-dependency, since those would have to change too.
+`criterion`. Feature references to that dependency are rewritten in the
+derived manifest too, preserving public feature names and optionality.
 
 ## Hermeticity
 

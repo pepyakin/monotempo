@@ -1,0 +1,42 @@
+# GENERATED FILE - DO NOT EDIT. Regenerate with `python3 bazel/generate.py`.
+#
+# Bazel-only derivation of `tempo/bin/tempo-sidecar/Cargo.toml`: the same
+# package as `cargo metadata` describes it in the tempo workspace, with
+# workspace inheritance resolved. Cargo builds are unaffected.
+
+[package]
+name = "tempo-sidecar"
+version = "1.14.0"
+edition = "2024"
+rust-version = "1.95.0"
+build = false
+autolib = false
+autobins = false
+autoexamples = false
+autotests = false
+autobenches = false
+
+[[bin]]
+name = "tempo-sidecar"
+path = "src/main.rs"
+
+[dependencies]
+alloy = { version = "^2.4.2", features = ["network", "rpc", "rpc-types", "transports", "providers", "provider-ws", "reqwest-rustls-tls", "signers", "signer-local", "signer-mnemonic", "rand"], default-features = false }
+clap = { version = "^4.5.57", features = ["derive", "env"] }
+eyre = { version = "^0.6.12" }
+futures = { version = "^0.3.31" }
+hex = { version = "^0.4" }
+itertools = { version = "^0.14.0" }
+metrics = { version = "^0.24.3" }
+metrics-exporter-prometheus = { version = "^0.18.1", default-features = false }
+poem = { version = "^3.1.12" }
+rand_distr = { version = "^0.5.1" }
+reqwest = { version = "^0.13", features = ["json", "rustls"], default-features = false }
+rustls = { version = "^0.23", features = ["ring"], default-features = false }
+tempo-alloy = { path = "../../crates/alloy" }
+tempo-precompiles = { path = "../../crates/precompiles", features = ["rpc"], default-features = false }
+tempo-primitives = { path = "../../crates/primitives", default-features = false }
+tempo-telemetry-util = { path = "../../crates/telemetry-util", default-features = false }
+tokio = { version = "^1.49.0", features = ["full"] }
+tracing = { version = "^0.1.44" }
+tracing-subscriber = { version = "^0.3.22", features = ["env-filter"] }

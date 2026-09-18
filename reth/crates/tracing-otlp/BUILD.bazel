@@ -42,7 +42,7 @@ crate_library(
         "@crates//:eyre",
         "@crates//:opentelemetry-0.32.0",
         "@crates//:opentelemetry-appender-tracing",
-        "@crates//:opentelemetry-otlp",
+        "@crates//:opentelemetry-otlp-0.32.0",
         "@crates//:opentelemetry-semantic-conventions",
         "@crates//:opentelemetry_sdk",
         "@crates//:tracing",

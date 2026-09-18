@@ -1,6 +1,6 @@
 # GENERATED FILE - DO NOT EDIT.
 #
-# Regenerate with `python3 tempo/scripts/bazel/generate.py` after changing Cargo.toml.
+# Regenerate with `python3 bazel/generate.py` after changing Cargo.toml.
 
 load("//tempo/bazel:rust.bzl", "crate_cargo_toml_env_vars", "crate_integration_test", "crate_library", "crate_unit_test")
 load("//tempo/bazel:workspace.bzl", "WORKSPACE")
@@ -17,18 +17,18 @@ crate_library(
     crate_features = FEATURES,
     declared_features = DECLARED_FEATURES,
     deps = [
-        "@tempo_crates//:clap",
-        "@tempo_crates//:dirs-next",
-        "@tempo_crates//:minisign-verify",
-        "@tempo_crates//:reqwest",
-        "@tempo_crates//:semver",
-        "@tempo_crates//:serde",
-        "@tempo_crates//:serde_json",
-        "@tempo_crates//:sha2",
-        "@tempo_crates//:tempfile",
-        "@tempo_crates//:thiserror",
-        "@tempo_crates//:tracing",
-        "@tempo_crates//:url",
+        "@crates//:clap",
+        "@crates//:dirs-next",
+        "@crates//:minisign-verify",
+        "@crates//:reqwest",
+        "@crates//:semver",
+        "@crates//:serde",
+        "@crates//:serde_json",
+        "@crates//:sha2",
+        "@crates//:tempfile",
+        "@crates//:thiserror",
+        "@crates//:tracing",
+        "@crates//:url",
     ],
 )
 
@@ -39,7 +39,7 @@ crate_unit_test(
     crate_features = FEATURES,
     declared_features = DECLARED_FEATURES,
     deps = [
-        "@tempo_crates//:minisign",
+        "@crates//:minisign",
     ],
 )
 
@@ -52,20 +52,18 @@ crate_integration_test(
     declared_features = DECLARED_FEATURES,
     deps = [
         ":tempo_ext",
-        "@tempo_crates//:clap",
-        "@tempo_crates//:dirs-next",
-        "@tempo_crates//:minisign",
-        "@tempo_crates//:minisign-verify",
-        "@tempo_crates//:reqwest",
-        "@tempo_crates//:semver",
-        "@tempo_crates//:serde",
-        "@tempo_crates//:serde_json",
-        "@tempo_crates//:sha2",
-        "@tempo_crates//:tempfile",
-        "@tempo_crates//:thiserror",
-        "@tempo_crates//:tracing",
-        "@tempo_crates//:url",
+        "@crates//:clap",
+        "@crates//:dirs-next",
+        "@crates//:minisign",
+        "@crates//:minisign-verify",
+        "@crates//:reqwest",
+        "@crates//:semver",
+        "@crates//:serde",
+        "@crates//:serde_json",
+        "@crates//:sha2",
+        "@crates//:tempfile",
+        "@crates//:thiserror",
+        "@crates//:tracing",
+        "@crates//:url",
     ],
 )
-
-exports_files(["Cargo.toml"])

@@ -8,6 +8,10 @@ load("//reth/bazel:workspace.bzl", "WORKSPACE")
 FEATURES = [
     "default",
     "optional-balance-check",
+    "optional-block-gas-limit",
+    "optional-checks",
+    "optional-eip3541",
+    "optional-eip3607",
     "optional-no-base-fee",
     "portable",
     "serde",

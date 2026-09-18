@@ -1,0 +1,26 @@
+# GENERATED FILE - DO NOT EDIT. Regenerate with `python3 bazel/generate.py`.
+#
+# Bazel-only derivation of `tempo/crates/telemetry-util/Cargo.toml`: the same
+# package as `cargo metadata` describes it in the tempo workspace, with
+# workspace inheritance resolved. Cargo builds are unaffected.
+
+[package]
+name = "tempo-telemetry-util"
+version = "1.14.0"
+edition = "2024"
+rust-version = "1.95.0"
+build = false
+autolib = false
+autobins = false
+autoexamples = false
+autotests = false
+autobenches = false
+
+[lib]
+name = "tempo_telemetry_util"
+path = "src/lib.rs"
+
+[dependencies]
+eyre = { version = "^0.6.12" }
+jiff = { version = "^0.2.18", default-features = false }
+tracing = { version = "^0.1.44" }

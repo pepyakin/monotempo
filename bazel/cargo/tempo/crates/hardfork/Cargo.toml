@@ -1,0 +1,37 @@
+# GENERATED FILE - DO NOT EDIT. Regenerate with `python3 bazel/generate.py`.
+#
+# Bazel-only derivation of `tempo/crates/hardfork/Cargo.toml`: the same
+# package as `cargo metadata` describes it in the tempo workspace, with
+# workspace inheritance resolved. Cargo builds are unaffected.
+
+[package]
+name = "tempo-hardfork"
+version = "1.11.0"
+edition = "2024"
+rust-version = "1.95.0"
+build = false
+autolib = false
+autobins = false
+autoexamples = false
+autotests = false
+autobenches = false
+
+[lib]
+name = "tempo_hardfork"
+path = "src/lib.rs"
+
+[features]
+default = ["std", "serde"]
+std = ["alloy-eips/std", "alloy-evm?/std", "serde?/std", "serde_json/std"]
+serde = ["dep:serde", "alloy-eips/serde", "alloy-hardforks/serde"]
+evm = ["dep:alloy-evm"]
+
+[dependencies]
+alloy-eips = { version = "^2.4.2", default-features = false }
+alloy-evm = { version = "^0.39.0", optional = true, default-features = false }
+alloy-hardforks = { version = "^0.4.8" }
+paste = { version = "^1" }
+serde = { version = "^1.0.228", features = ["derive"], optional = true, default-features = false }
+
+[dev-dependencies]
+serde_json = { version = "^1.0.149", features = ["alloc", "raw_value"], default-features = false }

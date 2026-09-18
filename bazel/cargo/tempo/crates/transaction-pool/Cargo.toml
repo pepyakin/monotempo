@@ -1,0 +1,83 @@
+# GENERATED FILE - DO NOT EDIT. Regenerate with `python3 bazel/generate.py`.
+#
+# Bazel-only derivation of `tempo/crates/transaction-pool/Cargo.toml`: the same
+# package as `cargo metadata` describes it in the tempo workspace, with
+# workspace inheritance resolved. Cargo builds are unaffected.
+
+[package]
+name = "tempo-transaction-pool"
+version = "1.14.0"
+edition = "2024"
+rust-version = "1.95.0"
+build = false
+autolib = false
+autobins = false
+autoexamples = false
+autotests = false
+autobenches = false
+
+[lib]
+name = "tempo_transaction_pool"
+path = "src/lib.rs"
+
+[features]
+default = []
+test-utils = [
+    "reth-chainspec/test-utils",
+    "reth-ethereum-primitives/test-utils",
+    "reth-evm/test-utils",
+    "reth-primitives-traits/test-utils",
+    "reth-provider/test-utils",
+    "reth-transaction-pool/test-utils",
+    "tempo-precompiles/test-utils",
+    "tempo-primitives/test-utils",
+    "reth-revm/test-utils",
+]
+
+[dependencies]
+alloy-consensus = { version = "^2.4.2", default-features = false }
+alloy-eips = { version = "^2.4.2", default-features = false }
+alloy-evm = { version = "^0.39.0", features = ["std"], default-features = false }
+alloy-primitives = { version = "^1.7.3", default-features = false }
+alloy-sol-types = { version = "^1.7.3", default-features = false }
+dashmap = { version = "^6" }
+derive_more = { version = "^2.1.1", default-features = false }
+futures = { version = "^0.3.31" }
+itertools = { version = "^0.14.0" }
+metrics = { version = "^0.24.3" }
+parking_lot = { version = "^0.12.5" }
+reth-chainspec = { path = "../../../reth/crates/chainspec", default-features = false }
+reth-eth-wire-types = { path = "../../../reth/crates/net/eth-wire-types" }
+reth-evm = { path = "../../../reth/crates/evm/evm" }
+reth-metrics = { path = "../../../reth/crates/metrics" }
+reth-primitives-traits = { version = "^0.7.1", default-features = false }
+reth-provider = { path = "../../../reth/crates/storage/provider" }
+reth-revm = { path = "../../../reth/crates/revm", features = ["std", "optional-checks"] }
+reth-storage-api = { path = "../../../reth/crates/storage/storage-api" }
+reth-tracing = { path = "../../../reth/crates/tracing" }
+reth-transaction-pool = { path = "../../../reth/crates/transaction-pool" }
+revm = { version = "^43.0.2", features = ["optional_fee_charge"], default-features = false }
+tempo-chainspec = { path = "../chainspec", features = ["reth"], default-features = false }
+tempo-contracts = { path = "../contracts", features = ["serde"], default-features = false }
+tempo-evm = { path = "../evm", default-features = false }
+tempo-precompiles = { path = "../precompiles", default-features = false }
+tempo-primitives = { path = "../primitives", features = ["serde", "reth-codec"], default-features = false }
+tempo-revm = { path = "../revm", features = ["reth"], default-features = false }
+thiserror = { version = "^2.0.18" }
+tokio = { version = "^1.49.0", features = ["full", "sync"] }
+tracing = { version = "^0.1.44" }
+
+[dev-dependencies]
+alloy-consensus = { version = "^2.4.2", default-features = false }
+alloy-eips = { version = "^2.4.2", default-features = false }
+alloy-signer = { version = "^2.4.2" }
+alloy-signer-local = { version = "^2.4.2" }
+proptest = { version = "^1.9" }
+proptest-arbitrary-interop = { version = "^0.1.0" }
+reth-ethereum-primitives = { path = "../../../reth/crates/ethereum/primitives", features = ["test-utils"], default-features = false }
+reth-provider = { path = "../../../reth/crates/storage/provider", features = ["test-utils"] }
+reth-transaction-pool = { path = "../../../reth/crates/transaction-pool", features = ["test-utils"] }
+tempo-precompiles = { path = "../precompiles", features = ["test-utils"], default-features = false }
+tempo-primitives = { path = "../primitives", features = ["arbitrary"], default-features = false }
+test-case = { version = "^3" }
+tokio = { version = "^1.49.0", features = ["full"] }

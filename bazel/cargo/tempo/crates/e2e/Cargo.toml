@@ -1,0 +1,71 @@
+# GENERATED FILE - DO NOT EDIT. Regenerate with `python3 bazel/generate.py`.
+#
+# Bazel-only derivation of `tempo/crates/e2e/Cargo.toml`: the same
+# package as `cargo metadata` describes it in the tempo workspace, with
+# workspace inheritance resolved. Cargo builds are unaffected.
+
+[package]
+name = "tempo-e2e"
+version = "1.14.0"
+edition = "2024"
+rust-version = "1.95.0"
+build = false
+autolib = false
+autobins = false
+autoexamples = false
+autotests = false
+autobenches = false
+
+[lib]
+name = "tempo_e2e"
+path = "src/lib.rs"
+
+[dependencies]
+alloy = { version = "^2.4.2", features = ["genesis", "rpc-types", "signers", "signer-local", "signer-mnemonic", "rlp", "providers"], default-features = false }
+alloy-evm = { version = "^0.39.0", features = ["std"], default-features = false }
+alloy-genesis = { version = "^2.4.2", features = ["std"], default-features = false }
+alloy-primitives = { version = "^1.7.3", default-features = false }
+commonware-codec = { version = "^2026.9.0" }
+commonware-consensus = { version = "^2026.9.0" }
+commonware-cryptography = { version = "^2026.9.0", default-features = false }
+commonware-math = { version = "^2026.9.0" }
+commonware-p2p = { version = "^2026.9.0" }
+commonware-runtime = { version = "^2026.9.0", features = ["external"] }
+commonware-utils = { version = "^2026.9.0" }
+eyre = { version = "^0.6.12" }
+futures = { version = "^0.3.31" }
+itertools = { version = "^0.14.0" }
+rand_core = { version = "^0.10" }
+reth-chainspec = { path = "../../../reth/crates/chainspec", default-features = false }
+reth-config = { path = "../../../reth/crates/config" }
+reth-db = { path = "../../../reth/crates/storage/db" }
+reth-downloaders = { path = "../../../reth/crates/net/downloaders" }
+reth-ethereum = { path = "../../../reth/crates/ethereum/reth", features = ["node", "rpc", "test-utils", "pool"] }
+reth-node-builder = { path = "../../../reth/crates/node/builder" }
+reth-node-core = { path = "../../../reth/crates/node/core" }
+reth-node-metrics = { path = "../../../reth/crates/node/metrics" }
+reth-prune-types = { path = "../../../reth/crates/prune/types" }
+reth-rpc-builder = { path = "../../../reth/crates/rpc/rpc-builder" }
+reth-stages = { path = "../../../reth/crates/stages/stages" }
+reth-static-file = { path = "../../../reth/crates/static-file/static-file" }
+serde_json = { version = "^1.0.149", features = ["alloc", "raw_value"], default-features = false }
+tempfile = { version = "^3.24.0" }
+tempo-chainspec = { path = "../chainspec", features = ["reth"], default-features = false }
+tempo-consensus = { path = "../consensus", default-features = false }
+tempo-dkg-onchain-artifacts = { path = "../dkg-onchain-artifacts", default-features = false }
+tempo-evm = { path = "../evm", default-features = false }
+tempo-node = { path = "../node" }
+tempo-precompiles = { path = "../precompiles", features = ["rpc"], default-features = false }
+tokio = { version = "^1.49.0", features = ["full"] }
+tracing = { version = "^0.1.44" }
+
+[dev-dependencies]
+alloy-network = { version = "^2.4.2", default-features = false }
+commonware-macros = { version = "^2026.9.0" }
+commonware-parallel = { version = "^2026.9.0" }
+jsonrpsee = { version = "^0.26.0", features = ["server", "client", "macros", "ws-client", "http-client"] }
+rand = { version = "^0.10" }
+rand_08 = { package = "rand", version = "^0.8.5" }
+tempo-eyre = { path = "../eyre", default-features = false }
+tempo-primitives = { path = "../primitives", default-features = false }
+tracing-subscriber = { version = "^0.3.22" }

@@ -6,9 +6,15 @@ load("//bazel:rust.bzl", "crate_cargo_toml_env_vars", "crate_library", "crate_un
 load("//alloy/bazel:workspace.bzl", "WORKSPACE")
 
 FEATURES = [
+    "anvil",
+    "debug",
     "default",
     "engine",
     "eth",
+    "k256",
+    "kzg",
+    "trace",
+    "txpool",
 ]
 
 DECLARED_FEATURES = [
@@ -38,8 +44,12 @@ crate_library(
     declared_features = DECLARED_FEATURES,
     deps = [
         "//alloy-core/crates/primitives:alloy_primitives",
+        "//alloy/crates/rpc-types-anvil:alloy_rpc_types_anvil",
+        "//alloy/crates/rpc-types-debug:alloy_rpc_types_debug",
         "//alloy/crates/rpc-types-engine:alloy_rpc_types_engine",
         "//alloy/crates/rpc-types-eth:alloy_rpc_types_eth",
+        "//alloy/crates/rpc-types-trace:alloy_rpc_types_trace",
+        "//alloy/crates/rpc-types-txpool:alloy_rpc_types_txpool",
         "//alloy/crates/serde:alloy_serde",
         "@crates//:serde",
     ],

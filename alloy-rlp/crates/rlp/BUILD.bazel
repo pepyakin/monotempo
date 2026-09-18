@@ -46,11 +46,11 @@ crate_unit_test(
     crate_features = FEATURES,
     declared_features = DECLARED_FEATURES,
     deps = [
-        "@crates//:hex",
+        "@crates//:const-hex",
         "@crates//:hex-literal",
     ],
     aliases = {
-        "@crates//:hex": "hex",
+        "@crates//:const-hex": "hex",
     },
 )
 
@@ -64,13 +64,13 @@ crate_integration_test(
         ":alloy_rlp",
         "@crates//:arrayvec",
         "@crates//:bytes",
-        "@crates//:hex",
+        "@crates//:const-hex",
         "@crates//:hex-literal",
     ],
     proc_macro_deps = [
         "//alloy-rlp/crates/rlp-derive:alloy_rlp_derive",
     ],
     aliases = {
-        "@crates//:hex": "hex",
+        "@crates//:const-hex": "hex",
     },
 )

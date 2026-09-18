@@ -1,0 +1,39 @@
+# GENERATED FILE - DO NOT EDIT. Regenerate with `python3 bazel/generate.py`.
+#
+# Bazel-only derivation of `tempo/crates/contracts/Cargo.toml`: the same
+# package as `cargo metadata` describes it in the tempo workspace, with
+# workspace inheritance resolved. Cargo builds are unaffected.
+
+[package]
+name = "tempo-contracts"
+version = "1.11.0"
+edition = "2024"
+rust-version = "1.95.0"
+build = false
+autolib = false
+autobins = false
+autoexamples = false
+autotests = false
+autobenches = false
+
+[lib]
+name = "tempo_contracts"
+path = "src/lib.rs"
+
+[features]
+default = ["std", "rpc"]
+std = ["alloy-primitives/std", "alloy-sol-types/std", "serde?/std", "tempo-hardfork/std"]
+rpc = ["dep:alloy-contract"]
+serde = ["dep:serde", "alloy-primitives/serde", "tempo-hardfork/serde"]
+
+[dependencies]
+alloy-contract = { version = "^2.4.2", optional = true, default-features = false }
+alloy-primitives = { version = "^1.7.3", default-features = false }
+alloy-sol-types = { version = "^1.7.3", features = ["json"], default-features = false }
+serde = { version = "^1.0.228", features = ["derive"], optional = true, default-features = false }
+tempo-hardfork = { path = "../hardfork", default-features = false }
+
+[dev-dependencies]
+alloy-primitives = { version = "^1.7.3", features = ["rand"], default-features = false }
+alloy-provider = { version = "^2.4.2", features = ["reqwest", "reqwest-rustls-tls"], default-features = false }
+tokio = { version = "^1.49.0", features = ["full", "rt-multi-thread", "macros"] }

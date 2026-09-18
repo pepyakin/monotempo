@@ -1,0 +1,29 @@
+# GENERATED FILE - DO NOT EDIT. Regenerate with `python3 bazel/generate.py`.
+#
+# Bazel-only derivation of `tempo/crates/nitro-attestation/Cargo.toml`: the same
+# package as `cargo metadata` describes it in the tempo workspace, with
+# workspace inheritance resolved. Cargo builds are unaffected.
+
+[package]
+name = "tempo-nitro-attestation"
+version = "1.14.0"
+edition = "2024"
+rust-version = "1.95.0"
+build = false
+autolib = false
+autobins = false
+autoexamples = false
+autotests = false
+autobenches = false
+
+[lib]
+name = "tempo_nitro_attestation"
+path = "src/lib.rs"
+
+[dependencies]
+arrayvec = { version = "=0.7.6", features = ["serde"], default-features = false }
+minicbor = { version = "=2.3.0", features = ["alloc"], default-features = false }
+minicbor-serde = { version = "=0.7.1", features = ["alloc"], default-features = false }
+serde = { version = "^1.0.228", features = ["derive", "alloc"], default-features = false }
+serde_with = { version = "=3.21.0", features = ["alloc"], default-features = false }
+x509-cert = { version = "=0.2.5", default-features = false }

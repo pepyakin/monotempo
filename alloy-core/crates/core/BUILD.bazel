@@ -6,11 +6,15 @@ load("//bazel:rust.bzl", "crate_cargo_toml_env_vars", "crate_integration_test", 
 load("//alloy-core/bazel:workspace.bzl", "WORKSPACE")
 
 FEATURES = [
+    "asm-keccak",
     "default",
     "dyn-abi",
+    "getrandom",
     "json",
     "json-abi",
+    "k256",
     "map",
+    "rand",
     "rlp",
     "serde",
     "sol-types",

@@ -1,6 +1,6 @@
 # GENERATED FILE - DO NOT EDIT.
 #
-# Regenerate with `python3 tempo/scripts/bazel/generate.py` after changing Cargo.toml.
+# Regenerate with `python3 bazel/generate.py` after changing Cargo.toml.
 
 load("//tempo/bazel:rust.bzl", "crate_cargo_toml_env_vars", "crate_library", "crate_unit_test")
 load("//tempo/bazel:workspace.bzl", "WORKSPACE")
@@ -21,12 +21,12 @@ crate_library(
     crate_features = FEATURES,
     declared_features = DECLARED_FEATURES,
     deps = [
-        "@tempo_crates//:arrayvec",
-        "@tempo_crates//:minicbor",
-        "@tempo_crates//:minicbor-serde",
-        "@tempo_crates//:serde",
-        "@tempo_crates//:serde_with",
-        "@tempo_crates//:x509-cert",
+        "@crates//:arrayvec",
+        "@crates//:minicbor",
+        "@crates//:minicbor-serde",
+        "@crates//:serde",
+        "@crates//:serde_with",
+        "@crates//:x509-cert",
     ],
 )
 
@@ -37,5 +37,3 @@ crate_unit_test(
     crate_features = FEATURES,
     declared_features = DECLARED_FEATURES,
 )
-
-exports_files(["Cargo.toml"])

@@ -24,8 +24,8 @@ crate_library(
         "//alloy-core/crates/json-abi:alloy_json_abi",
         "//alloy-core/crates/sol-macro-input:alloy_sol_macro_input",
         "//alloy-core/crates/syn-solidity:syn_solidity",
+        "@crates//:const-hex",
         "@crates//:heck",
-        "@crates//:hex",
         "@crates//:indexmap",
         "@crates//:proc-macro-error3",
         "@crates//:proc-macro2",
@@ -34,7 +34,7 @@ crate_library(
         "@crates//:syn",
     ],
     aliases = {
-        "@crates//:hex": "hex",
+        "@crates//:const-hex": "hex",
     },
 )
 

@@ -37,7 +37,6 @@ jobs:
         run: |
           python3 -m unittest discover -s bazel -p 'test_*.py'
           python3 bazel/generate.py --check
-          python3 tempo/scripts/bazel/generate.py --check
       - name: Build
         run: bazel build --config=ci //...
       - name: Test

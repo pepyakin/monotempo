@@ -71,12 +71,12 @@ crate_library(
         "@crates//:arbitrary",
         "@crates//:bytes",
         "@crates//:cfg-if",
+        "@crates//:const-hex",
         "@crates//:derive_more",
         "@crates//:fixed-cache",
         "@crates//:foldhash",
         "@crates//:getrandom",
         "@crates//:hashbrown",
-        "@crates//:hex",
         "@crates//:indexmap",
         "@crates//:itoa",
         "@crates//:k256",
@@ -94,7 +94,7 @@ crate_library(
         "@crates//:proptest-derive-0.8.0",
     ],
     aliases = {
-        "@crates//:hex": "hex",
+        "@crates//:const-hex": "hex",
     },
 )
 

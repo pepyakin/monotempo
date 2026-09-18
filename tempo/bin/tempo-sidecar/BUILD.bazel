@@ -1,6 +1,6 @@
 # GENERATED FILE - DO NOT EDIT.
 #
-# Regenerate with `python3 tempo/scripts/bazel/generate.py` after changing Cargo.toml.
+# Regenerate with `python3 bazel/generate.py` after changing Cargo.toml.
 
 load("//tempo/bazel:rust.bzl", "crate_binary", "crate_cargo_toml_env_vars", "crate_unit_test")
 load("//tempo/bazel:workspace.bzl", "WORKSPACE")
@@ -18,25 +18,25 @@ crate_binary(
     declared_features = DECLARED_FEATURES,
     workspace_lints = False,
     deps = [
+        "//alloy/crates/alloy:alloy",
         "//tempo/crates/alloy:tempo_alloy",
         "//tempo/crates/precompiles:tempo_precompiles",
         "//tempo/crates/primitives:tempo_primitives",
         "//tempo/crates/telemetry-util:tempo_telemetry_util",
-        "@tempo_crates//:alloy",
-        "@tempo_crates//:clap",
-        "@tempo_crates//:eyre",
-        "@tempo_crates//:futures",
-        "@tempo_crates//:hex",
-        "@tempo_crates//:itertools",
-        "@tempo_crates//:metrics",
-        "@tempo_crates//:metrics-exporter-prometheus",
-        "@tempo_crates//:poem",
-        "@tempo_crates//:rand_distr",
-        "@tempo_crates//:reqwest",
-        "@tempo_crates//:rustls",
-        "@tempo_crates//:tokio",
-        "@tempo_crates//:tracing",
-        "@tempo_crates//:tracing-subscriber",
+        "@crates//:clap",
+        "@crates//:eyre",
+        "@crates//:futures",
+        "@crates//:hex",
+        "@crates//:itertools",
+        "@crates//:metrics",
+        "@crates//:metrics-exporter-prometheus",
+        "@crates//:poem",
+        "@crates//:rand_distr",
+        "@crates//:reqwest",
+        "@crates//:rustls",
+        "@crates//:tokio",
+        "@crates//:tracing",
+        "@crates//:tracing-subscriber",
     ],
 )
 
@@ -48,5 +48,3 @@ crate_unit_test(
     declared_features = DECLARED_FEATURES,
     workspace_lints = False,
 )
-
-exports_files(["Cargo.toml"])

@@ -1,0 +1,155 @@
+# GENERATED FILE - DO NOT EDIT. Regenerate with `python3 bazel/generate.py`.
+#
+# Bazel-only derivation of `tempo/crates/primitives/Cargo.toml`: the same
+# package as `cargo metadata` describes it in the tempo workspace, with
+# workspace inheritance resolved. Cargo builds are unaffected.
+
+[package]
+name = "tempo-primitives"
+version = "1.11.0"
+edition = "2024"
+rust-version = "1.95.0"
+build = false
+autolib = false
+autobins = false
+autoexamples = false
+autotests = false
+autobenches = false
+
+[lib]
+name = "tempo_primitives"
+path = "src/lib.rs"
+
+[features]
+default = ["std", "evm", "reth", "serde", "reth-codec", "serde-bincode-compat", "rpc"]
+test-utils = [
+    "reth-codecs?/test-utils",
+    "reth-db-api?/test-utils",
+    "reth-ethereum-primitives?/test-utils",
+    "reth-primitives-traits?/test-utils",
+]
+std = [
+    "alloy-consensus/secp256k1",
+    "alloy-consensus/std",
+    "alloy-evm?/std",
+    "alloy-eips/std",
+    "alloy-primitives/std",
+    "alloy-rlp/std",
+    "alloy-serde?/std",
+    "dep:aws-lc-rs",
+    "base64/std",
+    "commonware-cryptography/std",
+    "derive_more/std",
+    "once_cell/std",
+    "p256/std",
+    "reth-ethereum-primitives?/std",
+    "reth-primitives-traits?/std",
+    "revm?/std",
+    "revm?/blst",
+    "revm?/c-kzg",
+    "serde/std",
+    "serde_json/std",
+    "sha2/std",
+    "alloy-sol-types/std",
+    "tempo-contracts/std",
+    "reth-codecs?/std",
+]
+reth = ["dep:reth-ethereum-primitives", "dep:reth-primitives-traits", "serde"]
+serde = [
+    "dep:alloy-serde",
+    "alloy-consensus/serde",
+    "reth-primitives-traits?/serde",
+    "reth-ethereum-primitives?/serde",
+    "alloy-eips/serde",
+    "alloy-primitives/serde",
+    "reth-codecs?/serde",
+    "p256/serde",
+    "rand/serde",
+    "tracing-subscriber/serde",
+    "revm?/serde",
+    "tempo-contracts/serde",
+]
+evm = ["dep:alloy-evm", "dep:revm"]
+reth-codec = [
+    "reth",
+    "serde",
+    "dep:reth-codecs",
+    "dep:reth-db-api",
+    "dep:modular-bitfield",
+    "reth-ethereum-primitives/reth-codec",
+    "reth-codecs/alloy",
+    "reth-primitives-traits/reth-codec",
+]
+serde-bincode-compat = [
+    "reth",
+    "serde",
+    "alloy-consensus/serde-bincode-compat",
+    "alloy-eips/serde-bincode-compat",
+    "alloy-rpc-types-eth?/serde-bincode-compat",
+]
+arbitrary = [
+    "std",
+    "dep:arbitrary",
+    "serde",
+    "alloy-consensus/arbitrary",
+    "alloy-primitives/arbitrary",
+    "alloy-eips/arbitrary",
+    "commonware-cryptography/arbitrary",
+    "reth-codecs?/arbitrary",
+    "alloy-serde?/arbitrary",
+    "reth-ethereum-primitives?/arbitrary",
+    "reth-primitives-traits?/arbitrary",
+    "alloy-rpc-types-eth?/arbitrary",
+    "reth-db-api?/arbitrary",
+    "revm?/arbitrary",
+    "alloy-sol-types/arbitrary",
+]
+rpc = [
+    "reth",
+    "reth-ethereum-primitives/rpc",
+    "dep:alloy-rpc-types-eth",
+    "dep:reth-rpc-convert",
+    "dep:alloy-network",
+]
+
+[dependencies]
+alloy-consensus = { version = "^2.4.2", features = ["k256"], default-features = false }
+alloy-eips = { version = "^2.4.2", default-features = false }
+alloy-evm = { version = "^0.39.0", optional = true, default-features = false }
+alloy-network = { version = "^2.4.2", optional = true, default-features = false }
+alloy-primitives = { version = "^1.7.3", default-features = false }
+alloy-rlp = { version = "^0.3.16", default-features = false }
+alloy-rpc-types-eth = { version = "^2.4.2", optional = true }
+alloy-serde = { version = "^2.4.2", optional = true, default-features = false }
+arbitrary = { version = "^1.4", features = ["derive", "derive"], optional = true }
+aws-lc-rs = { version = "^1.17.0", features = ["alloc", "non-fips", "ring-sig-verify"], optional = true, default-features = false }
+base64 = { version = "^0.22", features = ["alloc"], default-features = false }
+commonware-cryptography = { version = "^2026.9.0", default-features = false }
+derive_more = { version = "^2.1.1", default-features = false }
+modular-bitfield = { version = "^0.13.1", optional = true }
+once_cell = { version = "^1.21", default-features = false }
+p256 = { version = "^0.13", features = ["ecdsa"], default-features = false }
+reth-codecs = { version = "^0.7.0", optional = true, default-features = false }
+reth-db-api = { path = "../../../reth/crates/storage/db-api", optional = true }
+reth-ethereum-primitives = { path = "../../../reth/crates/ethereum/primitives", optional = true, default-features = false }
+reth-primitives-traits = { version = "^0.7.1", optional = true, default-features = false }
+reth-rpc-convert = { path = "../../../reth/crates/rpc/rpc-convert", optional = true }
+revm = { version = "^43.0.2", features = ["optional_fee_charge"], optional = true, default-features = false }
+serde = { version = "^1.0.228", features = ["derive", "derive"], default-features = false }
+serde_json = { version = "^1.0.149", features = ["alloc", "raw_value"], default-features = false }
+sha2 = { version = "^0.10", default-features = false }
+tempo-contracts = { path = "../contracts", features = ["serde"], default-features = false }
+
+[dev-dependencies]
+alloy-consensus = { version = "^2.4.2", features = ["arbitrary"], default-features = false }
+alloy-primitives = { version = "^1.7.3", features = ["arbitrary", "getrandom", "rand"], default-features = false }
+alloy-signer = { version = "^2.4.2" }
+alloy-signer-local = { version = "^2.4.2" }
+alloy-sol-types = { version = "^1.7.3", default-features = false }
+arbitrary = { version = "^1.4", features = ["derive"] }
+commonware-cryptography = { version = "^2026.9.0", features = ["arbitrary"], default-features = false }
+proptest = { version = "^1.9" }
+proptest-arbitrary-interop = { version = "^0.1.0" }
+rand = { version = "^0.9" }
+reth-codecs = { version = "^0.7.0", default-features = false }
+tracing-subscriber = { version = "^0.3.22", features = ["env-filter"] }

@@ -1,0 +1,40 @@
+# GENERATED FILE - DO NOT EDIT. Regenerate with `python3 bazel/generate.py`.
+#
+# Bazel-only derivation of `tempo/crates/payload/types/Cargo.toml`: the same
+# package as `cargo metadata` describes it in the tempo workspace, with
+# workspace inheritance resolved. Cargo builds are unaffected.
+
+[package]
+name = "tempo-payload-types"
+version = "1.14.0"
+edition = "2024"
+rust-version = "1.95.0"
+build = false
+autolib = false
+autobins = false
+autoexamples = false
+autotests = false
+autobenches = false
+
+[lib]
+name = "tempo_payload_types"
+path = "src/lib.rs"
+
+[dependencies]
+alloy-eips = { version = "^2.4.2", default-features = false }
+alloy-primitives = { version = "^1.7.3", default-features = false }
+alloy-rlp = { version = "^0.3.16", default-features = false }
+alloy-rpc-types-engine = { version = "^2.4.2" }
+alloy-rpc-types-eth = { version = "^2.4.2" }
+derive_more = { version = "^2.1.1", default-features = false }
+reth-ethereum-engine-primitives = { path = "../../../../reth/crates/ethereum/engine-primitives" }
+reth-node-api = { path = "../../../../reth/crates/node/api" }
+reth-payload-primitives = { path = "../../../../reth/crates/payload/primitives" }
+reth-primitives-traits = { version = "^0.7.1", default-features = false }
+serde = { version = "^1.0.228", features = ["derive"], default-features = false }
+tempo-primitives = { path = "../../primitives", features = ["reth-codec", "serde"], default-features = false }
+tracing = { version = "^0.1.44" }
+
+[dev-dependencies]
+serde_json = { version = "^1.0.149", features = ["alloc", "raw_value"], default-features = false }
+tempo-primitives = { path = "../../primitives", features = ["arbitrary", "reth-codec", "serde", "test-utils"], default-features = false }

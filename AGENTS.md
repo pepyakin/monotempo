@@ -50,11 +50,10 @@ the projects' lockfiles aligned on shared external crates: the generator fails
 when `bazel/cargo/Cargo.lock` would pin a version no project pins, and prints
 the `cargo update --precise` command that fixes it.
 
-For Tempo, use `python3 tempo/scripts/bazel/generate.py` and its `--check`
-mode. Repin with `CARGO_BAZEL_REPIN=1 CARGO_BAZEL_REPIN_ONLY=tempo_crates bazel mod deps`.
-Tempo retains a separate `@tempo_crates` resolution until its dependency versions
-align with the other projects. Its generator reuses `bazel/generate.py`; when
-changing the shared renderer, check both generators and run
+Tempo participates in the same resolution: its reth dependencies are local
+paths and its Alloy/reth-core dependencies are patched to the tree. Do not
+introduce a separate dependency graph or external copies of these projects.
+When changing the shared renderer, run its `--check` mode and
 `python3 -m unittest discover -s bazel -p 'test_*.py'`.
 
 ## Project-specific guidance
@@ -62,8 +61,8 @@ changing the shared renderer, check both generators and run
 Each project keeps its upstream guidance: `reth/AGENTS.md` applies to files
 under `reth/`, `alloy/CONTRIBUTING.md` to `alloy/`. Their Cargo commands still
 work when run from the project directory, but Bazel is the build of record here.
-`tempo/AGENTS.md` applies under `tempo/`. Tempo retains its locked upstream
-reth dependency; do not replace it with local labels without aligning versions.
+`tempo/AGENTS.md` applies under `tempo/`. Preserve Tempo's process-isolated,
+serial test budgets and snapshot names configured in `tempo/bazel/`.
 
 ## Git
 

@@ -29,7 +29,7 @@ required-features = ["rand"]
 default = ["std", "map", "map-foldhash"]
 std = [
     "bytes/std",
-    "hex/std",
+    "const-hex/std",
     "ruint/std",
     "alloy-rlp?/std",
     "foldhash?/std",
@@ -50,7 +50,7 @@ nightly = [
     "foldhash?/nightly",
     "rapidhash?/nightly",
     "hashbrown?/nightly",
-    "hex/nightly",
+    "const-hex/nightly",
     "fixed-cache?/nightly",
 ]
 asm-keccak = ["dep:keccak-asm"]
@@ -76,7 +76,7 @@ rlp = ["dep:alloy-rlp", "ruint/alloy-rlp"]
 serde = [
     "dep:serde",
     "bytes/serde",
-    "hex/serde",
+    "const-hex/serde",
     "ruint/serde",
     "hashbrown?/serde",
     "indexmap?/serde",
@@ -98,7 +98,7 @@ postgres = ["std", "dep:postgres-types", "ruint/postgres"]
 diesel = ["std", "dep:diesel", "ruint/diesel"]
 sqlx = ["std", "dep:sqlx-core", "ruint/sqlx"]
 sqlx-postgres = ["sqlx", "dep:sqlx-postgres"]
-hex-compat = ["hex/hex"]
+hex-compat = ["const-hex/hex"]
 
 [dependencies]
 allocative = { version = "^0.3.2", optional = true, default-features = false }
@@ -113,7 +113,7 @@ fixed-cache = { version = "^0.1.8", optional = true, default-features = false }
 foldhash = { version = "^0.2", optional = true, default-features = false }
 getrandom = { version = "^0.4", optional = true }
 hashbrown = { version = "^0.17", features = ["default-hasher", "inline-more"], optional = true, default-features = false }
-hex = { package = "const-hex", version = "^1.14", features = ["alloc", "core-error"], default-features = false }
+const-hex = { version = "^1.14", features = ["alloc", "core-error"], default-features = false }
 indexmap = { version = "^2.5", optional = true, default-features = false }
 itoa = { version = "^1" }
 k256 = { version = "^0.13", features = ["ecdsa"], optional = true, default-features = false }

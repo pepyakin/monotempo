@@ -1,6 +1,6 @@
 # GENERATED FILE - DO NOT EDIT.
 #
-# Regenerate with `python3 tempo/scripts/bazel/generate.py` after changing Cargo.toml.
+# Regenerate with `python3 bazel/generate.py` after changing Cargo.toml.
 
 """Workspace-wide values of the tempo project, derived from its root Cargo.toml."""
 
@@ -39,34 +39,4 @@ CLIPPY_LINTS = {
 
 RUSTDOC_LINTS = {
     "all": "warn",
-}
-
-# Published crates may have versions independent of the node.
-PACKAGE_VERSIONS = {
-    "tempo/bin/tempo": "1.14.0",
-    "tempo/bin/tempo-sidecar": "1.14.0",
-    "tempo/crates/alloy": "1.11.0",
-    "tempo/crates/chainspec": "1.11.0",
-    "tempo/crates/consensus": "1.14.0",
-    "tempo/crates/consensus-config": "1.14.0",
-    "tempo/crates/contracts": "1.11.0",
-    "tempo/crates/dkg-onchain-artifacts": "1.14.0",
-    "tempo/crates/e2e": "1.14.0",
-    "tempo/crates/evm": "1.14.0",
-    "tempo/crates/ext": "1.14.0",
-    "tempo/crates/eyre": "1.14.0",
-    "tempo/crates/faucet": "1.14.0",
-    "tempo/crates/hardfork": "1.11.0",
-    "tempo/crates/nitro-attestation": "1.14.0",
-    "tempo/crates/node": "1.14.0",
-    "tempo/crates/payload/builder": "1.14.0",
-    "tempo/crates/payload/types": "1.14.0",
-    "tempo/crates/precompiles": "1.14.0",
-    "tempo/crates/precompiles-macros": "1.14.0",
-    "tempo/crates/primitives": "1.11.0",
-    "tempo/crates/revm": "1.14.0",
-    "tempo/crates/telemetry-util": "1.14.0",
-    "tempo/crates/transaction-pool": "1.14.0",
-    "tempo/crates/validator-config": "1.14.0",
-    "tempo/xtask": "1.14.0",
 }

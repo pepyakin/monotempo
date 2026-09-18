@@ -27,7 +27,7 @@ json = ["dep:alloy-json-abi", "alloy-sol-macro-input/json"]
 alloy-json-abi = { path = "../json-abi", optional = true, default-features = false }
 alloy-sol-macro-input = { path = "../sol-macro-input", default-features = false }
 heck = { version = "^0.5" }
-hex = { package = "const-hex", version = "^1.14", features = ["alloc", "core-error"], default-features = false }
+const-hex = { version = "^1.14", features = ["alloc", "core-error"], default-features = false }
 indexmap = { version = "^2" }
 proc-macro-error3 = { version = ">=3.0.0, <=3.0.1" }
 proc-macro2 = { version = "^1.0" }

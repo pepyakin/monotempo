@@ -8,6 +8,7 @@ load("//alloy/bazel:workspace.bzl", "WORKSPACE")
 FEATURES = [
     "arbitrary",
     "default",
+    "k256",
     "serde",
     "serde-bincode-compat",
     "std",

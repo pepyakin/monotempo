@@ -45,6 +45,7 @@ bazel/cargo/alloy-trie
 bazel/cargo/reth
 bazel/cargo/reth-core
 bazel/cargo/revm-inspectors
+bazel/cargo/tempo
 # END GENERATED
 
 # tempo

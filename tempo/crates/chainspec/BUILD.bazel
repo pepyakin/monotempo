@@ -1,6 +1,6 @@
 # GENERATED FILE - DO NOT EDIT.
 #
-# Regenerate with `python3 tempo/scripts/bazel/generate.py` after changing Cargo.toml.
+# Regenerate with `python3 bazel/generate.py` after changing Cargo.toml.
 
 load("//tempo/bazel:rust.bzl", "crate_cargo_toml_env_vars", "crate_library", "crate_unit_test")
 load("//tempo/bazel:workspace.bzl", "WORKSPACE")
@@ -38,25 +38,25 @@ crate_library(
     crate_features = FEATURES,
     declared_features = DECLARED_FEATURES,
     deps = [
+        "//alloy-core/crates/primitives:alloy_primitives",
+        "//alloy-evm/crates/evm:alloy_evm",
+        "//alloy/crates/eips:alloy_eips",
+        "//alloy/crates/genesis:alloy_genesis",
+        "//reth/crates/chainspec:reth_chainspec",
+        "//reth/crates/cli/cli:reth_cli",
+        "//reth/crates/net/peers:reth_network_peers",
         "//tempo/crates/dkg-onchain-artifacts:tempo_dkg_onchain_artifacts",
         "//tempo/crates/hardfork:tempo_hardfork",
         "//tempo/crates/primitives:tempo_primitives",
-        "@tempo_crates//:alloy-eips",
-        "@tempo_crates//:alloy-evm",
-        "@tempo_crates//:alloy-genesis",
-        "@tempo_crates//:alloy-primitives",
-        "@tempo_crates//:commonware-codec",
-        "@tempo_crates//:commonware-cryptography",
-        "@tempo_crates//:eyre",
-        "@tempo_crates//:once_cell",
-        "@tempo_crates//:reth-chainspec",
-        "@tempo_crates//:reth-cli",
-        "@tempo_crates//:reth-network-peers",
-        "@tempo_crates//:serde",
-        "@tempo_crates//:serde_json",
+        "@crates//:commonware-codec",
+        "@crates//:commonware-cryptography",
+        "@crates//:eyre",
+        "@crates//:once_cell",
+        "@crates//:serde",
+        "@crates//:serde_json",
     ],
     proc_macro_deps = [
-        "@tempo_crates//:paste",
+        "@crates//:paste",
     ],
 )
 
@@ -68,5 +68,3 @@ crate_unit_test(
     crate_features = FEATURES,
     declared_features = DECLARED_FEATURES,
 )
-
-exports_files(["Cargo.toml"])

@@ -20,7 +20,7 @@ change to one file only rebuilds (and retests) the crates that depend on it.
 | `alloy-rlp/` | RLP encoding and derive macros | [alloy-rs/rlp](https://github.com/alloy-rs/rlp) | imported at v0.3.16 |
 | `alloy-trie/` | Merkle Patricia trie | [alloy-rs/trie](https://github.com/alloy-rs/trie) | imported at the 0.9.5 release commit |
 | `alloy-chains/` | EIP-155 chain definitions | [alloy-rs/chains](https://github.com/alloy-rs/chains) | imported at v0.2.37 |
-| `alloy-hardforks/` | Hardfork definitions | [alloy-rs/hardforks](https://github.com/alloy-rs/hardforks) | imported at alloy-hardforks-v0.4.8; incompatible 0.2.13 remains external |
+| `alloy-hardforks/` | Hardfork definitions | [alloy-rs/hardforks](https://github.com/alloy-rs/hardforks) | imported at alloy-hardforks-v0.4.8; all consumers use the local version |
 | `alloy-eips/` | EIP-2124, 2930, 7702, 7928 and 8141 types | [alloy-rs/eips](https://github.com/alloy-rs/eips) | imported at alloy-eip7928-v0.4.10 (individual crates have independent versions) |
 | `revm/` or `evm2/` | The EVM used by reth | [bluealloy/revm](https://github.com/bluealloy/revm) (what reth and tempo use today) or [alloy-rs/evm2](https://github.com/alloy-rs/evm2) (its successor, in development) | not yet imported; which one is still open |
 
@@ -31,16 +31,13 @@ at it with `[patch.crates-io]` in their `Cargo.toml`, as reth does for alloy;
 the Bazel build follows the patch. External crates such as revm also consume
 the in-tree foundations through generated crate_universe annotations.
 The EIPs import pins one coherent revision: EIP-2124 0.2.0, EIP-2930 0.2.4,
-EIP-7702 0.6.3, EIP-7928 0.4.10 and EIP-8141 0.1.0. Alloy node-bindings still
-requires hardforks 0.2.x, so it retains the external 0.2.13 release rather
-than being forced onto the incompatible 0.4 API.
+EIP-7702 0.6.3, EIP-7928 0.4.10 and EIP-8141 0.1.0. Alloy node-bindings uses
+the local hardforks 0.4.8 API; no external 0.2.x copy is retained.
 
-Tempo resolves external crates separately through `@tempo_crates`, exactly as
-its `Cargo.lock` says. It still consumes its
-pinned upstream reth Git revision, which differs from the imported `reth/`.
-Importing sources and generating targets does not automatically replace those
-dependencies: sharing cross-project targets also requires aligning revisions
-and dependency resolution.
+Tempo builds against the local reth, Alloy, reth-core, alloy-evm,
+revm-inspectors and Alloy foundations. All projects share one Bazel dependency
+resolution, `@crates`. Editing an imported dependency rebuilds its affected
+Tempo consumers; no separate upstream reth or Alloy copy is used by Tempo.
 
 ## Quick start
 
@@ -69,7 +66,7 @@ another with a plain label (`//reth/crates/primitives:reth_primitives`).
 
 | Path | Purpose |
 | --- | --- |
-| `MODULE.bazel` | The module: rules_rust, the Rust and LLVM toolchains, `@crates` shared by the version-aligned projects, and Tempo's separate `@tempo_crates`. |
+| `MODULE.bazel` | The module: rules_rust, the Rust and LLVM toolchains, and `@crates` shared by all projects. |
 | `Cargo.Bazel.lock` | crate_universe's pinned rendering of the external crates. |
 | `.bazelrc` | Hermeticity flags, `--config=release`, `--config=ci`, `--config=dev`. |
 | `.bazelignore` | Directories Bazel must not treat as packages (Cargo `target/` dirs, docs, the Bazel Cargo workspace). |
@@ -86,8 +83,8 @@ from the version-aligned projects at once, not written by hand. Bazel resolves
 those projects as one Cargo workspace (`bazel/cargo/`, also generated) so that they
 can depend on each other in-tree and share every external crate. See [`bazel/README.md`](bazel/README.md) for how that works and for the day-to-day workflow (changing a `Cargo.toml`,
 repinning, incremental dev builds).
-See [`tempo/bazel/README.md`](tempo/bazel/README.md) for Tempo's generation and
-repinning commands and the current cross-project dependency boundary.
+See [`tempo/bazel/README.md`](tempo/bazel/README.md) for Tempo's test policies
+and local dependency wiring.
 
 ## Adding a project
 

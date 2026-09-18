@@ -1,0 +1,88 @@
+# GENERATED FILE - DO NOT EDIT. Regenerate with `python3 bazel/generate.py`.
+#
+# Bazel-only derivation of `tempo/crates/precompiles/Cargo.toml`: the same
+# package as `cargo metadata` describes it in the tempo workspace, with
+# workspace inheritance resolved. Cargo builds are unaffected.
+
+[package]
+name = "tempo-precompiles"
+version = "1.14.0"
+edition = "2024"
+rust-version = "1.95.0"
+build = false
+autolib = false
+autobins = false
+autoexamples = false
+autotests = false
+autobenches = false
+
+[lib]
+name = "tempo_precompiles"
+path = "src/lib.rs"
+
+[[test]]
+name = "storage"
+path = "tests/storage.rs"
+required-features = ["test-utils"]
+
+[[bench]]
+name = "tempo_precompiles"
+path = "benches/tempo_precompiles.rs"
+required-features = ["test-utils"]
+
+[features]
+default = ["rpc"]
+test-utils = [
+    "alloy/getrandom",
+    "dep:alloy-json-abi",
+    "dep:itertools",
+    "dep:serde",
+    "dep:serde_json",
+    "tempo-primitives/test-utils",
+]
+rpc = ["tempo-contracts/rpc"]
+
+[dependencies]
+alloy = { version = "^2.4.2", features = ["sol-types", "consensus"], default-features = false }
+alloy-evm = { version = "^0.39.0", features = ["std"], default-features = false }
+alloy-json-abi = { version = "^1.7.3", optional = true, default-features = false }
+alloy-primitives = { version = "^1.7.3", features = ["map-foldhash"], default-features = false }
+aws-lc-rs = { version = "^1.17.0", features = ["alloc", "non-fips", "ring-sig-verify"], default-features = false }
+bitflags = { version = "^2.11.1" }
+commonware-codec = { version = "^2026.9.0" }
+commonware-cryptography = { version = "^2026.9.0", default-features = false }
+derive_more = { version = "^2.1.1", default-features = false }
+itertools = { version = "^0.14.0", optional = true }
+keccak-const = { version = "^0.2.0" }
+paste = { version = "^1" }
+revm = { version = "^43.0.2", features = ["optional_fee_charge"], default-features = false }
+scoped-tls = { version = "^1.0" }
+serde = { version = "^1.0.228", features = ["derive"], optional = true, default-features = false }
+serde_json = { version = "^1.0.149", features = ["alloc", "raw_value"], optional = true, default-features = false }
+tempo-chainspec = { path = "../chainspec", features = ["evm"], default-features = false }
+tempo-contracts = { path = "../contracts", features = ["serde"], default-features = false }
+tempo-nitro-attestation = { path = "../nitro-attestation", default-features = false }
+tempo-precompiles-macros = { path = "../precompiles-macros" }
+tempo-primitives = { path = "../primitives", features = ["evm"], default-features = false }
+thiserror = { version = "^2.0.18" }
+tracing = { version = "^0.1.44" }
+
+[dev-dependencies]
+alloy-primitives = { version = "^1.7.3", features = ["rand"], default-features = false }
+alloy-signer = { version = "^2.4.2" }
+alloy-signer-local = { version = "^2.4.2" }
+base64 = { version = "^0.22", features = ["alloc"], default-features = false }
+codspeed-criterion-compat = { version = "^4.6.0" }
+eyre = { version = "^0.6.12" }
+minicbor = { version = "=2.3.0", features = ["alloc"] }
+p256 = { version = "^0.13", default-features = false }
+p384 = { version = "^0.13", features = ["ecdsa", "pkcs8"] }
+proptest = { version = "^1.9" }
+rand_08 = { package = "rand", version = "^0.8.5" }
+serde = { version = "^1.0.228", features = ["derive"], default-features = false }
+serde_json = { version = "^1.0.149", features = ["alloc", "raw_value"], default-features = false }
+sha2 = { version = "^0.10", features = ["oid"], default-features = false }
+tempo-alloy = { path = "../alloy" }
+tempo-evm = { path = "../evm", features = ["engine"], default-features = false }
+tempo-revm = { path = "../revm", default-features = false }
+x509-cert = { version = "=0.2.5", features = ["builder"] }
