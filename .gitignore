@@ -1,0 +1,10 @@
+# Bazel convenience symlinks and per-machine overrides.
+/bazel-*
+/user.bazelrc
+
+# Cargo, when used directly inside a project.
+target/
+
+.idea
+.vscode
+.DS_Store
