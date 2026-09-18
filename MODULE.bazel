@@ -43,11 +43,12 @@ register_toolchains("@llvm_toolchain//:all")
 ###############################################################################
 # Rust toolchain.
 #
-# One Rust version for every project, pinned to the workspaces' `rust-version`
-# (MSRV) so that a Bazel build never depends on the host's rustup state.
+# One pinned Rust version for every project, independent of host rustup.
+# Tempo's tests use std::assert_matches!, which requires Rust 1.96 even though
+# its manifest still declares a 1.95 MSRV.
 ###############################################################################
 
-RUST_VERSION = "1.95.0"
+RUST_VERSION = "1.96.1"
 
 RUST_EDITION = "2024"
 
@@ -106,3 +107,4 @@ include("//bazel/cargo:member_deps.MODULE.bazel")
 ###############################################################################
 
 include("//reth:reth.MODULE.bazel")
+include("//tempo:tempo.MODULE.bazel")

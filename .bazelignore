@@ -32,3 +32,8 @@ bazel/cargo/reth
 bazel/cargo/reth-core
 bazel/cargo/revm-inspectors
 # END GENERATED
+
+# tempo
+tempo/target
+tempo/tips/verify
+tempo/crates/nitro-attestation/fuzz/target

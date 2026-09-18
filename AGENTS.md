@@ -11,6 +11,7 @@ crates are `//reth/crates/...`.
 
 ```bash
 bazel build //reth                          # reth node binary
+bazel build //tempo                         # Tempo node binary
 bazel test //reth/crates/net/eth-wire/...   # tests of one crate
 bazel test //alloy/...                      # all of alloy
 bazel test //...                            # everything; only changed crates rebuild/rerun
@@ -36,8 +37,8 @@ script inputs, test tags) live in `<project>/bazel/project.toml`.
 
 ## Cross-project dependencies
 
-Each project is its own Cargo workspace for `cargo`, but Bazel resolves all of
-them as one workspace (`bazel/cargo/`, generated, with its own committed
+Each project is its own Cargo workspace for `cargo`, but Bazel resolves the
+version-aligned projects as one workspace (`bazel/cargo/`, generated, with its own committed
 `Cargo.lock`) and one crate_universe repository, `@crates`. reth depends on the
 in-tree alloy, reth-core, alloy-evm and revm-inspectors through
 `[patch.crates-io]` in `reth/Cargo.toml` (and those three patch alloy the same
@@ -50,11 +51,20 @@ the projects' lockfiles aligned on shared external crates: the generator fails
 when `bazel/cargo/Cargo.lock` would pin a version no project pins, and prints
 the `cargo update --precise` command that fixes it.
 
+For Tempo, use `python3 tempo/scripts/bazel/generate.py` and its `--check`
+mode. Repin with `CARGO_BAZEL_REPIN=1 CARGO_BAZEL_REPIN_ONLY=tempo_crates bazel mod deps`.
+Tempo retains a separate `@tempo_crates` resolution until its dependency versions
+align with the other projects. Its generator reuses `bazel/generate.py`; when
+changing the shared renderer, check both generators and run
+`python3 -m unittest discover -s bazel -p 'test_*.py'`.
+
 ## Project-specific guidance
 
 Each project keeps its upstream guidance: `reth/AGENTS.md` applies to files
 under `reth/`, `alloy/CONTRIBUTING.md` to `alloy/`. Their Cargo commands still
 work when run from the project directory, but Bazel is the build of record here.
+`tempo/AGENTS.md` applies under `tempo/`. Tempo retains its locked upstream
+reth dependency; do not replace it with local labels without aligning versions.
 
 ## Git
 
