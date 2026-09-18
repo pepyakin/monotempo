@@ -41,7 +41,7 @@ crate_unit_test(
     crate_features = FEATURES,
     declared_features = DECLARED_FEATURES,
     deps = [
-        "@crates//:alloy-primitives",
+        "//alloy-core/crates/primitives:alloy_primitives",
         "@crates//:tempfile",
     ],
 )

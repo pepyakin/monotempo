@@ -14,14 +14,15 @@ crate_cargo_toml_env_vars(WORKSPACE)
 crate_binary(
     name = "example-custom-beacon-withdrawals",
     workspace = WORKSPACE,
+    version = "0.0.0",
     crate_features = FEATURES,
     declared_features = DECLARED_FEATURES,
     workspace_lints = False,
     deps = [
+        "//alloy-core/crates/sol-types:alloy_sol_types",
         "//alloy-evm/crates/evm:alloy_evm",
         "//alloy/crates/eips:alloy_eips",
         "//reth/crates/ethereum/reth:reth_ethereum",
-        "@crates//:alloy-sol-types",
         "@crates//:eyre",
     ],
 )
@@ -29,6 +30,7 @@ crate_binary(
 crate_unit_test(
     name = "example_custom_beacon_withdrawals_test",
     workspace = WORKSPACE,
+    version = "0.0.0",
     crate = ":example-custom-beacon-withdrawals",
     crate_features = FEATURES,
     declared_features = DECLARED_FEATURES,

@@ -23,10 +23,10 @@ crate_library(
     crate_features = FEATURES,
     declared_features = DECLARED_FEATURES,
     deps = [
+        "//alloy-core/crates/primitives:alloy_primitives",
         "//alloy-evm/crates/evm:alloy_evm",
+        "//alloy-rlp/crates/rlp:alloy_rlp",
         "//reth/crates/storage/errors:reth_storage_errors",
-        "@crates//:alloy-primitives",
-        "@crates//:alloy-rlp",
         "@crates//:nybbles",
         "@crates//:thiserror",
     ],

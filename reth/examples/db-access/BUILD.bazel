@@ -14,12 +14,13 @@ crate_cargo_toml_env_vars(WORKSPACE)
 crate_binary(
     name = "example-db-access",
     workspace = WORKSPACE,
+    version = "0.0.0",
     crate_features = FEATURES,
     declared_features = DECLARED_FEATURES,
     workspace_lints = False,
     deps = [
+        "//alloy-core/crates/primitives:alloy_primitives",
         "//reth/crates/ethereum/reth:reth_ethereum",
-        "@crates//:alloy-primitives",
         "@crates//:eyre",
     ],
 )
@@ -27,6 +28,7 @@ crate_binary(
 crate_unit_test(
     name = "example_db_access_test",
     workspace = WORKSPACE,
+    version = "0.0.0",
     crate = ":example-db-access",
     crate_features = FEATURES,
     declared_features = DECLARED_FEATURES,

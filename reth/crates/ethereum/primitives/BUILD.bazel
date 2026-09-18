@@ -49,9 +49,9 @@ crate_unit_test(
     crate_features = FEATURES,
     declared_features = DECLARED_FEATURES,
     deps = [
+        "//alloy-core/crates/primitives:alloy_primitives",
+        "//alloy-rlp/crates/rlp:alloy_rlp",
         "//reth-core/crates/zstd-compressors:reth_zstd_compressors",
-        "@crates//:alloy-primitives",
-        "@crates//:alloy-rlp",
         "@crates//:arbitrary",
         "@crates//:proptest",
         "@crates//:proptest-arbitrary-interop",

@@ -41,13 +41,13 @@ crate_library(
     crate_features = FEATURES,
     declared_features = DECLARED_FEATURES,
     deps = [
+        "//alloy-core/crates/primitives:alloy_primitives",
+        "//alloy-rlp/crates/rlp:alloy_rlp",
         "//alloy/crates/rpc-types-debug:alloy_rpc_types_debug",
         "//reth-core/crates/primitives-traits:reth_primitives_traits",
         "//reth/crates/storage/errors:reth_storage_errors",
         "//reth/crates/storage/storage-api:reth_storage_api",
         "//reth/crates/trie/trie:reth_trie",
-        "@crates//:alloy-primitives",
-        "@crates//:alloy-rlp",
         "@crates//:revm",
     ],
 )

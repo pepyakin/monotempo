@@ -14,10 +14,12 @@ crate_cargo_toml_env_vars(WORKSPACE)
 crate_binary(
     name = "example-custom-state-root",
     workspace = WORKSPACE,
+    version = "0.0.0",
     crate_features = FEATURES,
     declared_features = DECLARED_FEATURES,
     workspace_lints = False,
     deps = [
+        "//alloy-core/crates/primitives:alloy_primitives",
         "//alloy/crates/genesis:alloy_genesis",
         "//alloy/crates/network:alloy_network",
         "//alloy/crates/rpc-types-engine:alloy_rpc_types_engine",
@@ -28,7 +30,6 @@ crate_binary(
         "//reth/crates/storage/provider:reth_provider",
         "//reth/crates/storage/storage-overlay:reth_storage_overlay",
         "//reth/crates/trie/trie:reth_trie",
-        "@crates//:alloy-primitives",
         "@crates//:eyre",
         "@crates//:serde_json",
         "@crates//:tokio",
@@ -38,6 +39,7 @@ crate_binary(
 crate_unit_test(
     name = "example_custom_state_root_test",
     workspace = WORKSPACE,
+    version = "0.0.0",
     crate = ":example-custom-state-root",
     crate_features = FEATURES,
     declared_features = DECLARED_FEATURES,

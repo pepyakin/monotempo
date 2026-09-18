@@ -14,15 +14,16 @@ crate_cargo_toml_env_vars(WORKSPACE)
 crate_binary(
     name = "example-beacon-api-sidecar-fetcher",
     workspace = WORKSPACE,
+    version = "0.1.0",
     crate_features = FEATURES,
     declared_features = DECLARED_FEATURES,
     workspace_lints = False,
     deps = [
+        "//alloy-core/crates/primitives:alloy_primitives",
         "//alloy/crates/consensus:alloy_consensus",
         "//alloy/crates/eips:alloy_eips",
         "//alloy/crates/rpc-types-beacon:alloy_rpc_types_beacon",
         "//reth/crates/ethereum/reth:reth_ethereum",
-        "@crates//:alloy-primitives",
         "@crates//:clap",
         "@crates//:eyre",
         "@crates//:futures-util",
@@ -36,6 +37,7 @@ crate_binary(
 crate_unit_test(
     name = "example_beacon_api_sidecar_fetcher_test",
     workspace = WORKSPACE,
+    version = "0.1.0",
     crate = ":example-beacon-api-sidecar-fetcher",
     crate_features = FEATURES,
     declared_features = DECLARED_FEATURES,

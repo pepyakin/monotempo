@@ -33,6 +33,7 @@ crate_library(
     crate_features = FEATURES,
     declared_features = DECLARED_FEATURES,
     deps = [
+        "//alloy-core/crates/primitives:alloy_primitives",
         "//reth-core/crates/primitives-traits:reth_primitives_traits",
         "//reth/crates/fs-util:reth_fs_util",
         "//reth/crates/metrics:reth_metrics",
@@ -42,7 +43,6 @@ crate_library(
         "//reth/crates/storage/libmdbx-rs:reth_libmdbx",
         "//reth/crates/storage/nippy-jar:reth_nippy_jar",
         "//reth/crates/tracing:reth_tracing",
-        "@crates//:alloy-primitives",
         "@crates//:derive_more",
         "@crates//:eyre",
         "@crates//:metrics",

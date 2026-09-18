@@ -23,6 +23,7 @@ crate_library(
     crate_features = FEATURES,
     declared_features = DECLARED_FEATURES,
     deps = [
+        "//alloy-core/crates/primitives:alloy_primitives",
         "//alloy/crates/consensus:alloy_consensus",
         "//alloy/crates/eips:alloy_eips",
         "//reth-core/crates/primitives-traits:reth_primitives_traits",
@@ -30,7 +31,6 @@ crate_library(
         "//reth/crates/consensus/common:reth_consensus_common",
         "//reth/crates/consensus/consensus:reth_consensus",
         "//reth/crates/evm/execution-types:reth_execution_types",
-        "@crates//:alloy-primitives",
         "@crates//:tracing",
     ],
 )

@@ -14,12 +14,13 @@ crate_cargo_toml_env_vars(WORKSPACE)
 crate_binary(
     name = "example-custom-rlpx-subprotocol",
     workspace = WORKSPACE,
+    version = "0.0.0",
     crate_features = FEATURES,
     declared_features = DECLARED_FEATURES,
     workspace_lints = False,
     deps = [
+        "//alloy-core/crates/primitives:alloy_primitives",
         "//reth/crates/ethereum/reth:reth_ethereum",
-        "@crates//:alloy-primitives",
         "@crates//:eyre",
         "@crates//:futures",
         "@crates//:tokio",
@@ -31,6 +32,7 @@ crate_binary(
 crate_unit_test(
     name = "example_custom_rlpx_subprotocol_test",
     workspace = WORKSPACE,
+    version = "0.0.0",
     crate = ":example-custom-rlpx-subprotocol",
     crate_features = FEATURES,
     declared_features = DECLARED_FEATURES,

@@ -21,6 +21,7 @@ crate_library(
     crate_features = FEATURES,
     declared_features = DECLARED_FEATURES,
     deps = [
+        "//alloy-core/crates/primitives:alloy_primitives",
         "//alloy/crates/consensus:alloy_consensus",
         "//alloy/crates/rpc-types-admin:alloy_rpc_types_admin",
         "//alloy/crates/rpc-types-eth:alloy_rpc_types_eth",
@@ -30,7 +31,6 @@ crate_library(
         "//reth/crates/net/p2p:reth_network_p2p",
         "//reth/crates/net/peers:reth_network_peers",
         "//reth/crates/tokio-util:reth_tokio_util",
-        "@crates//:alloy-primitives",
         "@crates//:derive_more",
         "@crates//:enr",
         "@crates//:futures",

@@ -25,11 +25,11 @@ crate_library(
     crate_features = FEATURES,
     declared_features = DECLARED_FEATURES,
     deps = [
+        "//alloy-core/crates/primitives:alloy_primitives",
+        "//alloy-eips/crates/eip7928:alloy_eip7928",
         "//alloy/crates/consensus:alloy_consensus",
         "//reth-core/crates/primitives-traits:reth_primitives_traits",
         "//reth/crates/evm/execution-types:reth_execution_types",
-        "@crates//:alloy-eip7928",
-        "@crates//:alloy-primitives",
         "@crates//:thiserror",
     ],
     proc_macro_deps = [

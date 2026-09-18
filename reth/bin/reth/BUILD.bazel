@@ -50,6 +50,7 @@ crate_library(
     crate_features = FEATURES,
     declared_features = DECLARED_FEATURES,
     deps = [
+        "//alloy-core/crates/primitives:alloy_primitives",
         "//alloy/crates/rpc-types:alloy_rpc_types",
         "//reth-core/crates/primitives-traits:reth_primitives_traits",
         "//reth/crates/chainspec:reth_chainspec",
@@ -80,7 +81,6 @@ crate_library(
         "//reth/crates/storage/provider:reth_provider",
         "//reth/crates/tasks:reth_tasks",
         "//reth/crates/transaction-pool:reth_transaction_pool",
-        "@crates//:alloy-primitives",
         "@crates//:clap",
         "@crates//:tracing",
     ],
@@ -95,6 +95,7 @@ crate_binary(
     crate_features = FEATURES,
     declared_features = DECLARED_FEATURES,
     deps = [
+        "//alloy-core/crates/primitives:alloy_primitives",
         "//alloy/crates/rpc-types:alloy_rpc_types",
         "//reth-core/crates/primitives-traits:reth_primitives_traits",
         "//reth/crates/chainspec:reth_chainspec",
@@ -126,7 +127,6 @@ crate_binary(
         "//reth/crates/tasks:reth_tasks",
         "//reth/crates/transaction-pool:reth_transaction_pool",
         ":reth_lib",
-        "@crates//:alloy-primitives",
         "@crates//:clap",
         "@crates//:tracing",
     ],
@@ -166,6 +166,7 @@ crate_integration_test(
     crate_features = FEATURES,
     declared_features = DECLARED_FEATURES,
     deps = [
+        "//alloy-core/crates/primitives:alloy_primitives",
         "//alloy/crates/node-bindings:alloy_node_bindings",
         "//alloy/crates/provider:alloy_provider",
         "//alloy/crates/rpc-types-eth:alloy_rpc_types_eth",
@@ -200,7 +201,6 @@ crate_integration_test(
         "//reth/crates/tasks:reth_tasks",
         "//reth/crates/transaction-pool:reth_transaction_pool",
         ":reth_lib",
-        "@crates//:alloy-primitives",
         "@crates//:backon",
         "@crates//:blake3",
         "@crates//:clap",

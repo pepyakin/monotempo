@@ -14,6 +14,7 @@ crate_cargo_toml_env_vars(WORKSPACE)
 crate_binary(
     name = "example-rpc-db",
     workspace = WORKSPACE,
+    version = "0.0.0",
     crate_features = FEATURES,
     declared_features = DECLARED_FEATURES,
     workspace_lints = False,
@@ -29,6 +30,7 @@ crate_binary(
 crate_unit_test(
     name = "example_rpc_db_test",
     workspace = WORKSPACE,
+    version = "0.0.0",
     crate = ":example-rpc-db",
     crate_features = FEATURES,
     declared_features = DECLARED_FEATURES,

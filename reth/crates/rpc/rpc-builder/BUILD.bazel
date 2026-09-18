@@ -63,6 +63,7 @@ crate_unit_test(
     crate_features = FEATURES,
     declared_features = DECLARED_FEATURES,
     deps = [
+        "//alloy-core/crates/primitives:alloy_primitives",
         "//alloy/crates/eips:alloy_eips",
         "//alloy/crates/rpc-types-engine:alloy_rpc_types_engine",
         "//alloy/crates/rpc-types-eth:alloy_rpc_types_eth",
@@ -75,7 +76,6 @@ crate_unit_test(
         "//reth/crates/payload/builder:reth_payload_builder",
         "//reth/crates/storage/provider:reth_provider",
         "//reth/crates/tracing:reth_tracing",
-        "@crates//:alloy-primitives",
         "@crates//:clap",
         "@crates//:reqwest",
         "@crates//:serde_json",
@@ -89,6 +89,7 @@ crate_integration_test(
     crate_features = FEATURES,
     declared_features = DECLARED_FEATURES,
     deps = [
+        "//alloy-core/crates/primitives:alloy_primitives",
         "//alloy/crates/eips:alloy_eips",
         "//alloy/crates/network:alloy_network",
         "//alloy/crates/provider:alloy_provider",
@@ -126,7 +127,6 @@ crate_integration_test(
         "//reth/crates/tracing:reth_tracing",
         "//reth/crates/transaction-pool:reth_transaction_pool",
         ":reth_rpc_builder",
-        "@crates//:alloy-primitives",
         "@crates//:clap",
         "@crates//:dyn-clone",
         "@crates//:http",

@@ -21,6 +21,7 @@ crate_library(
     crate_features = FEATURES,
     declared_features = DECLARED_FEATURES,
     deps = [
+        "//alloy-core/crates/primitives:alloy_primitives",
         "//alloy/crates/eips:alloy_eips",
         "//reth-core/crates/codecs:reth_codecs",
         "//reth-core/crates/primitives-traits:reth_primitives_traits",
@@ -34,7 +35,6 @@ crate_library(
         "//reth/crates/static-file/types:reth_static_file_types",
         "//reth/crates/storage/provider:reth_provider",
         "//reth/crates/tokio-util:reth_tokio_util",
-        "@crates//:alloy-primitives",
         "@crates//:futures-util",
         "@crates//:metrics",
         "@crates//:thiserror",

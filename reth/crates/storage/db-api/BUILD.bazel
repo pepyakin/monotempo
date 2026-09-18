@@ -23,6 +23,7 @@ crate_library(
     crate_features = FEATURES,
     declared_features = DECLARED_FEATURES,
     deps = [
+        "//alloy-core/crates/primitives:alloy_primitives",
         "//alloy/crates/consensus:alloy_consensus",
         "//alloy/crates/eips:alloy_eips",
         "//reth-core/crates/codecs:reth_codecs",
@@ -33,7 +34,6 @@ crate_library(
         "//reth/crates/storage/db-models:reth_db_models",
         "//reth/crates/storage/errors:reth_storage_errors",
         "//reth/crates/trie/common:reth_trie_common",
-        "@crates//:alloy-primitives",
         "@crates//:arbitrary",
         "@crates//:arrayvec",
         "@crates//:bytes",

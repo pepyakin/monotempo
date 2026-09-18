@@ -14,15 +14,16 @@ crate_cargo_toml_env_vars(WORKSPACE)
 crate_binary(
     name = "example-custom-evm",
     workspace = WORKSPACE,
+    version = "0.0.0",
     crate_features = FEATURES,
     declared_features = DECLARED_FEATURES,
     workspace_lints = False,
     deps = [
+        "//alloy-core/crates/primitives:alloy_primitives",
         "//alloy-evm/crates/evm:alloy_evm",
         "//alloy/crates/genesis:alloy_genesis",
         "//reth/crates/ethereum/reth:reth_ethereum",
         "//reth/crates/tracing:reth_tracing",
-        "@crates//:alloy-primitives",
         "@crates//:eyre",
         "@crates//:tokio",
     ],
@@ -31,6 +32,7 @@ crate_binary(
 crate_unit_test(
     name = "example_custom_evm_test",
     workspace = WORKSPACE,
+    version = "0.0.0",
     crate = ":example-custom-evm",
     crate_features = FEATURES,
     declared_features = DECLARED_FEATURES,

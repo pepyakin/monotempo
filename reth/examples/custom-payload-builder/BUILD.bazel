@@ -14,6 +14,7 @@ crate_cargo_toml_env_vars(WORKSPACE)
 crate_binary(
     name = "example-custom-payload-builder",
     workspace = WORKSPACE,
+    version = "0.0.0",
     crate_features = FEATURES,
     declared_features = DECLARED_FEATURES,
     workspace_lints = False,
@@ -32,6 +33,7 @@ crate_binary(
 crate_unit_test(
     name = "example_custom_payload_builder_test",
     workspace = WORKSPACE,
+    version = "0.0.0",
     crate = ":example-custom-payload-builder",
     crate_features = FEATURES,
     declared_features = DECLARED_FEATURES,

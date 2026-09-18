@@ -17,6 +17,7 @@ crate_library(
     crate_features = FEATURES,
     declared_features = DECLARED_FEATURES,
     deps = [
+        "//alloy-core/crates/primitives:alloy_primitives",
         "//alloy/crates/consensus:alloy_consensus",
         "//alloy/crates/eips:alloy_eips",
         "//alloy/crates/network:alloy_network",
@@ -35,7 +36,6 @@ crate_library(
         "//reth/crates/storage/provider:reth_provider",
         "//reth/crates/storage/storage-api:reth_storage_api",
         "//reth/crates/trie/trie:reth_trie",
-        "@crates//:alloy-primitives",
         "@crates//:dashmap",
         "@crates//:revm",
         "@crates//:tokio",

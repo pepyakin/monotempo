@@ -25,6 +25,8 @@ crate_library(
     crate_features = FEATURES,
     declared_features = DECLARED_FEATURES,
     deps = [
+        "//alloy-core/crates/primitives:alloy_primitives",
+        "//alloy-eips/crates/eip7928:alloy_eip7928",
         "//alloy/crates/consensus:alloy_consensus",
         "//alloy/crates/eips:alloy_eips",
         "//alloy/crates/genesis:alloy_genesis",
@@ -53,8 +55,6 @@ crate_library(
         "//reth/crates/tokio-util:reth_tokio_util",
         "//reth/crates/trie/db:reth_trie_db",
         "//reth/crates/trie/trie:reth_trie",
-        "@crates//:alloy-eip7928",
-        "@crates//:alloy-primitives",
         "@crates//:eyre",
         "@crates//:itertools",
         "@crates//:metrics",

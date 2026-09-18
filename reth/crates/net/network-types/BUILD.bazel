@@ -23,9 +23,9 @@ crate_library(
     crate_features = FEATURES,
     declared_features = DECLARED_FEATURES,
     deps = [
+        "//alloy-eips/crates/eip2124:alloy_eip2124",
         "//reth/crates/net/banlist:reth_net_banlist",
         "//reth/crates/net/peers:reth_network_peers",
-        "@crates//:alloy-eip2124",
         "@crates//:humantime-serde",
         "@crates//:serde",
         "@crates//:serde_json",

@@ -14,6 +14,7 @@ crate_cargo_toml_env_vars(WORKSPACE)
 crate_binary(
     name = "example-exex-test",
     workspace = WORKSPACE,
+    version = "0.0.0",
     crate_features = FEATURES,
     declared_features = DECLARED_FEATURES,
     workspace_lints = False,
@@ -33,9 +34,13 @@ crate_binary(
 crate_unit_test(
     name = "example_exex_test_test",
     workspace = WORKSPACE,
+    version = "0.0.0",
     crate = ":example-exex-test",
     crate_features = FEATURES,
     declared_features = DECLARED_FEATURES,
     workspace_lints = False,
+    data = [
+        "//reth/crates/e2e-test-utils:src/testsuite/assets/genesis.json",
+    ],
     process_per_test = True,
 )

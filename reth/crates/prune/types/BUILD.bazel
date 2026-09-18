@@ -31,8 +31,8 @@ crate_library(
     crate_features = FEATURES,
     declared_features = DECLARED_FEATURES,
     deps = [
+        "//alloy-core/crates/primitives:alloy_primitives",
         "//reth-core/crates/codecs:reth_codecs",
-        "@crates//:alloy-primitives",
         "@crates//:arbitrary",
         "@crates//:derive_more",
         "@crates//:modular-bitfield",

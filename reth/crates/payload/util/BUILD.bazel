@@ -17,9 +17,9 @@ crate_library(
     crate_features = FEATURES,
     declared_features = DECLARED_FEATURES,
     deps = [
+        "//alloy-core/crates/primitives:alloy_primitives",
         "//alloy/crates/consensus:alloy_consensus",
         "//reth/crates/transaction-pool:reth_transaction_pool",
-        "@crates//:alloy-primitives",
     ],
 )
 

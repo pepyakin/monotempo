@@ -21,6 +21,7 @@ crate_library(
     crate_features = FEATURES,
     declared_features = DECLARED_FEATURES,
     deps = [
+        "//alloy-core/crates/primitives:alloy_primitives",
         "//alloy-evm/crates/evm:alloy_evm",
         "//alloy/crates/consensus:alloy_consensus",
         "//alloy/crates/json-rpc:alloy_json_rpc",
@@ -29,7 +30,6 @@ crate_library(
         "//reth-core/crates/primitives-traits:reth_primitives_traits",
         "//reth-core/crates/rpc-traits:reth_rpc_traits",
         "//reth/crates/evm/evm:reth_evm",
-        "@crates//:alloy-primitives",
         "@crates//:dyn-clone",
         "@crates//:jsonrpsee-types",
         "@crates//:thiserror",

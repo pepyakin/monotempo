@@ -14,15 +14,16 @@ crate_cargo_toml_env_vars(WORKSPACE)
 crate_binary(
     name = "example-custom-inspector",
     workspace = WORKSPACE,
+    version = "0.0.0",
     crate_features = FEATURES,
     declared_features = DECLARED_FEATURES,
     workspace_lints = False,
     deps = [
+        "//alloy-core/crates/primitives:alloy_primitives",
         "//alloy-evm/crates/evm:alloy_evm",
         "//alloy/crates/eips:alloy_eips",
         "//alloy/crates/rpc-types-eth:alloy_rpc_types_eth",
         "//reth/crates/ethereum/reth:reth_ethereum",
-        "@crates//:alloy-primitives",
         "@crates//:clap",
         "@crates//:futures-util",
     ],
@@ -31,6 +32,7 @@ crate_binary(
 crate_unit_test(
     name = "example_custom_inspector_test",
     workspace = WORKSPACE,
+    version = "0.0.0",
     crate = ":example-custom-inspector",
     crate_features = FEATURES,
     declared_features = DECLARED_FEATURES,

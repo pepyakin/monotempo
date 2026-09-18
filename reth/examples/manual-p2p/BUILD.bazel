@@ -14,6 +14,7 @@ crate_cargo_toml_env_vars(WORKSPACE)
 crate_binary(
     name = "example-manual-p2p",
     workspace = WORKSPACE,
+    version = "0.0.0",
     crate_features = FEATURES,
     declared_features = DECLARED_FEATURES,
     workspace_lints = False,
@@ -25,7 +26,7 @@ crate_binary(
         "//reth/crates/net/peers:reth_network_peers",
         "@crates//:eyre",
         "@crates//:futures",
-        "@crates//:secp256k1",
+        "@crates//:secp256k1-0.30.0",
         "@crates//:tokio",
     ],
 )
@@ -33,6 +34,7 @@ crate_binary(
 crate_unit_test(
     name = "example_manual_p2p_test",
     workspace = WORKSPACE,
+    version = "0.0.0",
     crate = ":example-manual-p2p",
     crate_features = FEATURES,
     declared_features = DECLARED_FEATURES,

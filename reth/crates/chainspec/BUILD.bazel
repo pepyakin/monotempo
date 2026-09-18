@@ -27,16 +27,16 @@ crate_library(
     crate_features = FEATURES,
     declared_features = DECLARED_FEATURES,
     deps = [
+        "//alloy-chains:alloy_chains",
+        "//alloy-core/crates/primitives:alloy_primitives",
         "//alloy-evm/crates/evm:alloy_evm",
+        "//alloy-trie:alloy_trie",
         "//alloy/crates/consensus:alloy_consensus",
         "//alloy/crates/eips:alloy_eips",
         "//alloy/crates/genesis:alloy_genesis",
         "//reth-core/crates/primitives-traits:reth_primitives_traits",
         "//reth/crates/ethereum/hardforks:reth_ethereum_forks",
         "//reth/crates/net/peers:reth_network_peers",
-        "@crates//:alloy-chains",
-        "@crates//:alloy-primitives",
-        "@crates//:alloy-trie",
         "@crates//:derive_more",
         "@crates//:serde_json",
     ],
@@ -52,6 +52,6 @@ crate_unit_test(
     crate_features = FEATURES,
     declared_features = DECLARED_FEATURES,
     deps = [
-        "@crates//:alloy-rlp",
+        "//alloy-rlp/crates/rlp:alloy_rlp",
     ],
 )

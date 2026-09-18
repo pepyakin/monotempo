@@ -17,6 +17,7 @@ crate_library(
     crate_features = FEATURES,
     declared_features = DECLARED_FEATURES,
     deps = [
+        "//alloy-core/crates/primitives:alloy_primitives",
         "//alloy/crates/consensus:alloy_consensus",
         "//alloy/crates/genesis:alloy_genesis",
         "//reth-core/crates/codecs:reth_codecs",
@@ -33,7 +34,6 @@ crate_library(
         "//reth/crates/storage/provider:reth_provider",
         "//reth/crates/trie/db:reth_trie_db",
         "//reth/crates/trie/trie:reth_trie",
-        "@crates//:alloy-primitives",
         "@crates//:boyer-moore-magiclen",
         "@crates//:eyre",
         "@crates//:serde",

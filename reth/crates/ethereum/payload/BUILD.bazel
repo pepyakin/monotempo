@@ -17,6 +17,8 @@ crate_library(
     crate_features = FEATURES,
     declared_features = DECLARED_FEATURES,
     deps = [
+        "//alloy-core/crates/primitives:alloy_primitives",
+        "//alloy-rlp/crates/rlp:alloy_rlp",
         "//alloy/crates/consensus:alloy_consensus",
         "//alloy/crates/eips:alloy_eips",
         "//alloy/crates/rpc-types-engine:alloy_rpc_types_engine",
@@ -36,8 +38,6 @@ crate_library(
         "//reth/crates/revm:reth_revm",
         "//reth/crates/storage/storage-api:reth_storage_api",
         "//reth/crates/transaction-pool:reth_transaction_pool",
-        "@crates//:alloy-primitives",
-        "@crates//:alloy-rlp",
         "@crates//:revm",
         "@crates//:tracing",
     ],

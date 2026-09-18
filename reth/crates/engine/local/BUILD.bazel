@@ -17,6 +17,7 @@ crate_library(
     crate_features = FEATURES,
     declared_features = DECLARED_FEATURES,
     deps = [
+        "//alloy-core/crates/primitives:alloy_primitives",
         "//alloy/crates/consensus:alloy_consensus",
         "//alloy/crates/rpc-types-engine:alloy_rpc_types_engine",
         "//reth-core/crates/primitives-traits:reth_primitives_traits",
@@ -27,7 +28,6 @@ crate_library(
         "//reth/crates/payload/primitives:reth_payload_primitives",
         "//reth/crates/storage/storage-api:reth_storage_api",
         "//reth/crates/transaction-pool:reth_transaction_pool",
-        "@crates//:alloy-primitives",
         "@crates//:eyre",
         "@crates//:futures-util",
         "@crates//:tokio",

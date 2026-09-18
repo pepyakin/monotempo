@@ -14,14 +14,15 @@ crate_cargo_toml_env_vars(WORKSPACE)
 crate_binary(
     name = "example-txpool-tracing",
     workspace = WORKSPACE,
+    version = "0.0.0",
     crate_features = FEATURES,
     declared_features = DECLARED_FEATURES,
     workspace_lints = False,
     deps = [
+        "//alloy-core/crates/primitives:alloy_primitives",
         "//alloy/crates/network:alloy_network",
         "//alloy/crates/rpc-types-trace:alloy_rpc_types_trace",
         "//reth/crates/ethereum/reth:reth_ethereum",
-        "@crates//:alloy-primitives",
         "@crates//:clap",
         "@crates//:eyre",
         "@crates//:futures-util",
@@ -31,6 +32,7 @@ crate_binary(
 crate_unit_test(
     name = "example_txpool_tracing_test",
     workspace = WORKSPACE,
+    version = "0.0.0",
     crate = ":example-txpool-tracing",
     crate_features = FEATURES,
     declared_features = DECLARED_FEATURES,

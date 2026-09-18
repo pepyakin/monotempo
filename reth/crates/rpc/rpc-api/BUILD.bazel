@@ -21,6 +21,7 @@ crate_library(
     crate_features = FEATURES,
     declared_features = DECLARED_FEATURES,
     deps = [
+        "//alloy-core/crates/primitives:alloy_primitives",
         "//alloy/crates/eips:alloy_eips",
         "//alloy/crates/genesis:alloy_genesis",
         "//alloy/crates/json-rpc:alloy_json_rpc",
@@ -40,7 +41,6 @@ crate_library(
         "//reth/crates/net/peers:reth_network_peers",
         "//reth/crates/rpc/rpc-eth-api:reth_rpc_eth_api",
         "//reth/crates/trie/common:reth_trie_common",
-        "@crates//:alloy-primitives",
         "@crates//:jsonrpsee",
         "@crates//:serde",
         "@crates//:serde_json",

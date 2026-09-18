@@ -14,6 +14,7 @@ crate_cargo_toml_env_vars(WORKSPACE)
 crate_binary(
     name = "example-node-event-hooks",
     workspace = WORKSPACE,
+    version = "0.0.0",
     crate_features = FEATURES,
     declared_features = DECLARED_FEATURES,
     workspace_lints = False,
@@ -25,6 +26,7 @@ crate_binary(
 crate_unit_test(
     name = "example_node_event_hooks_test",
     workspace = WORKSPACE,
+    version = "0.0.0",
     crate = ":example-node-event-hooks",
     crate_features = FEATURES,
     declared_features = DECLARED_FEATURES,

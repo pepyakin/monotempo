@@ -14,16 +14,17 @@ crate_cargo_toml_env_vars(WORKSPACE)
 crate_binary(
     name = "custom-hardforks",
     workspace = WORKSPACE,
+    version = "0.1.0",
     crate_features = FEATURES,
     declared_features = DECLARED_FEATURES,
     workspace_lints = False,
     deps = [
+        "//alloy-core/crates/primitives:alloy_primitives",
         "//alloy/crates/consensus:alloy_consensus",
         "//alloy/crates/eips:alloy_eips",
         "//alloy/crates/genesis:alloy_genesis",
         "//reth/crates/chainspec:reth_chainspec",
         "//reth/crates/net/peers:reth_network_peers",
-        "@crates//:alloy-primitives",
         "@crates//:serde",
     ],
 )
@@ -31,6 +32,7 @@ crate_binary(
 crate_unit_test(
     name = "custom_hardforks_test",
     workspace = WORKSPACE,
+    version = "0.1.0",
     crate = ":custom-hardforks",
     crate_features = FEATURES,
     declared_features = DECLARED_FEATURES,

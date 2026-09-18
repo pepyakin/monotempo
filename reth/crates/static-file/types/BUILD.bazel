@@ -25,8 +25,8 @@ crate_library(
     crate_features = FEATURES,
     declared_features = DECLARED_FEATURES,
     deps = [
+        "//alloy-core/crates/primitives:alloy_primitives",
         "//reth/crates/stages/types:reth_stages_types",
-        "@crates//:alloy-primitives",
         "@crates//:clap",
         "@crates//:derive_more",
         "@crates//:fixed-map",

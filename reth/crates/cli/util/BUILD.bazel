@@ -25,13 +25,13 @@ crate_library(
     crate_features = FEATURES,
     declared_features = DECLARED_FEATURES,
     deps = [
+        "//alloy-core/crates/primitives:alloy_primitives",
         "//alloy/crates/eips:alloy_eips",
         "//reth/crates/fs-util:reth_fs_util",
-        "@crates//:alloy-primitives",
         "@crates//:cfg-if",
         "@crates//:eyre",
         "@crates//:rand_08-0.8.6",
-        "@crates//:secp256k1",
+        "@crates//:secp256k1-0.30.0",
         "@crates//:serde",
         "@crates//:thiserror",
     ] + select({

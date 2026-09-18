@@ -17,15 +17,15 @@ crate_library(
     crate_features = FEATURES,
     declared_features = DECLARED_FEATURES,
     deps = [
+        "//alloy-core/crates/primitives:alloy_primitives",
         "//alloy/crates/consensus:alloy_consensus",
         "//alloy/crates/eips:alloy_eips",
         "//alloy/crates/genesis:alloy_genesis",
         "//reth-core/crates/primitives-traits:reth_primitives_traits",
         "//reth/crates/ethereum/primitives:reth_ethereum_primitives",
-        "@crates//:alloy-primitives",
         "@crates//:rand-0.9.4",
         "@crates//:rand_08-0.8.6",
-        "@crates//:secp256k1",
+        "@crates//:secp256k1-0.30.0",
     ],
     aliases = {
         "@crates//:rand_08-0.8.6": "rand_08",
@@ -39,6 +39,6 @@ crate_unit_test(
     crate_features = FEATURES,
     declared_features = DECLARED_FEATURES,
     deps = [
-        "@crates//:alloy-rlp",
+        "//alloy-rlp/crates/rlp:alloy_rlp",
     ],
 )

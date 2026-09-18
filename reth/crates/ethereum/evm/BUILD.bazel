@@ -27,6 +27,7 @@ crate_library(
     crate_features = FEATURES,
     declared_features = DECLARED_FEATURES,
     deps = [
+        "//alloy-core/crates/primitives:alloy_primitives",
         "//alloy-evm/crates/evm:alloy_evm",
         "//alloy/crates/consensus:alloy_consensus",
         "//alloy/crates/eips:alloy_eips",
@@ -38,7 +39,6 @@ crate_library(
         "//reth/crates/evm/evm:reth_evm",
         "//reth/crates/evm/execution-types:reth_execution_types",
         "//reth/crates/storage/errors:reth_storage_errors",
-        "@crates//:alloy-primitives",
         "@crates//:revm",
     ],
 )
@@ -52,7 +52,7 @@ crate_unit_test(
     deps = [
         "//alloy/crates/genesis:alloy_genesis",
         "//reth/testing/testing-utils:reth_testing_utils",
-        "@crates//:secp256k1",
+        "@crates//:secp256k1-0.30.0",
     ],
 )
 
@@ -63,6 +63,7 @@ crate_integration_test(
     crate_features = FEATURES,
     declared_features = DECLARED_FEATURES,
     deps = [
+        "//alloy-core/crates/primitives:alloy_primitives",
         "//alloy-evm/crates/evm:alloy_evm",
         "//alloy/crates/consensus:alloy_consensus",
         "//alloy/crates/eips:alloy_eips",
@@ -77,8 +78,7 @@ crate_integration_test(
         "//reth/crates/storage/errors:reth_storage_errors",
         "//reth/testing/testing-utils:reth_testing_utils",
         ":reth_evm_ethereum",
-        "@crates//:alloy-primitives",
         "@crates//:revm",
-        "@crates//:secp256k1",
+        "@crates//:secp256k1-0.30.0",
     ],
 )

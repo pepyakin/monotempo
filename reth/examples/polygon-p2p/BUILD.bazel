@@ -14,6 +14,7 @@ crate_cargo_toml_env_vars(WORKSPACE)
 crate_binary(
     name = "example-polygon-p2p",
     workspace = WORKSPACE,
+    version = "0.0.0",
     crate_features = FEATURES,
     declared_features = DECLARED_FEATURES,
     workspace_lints = False,
@@ -22,7 +23,7 @@ crate_binary(
         "//reth/crates/ethereum/reth:reth_ethereum",
         "//reth/crates/net/discv4:reth_discv4",
         "//reth/crates/tracing:reth_tracing",
-        "@crates//:secp256k1",
+        "@crates//:secp256k1-0.30.0",
         "@crates//:serde_json",
         "@crates//:tokio",
         "@crates//:tokio-stream",
@@ -32,6 +33,7 @@ crate_binary(
 crate_unit_test(
     name = "example_polygon_p2p_test",
     workspace = WORKSPACE,
+    version = "0.0.0",
     crate = ":example-polygon-p2p",
     crate_features = FEATURES,
     declared_features = DECLARED_FEATURES,
