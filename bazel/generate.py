@@ -745,12 +745,12 @@ def bazel_workspace_metadata(projects: list[Project], shadow: ShadowWorkspace, c
     return json.loads(result.stdout), lock.read_text() != before
 
 
-def build_crates(projects: list[Project], members: list[Member], meta: dict) -> dict[str, Crate]:
+def build_crates(projects: list[Project], members: list[Member], meta: dict, *, derived: bool = True) -> dict[str, Crate]:
     """Crates of the Bazel workspace with their resolved features and dependency edges."""
     packages = {p["id"]: p for p in meta["packages"]}
     nodes = {n["id"]: n for n in meta["resolve"]["nodes"]}
     member_ids = set(meta["workspace_members"])
-    by_shadow_dir = {m.shadow_dir: m for m in members}
+    by_shadow_dir = {m.shadow_dir if derived else m.real_dir: m for m in members}
 
     def lib_target(pkg: dict) -> dict | None:
         for t in pkg["targets"]:
@@ -769,7 +769,7 @@ def build_crates(projects: list[Project], members: list[Member], meta: dict) -> 
 
     # Renames the derived manifests dropped (see colliding_renames), by member:
     # external package name -> extern crate name the sources expect.
-    unrenamed = colliding_renames(members)
+    unrenamed = colliding_renames(members) if derived else set()
     dropped_renames: dict[str, dict[str, str]] = {}
 
     crates: dict[str, Crate] = {}
@@ -1020,7 +1020,7 @@ def render_build_file(crate: Crate, crates: dict[str, Crate]) -> str:
     project = crate.project
     lib = crate.lib
     lib_rule = "crate_proc_macro" if lib and lib.kind == "proc-macro" else "crate_library"
-    bins = [t for t in crate.targets if t.kind == "bin"]
+    bins = [t for t in crate.targets if t.kind == "bin" and set(t.required_features) <= set(crate.features)]
     tests = [t for t in crate.targets if t.kind == "test"]
     build_script = crate.target("custom-build")
     # `#[test_fuzz]`-instrumented tests need extra runtime plumbing (see rust.bzl).
