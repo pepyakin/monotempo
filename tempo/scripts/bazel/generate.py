@@ -84,7 +84,7 @@ def main() -> int:
         # Every member manifest is an explicit crate_universe input, so editing
         # a member dependency invalidates the lock even if the root is unchanged.
         outputs[ROOT / crate.package_path / "BUILD.bazel"] = (
-            renderer.render_build_file(crate)
+            renderer.render_build_file(crate, cargo_test_names=True)
             + '\nexports_files(["Cargo.toml"])\n'
         )
     outputs[ROOT / "BUILD.bazel"] = renderer.HEADER + '''

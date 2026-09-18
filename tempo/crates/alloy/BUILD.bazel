@@ -84,6 +84,7 @@ tempo_unit_test(
 
 tempo_integration_test(
     name = "tempo_alloy_relay_transport_test",
+    crate_name = "relay_transport",
     crate_root = "tests/relay_transport.rs",
     crate_features = FEATURES,
     declared_features = DECLARED_FEATURES,

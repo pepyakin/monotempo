@@ -85,6 +85,7 @@ tempo_unit_test(
 
 tempo_integration_test(
     name = "tempo_evm_reexports_test",
+    crate_name = "reexports",
     crate_root = "tests/reexports.rs",
     crate_features = FEATURES,
     declared_features = DECLARED_FEATURES,

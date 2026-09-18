@@ -143,6 +143,7 @@ tempo_unit_test(
 
 tempo_integration_test(
     name = "tempo_node_it_test",
+    crate_name = "it",
     crate_root = "tests/it/main.rs",
     crate_features = FEATURES,
     declared_features = DECLARED_FEATURES,

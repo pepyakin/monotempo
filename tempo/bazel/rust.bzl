@@ -61,9 +61,11 @@ def _test(name, crate_features, declared_features, workspace_lints, process_per_
     # CLI tests initialize global defaults. Match nextest's process isolation
     # so one test cannot initialize a OnceLock before another test configures it.
     process_per_test = process_per_test or native.package_name() == "tempo/bin/tempo"
+    # Serial recovery and RPC suites exceed the 15-minute "large" budget.
+    size = "enormous" if native.package_name() in ["tempo/crates/e2e", "tempo/crates/node"] else "large"
     rust_test(
         name = name + "_bin" if process_per_test else name,
-        size = "large",
+        size = size,
         tags = ["manual"] if process_per_test else tags,
         data = data + _data(),
         compile_data = compile_data + _data(),
@@ -80,7 +82,7 @@ def _test(name, crate_features, declared_features, workspace_lints, process_per_
         **dict(_common(crate_features, declared_features, workspace_lints), **kwargs)
     )
     if process_per_test:
-        _process_per_test(name = name, test = ":" + name + "_bin", size = "large", tags = tags)
+        _process_per_test(name = name, test = ":" + name + "_bin", size = size, tags = tags)
 
 def tempo_unit_test(name, crate, crate_features = [], declared_features = [], workspace_lints = True, process_per_test = False, tags = [], data = [], **kwargs):
     _test(name, crate_features, declared_features, workspace_lints, process_per_test, tags, data, [], crate = crate, **kwargs)

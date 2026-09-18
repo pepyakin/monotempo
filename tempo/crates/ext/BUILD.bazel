@@ -42,6 +42,7 @@ tempo_unit_test(
 
 tempo_integration_test(
     name = "tempo_ext_lifecycle_test",
+    crate_name = "lifecycle",
     crate_root = "tests/lifecycle.rs",
     crate_features = FEATURES,
     declared_features = DECLARED_FEATURES,

@@ -41,6 +41,8 @@ Node-launching and CLI tests run one test per process, like upstream's
 `cargo nextest`, to bound node memory use and isolate global CLI defaults.
 They run serially within each suite: a single multi-node e2e test can retain
 over 10 GiB. Use `--local_test_jobs=1` to also serialize suites on smaller hosts.
+The e2e and node suites have Bazel's `enormous` size (a one-hour timeout)
+because serial recovery and RPC scenarios exceed the normal 15-minute budget.
 The storage proc macro is compiled with debug assertions so it emits the
 layout constants consumed by the Solidity compatibility tests. Pipelining is
 disabled only for `age`, whose separate metadata/library builds otherwise

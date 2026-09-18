@@ -84,6 +84,7 @@ tempo_unit_test(
 
 tempo_integration_test(
     name = "tempo_precompiles_storage_test",
+    crate_name = "storage",
     crate_root = "tests/storage.rs",
     crate_features = FEATURES,
     declared_features = DECLARED_FEATURES,
