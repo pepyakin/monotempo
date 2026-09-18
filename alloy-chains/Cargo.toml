@@ -45,3 +45,8 @@ rlp = ["dep:alloy-rlp", "alloy-primitives/rlp"]
 arbitrary = ["dep:arbitrary", "dep:proptest", "alloy-primitives/arbitrary"]
 
 schema = ["std", "dep:schemars"]
+
+[patch.crates-io]
+alloy-primitives = { path = "../alloy-core/crates/primitives" }
+alloy-rlp = { path = "../alloy-rlp/crates/rlp" }
+alloy-rlp-derive = { path = "../alloy-rlp/crates/rlp-derive" }
