@@ -12,10 +12,10 @@ change to one file only rebuilds (and retests) the crates that depend on it.
 | --- | --- | --- | --- |
 | `reth/` | Ethereum execution client Tempo is built on | [paradigmxyz/reth](https://github.com/paradigmxyz/reth) | imported, builds and tests with Bazel |
 | `tempo/` | The Tempo node itself | [tempoxyz/tempo](https://github.com/tempoxyz/tempo) | imported with full history; Bazel targets generated from Cargo |
-| `alloy/` | Ethereum types, RPC and transports used by reth and tempo | [alloy-rs/alloy](https://github.com/alloy-rs/alloy) (Tempo's fork, with `signer-tempo`) | imported; reth builds against it (`[patch.crates-io]` in `reth/Cargo.toml`, `//alloy/...` targets under Bazel) |
-| `reth-core/` | `reth-primitives-traits`, `reth-codecs`, `reth-rpc-traits`, `reth-zstd-compressors`: reth's foundation crates, published separately | [paradigmxyz/reth-core](https://github.com/paradigmxyz/reth-core) | imported; reth builds against it |
-| `alloy-evm/` | EVM abstraction layer between alloy and revm | [alloy-rs/alloy-evm](https://github.com/alloy-rs/alloy-evm) | imported; reth builds against it |
-| `revm-inspectors/` | EVM tracing inspectors for the debug/trace RPC namespaces | [paradigmxyz/revm-inspectors](https://github.com/paradigmxyz/revm-inspectors) | imported; reth builds against it |
+| `alloy/` | Ethereum types, RPC and transports used by reth and tempo | [alloy-rs/alloy](https://github.com/alloy-rs/alloy) (Tempo's fork, with `signer-tempo`) | imported; reth and Tempo build against the local crates |
+| `reth-core/` | `reth-primitives-traits`, `reth-codecs`, `reth-rpc-traits`, `reth-zstd-compressors`: reth's foundation crates, published separately | [paradigmxyz/reth-core](https://github.com/paradigmxyz/reth-core) | imported; reth and Tempo build against the local crates |
+| `alloy-evm/` | EVM abstraction layer between alloy and revm | [alloy-rs/alloy-evm](https://github.com/alloy-rs/alloy-evm) | imported; reth and Tempo build against the local crates |
+| `revm-inspectors/` | EVM tracing inspectors for the debug/trace RPC namespaces | [paradigmxyz/revm-inspectors](https://github.com/paradigmxyz/revm-inspectors) | imported; reth and Tempo build against the local crate |
 | `alloy-core/` | Primitives, Solidity types and macros, dynamic and JSON ABI | [alloy-rs/core](https://github.com/alloy-rs/core) | imported at v1.7.3; shared in-tree dependencies |
 | `alloy-rlp/` | RLP encoding and derive macros | [alloy-rs/rlp](https://github.com/alloy-rs/rlp) | imported at v0.3.16 |
 | `alloy-trie/` | Merkle Patricia trie | [alloy-rs/trie](https://github.com/alloy-rs/trie) | imported at the 0.9.5 release commit |
@@ -57,6 +57,14 @@ bazel test //...                                 # everything (cached per crate)
 Outputs land in `bazel-bin/`, e.g. `bazel-bin/reth/bin/reth/reth`.
 
 [bazelisk]: https://github.com/bazelbuild/bazelisk
+
+## CI status
+
+The root [Bazel workflow](.github/workflows/bazel.yml) is manual-only
+(`workflow_dispatch`): launch it with GitHub Actions' **Run workflow** button.
+It checks generated files, builds `//...` and tests `//...`; pushes and pull
+requests do not trigger it automatically. Automatic CI is deferred until an
+adequately provisioned runner is configured for the full monorepo build.
 
 ## Layout
 
