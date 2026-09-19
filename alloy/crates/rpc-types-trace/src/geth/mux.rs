@@ -77,8 +77,16 @@ mod tests {
         .into();
 
         assert_eq!(
-            serde_json::to_string(&opts).unwrap(),
-            r#"{"tracer":"muxTracer","tracerConfig":{"4byteTracer":null,"callTracer":{"onlyTopCall":true,"withLog":true},"prestateTracer":{"diffMode":true},"{ js_tracer_code }":null}}"#,
+            serde_json::to_value(&opts).unwrap(),
+            serde_json::json!({
+                "tracer": "muxTracer",
+                "tracerConfig": {
+                    "4byteTracer": null,
+                    "callTracer": {"onlyTopCall": true, "withLog": true},
+                    "prestateTracer": {"diffMode": true},
+                    "{ js_tracer_code }": null,
+                },
+            }),
         );
     }
 
