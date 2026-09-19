@@ -1,0 +1,219 @@
+//! Custom precompile provider implementation.
+
+use revm::{
+    context::Cfg,
+    context_interface::{ContextTr, JournalTr, LocalContextTr, Transaction},
+    handler::{precompile_output_to_interpreter_result, EthPrecompiles, PrecompileProvider},
+    interpreter::{CallInputs, InterpreterResult},
+    precompile::{EthPrecompileOutput, EthPrecompileResult, PrecompileHalt, PrecompileOutput},
+    primitives::{address, hardfork::SpecId, Address, AddressSet, Bytes, Log, B256, U256},
+};
+use std::string::String;
+
+// Define our custom precompile address
+pub const CUSTOM_PRECOMPILE_ADDRESS: Address = address!("0000000000000000000000000000000000000100");
+
+// Custom storage key for our example
+const STORAGE_KEY: U256 = U256::ZERO;
+
+/// Custom precompile provider that includes journal access functionality
+#[derive(Debug, Clone)]
+pub struct CustomPrecompileProvider {
+    inner: EthPrecompiles,
+    addresses: AddressSet,
+    spec: SpecId,
+}
+
+impl CustomPrecompileProvider {
+    pub fn new_with_spec(spec: SpecId) -> Self {
+        let mut this = Self {
+            inner: EthPrecompiles::new(spec),
+            addresses: AddressSet::default(),
+            spec,
+        };
+        this.renew();
+        this
+    }
+
+    fn renew(&mut self) {
+        // Include our custom precompile address along with standard ones
+        self.addresses.clone_from(self.inner.warm_addresses());
+        self.addresses.insert(CUSTOM_PRECOMPILE_ADDRESS);
+    }
+}
+
+impl<CTX> PrecompileProvider<CTX> for CustomPrecompileProvider
+where
+    CTX: ContextTr<Cfg: Cfg<Spec = SpecId>>,
+{
+    type Output = InterpreterResult;
+
+    fn set_spec(&mut self, spec: <CTX::Cfg as Cfg>::Spec) -> bool {
+        if spec == self.spec {
+            return false;
+        }
+        self.spec = spec;
+        self.inner = EthPrecompiles::new(spec);
+        self.renew();
+        true
+    }
+
+    fn run(
+        &mut self,
+        context: &mut CTX,
+        inputs: &CallInputs,
+    ) -> Result<Option<Self::Output>, String> {
+        // Check if this is our custom precompile
+        if inputs.bytecode_address == CUSTOM_PRECOMPILE_ADDRESS {
+            return Ok(Some(run_custom_precompile(context, inputs)?));
+        }
+
+        // Otherwise, delegate to standard Ethereum precompiles
+        self.inner.run(context, inputs)
+    }
+
+    fn warm_addresses(&self) -> &AddressSet {
+        &self.addresses
+    }
+}
+
+/// Runs our custom precompile
+fn run_custom_precompile<CTX: ContextTr>(
+    context: &mut CTX,
+    inputs: &CallInputs,
+) -> Result<InterpreterResult, String> {
+    let input_bytes = inputs.input.bytes(context);
+
+    // For this example, we'll implement a simple precompile that:
+    // - If called with empty data: reads a storage value
+    // - If called with 32 bytes: writes that value to storage and transfers 1 wei to the caller
+
+    let result = if input_bytes.is_empty() {
+        // Read storage operation
+        handle_read_storage(context, inputs.gas_limit)
+    } else if input_bytes.len() == 32 {
+        if inputs.is_static {
+            return Err("Cannot modify state in static context".to_string());
+        }
+        // Write storage operation
+        handle_write_storage(context, &input_bytes, inputs.gas_limit)
+    } else {
+        Err(PrecompileHalt::Other("Invalid input length".into()))
+    };
+
+    // Convert EthPrecompileResult to PrecompileOutput, preserving the reservoir,
+    // then to InterpreterResult which properly records gas_used.
+    let output = PrecompileOutput::from_eth_result(result, inputs.reservoir);
+
+    // If this is a top-level precompile call and error is non-OOG, record the message
+    if let Some(halt_reason) = output.halt_reason() {
+        if !halt_reason.is_oog() && context.journal().depth() == 1 {
+            context
+                .local_mut()
+                .set_precompile_error_context(halt_reason.to_string());
+        }
+    }
+
+    Ok(precompile_output_to_interpreter_result(
+        output,
+        inputs.gas_limit,
+    ))
+}
+
+/// Handles reading from storage
+fn handle_read_storage<CTX: ContextTr>(context: &mut CTX, gas_limit: u64) -> EthPrecompileResult {
+    // Base gas cost for reading storage
+    const BASE_GAS: u64 = 2_100;
+
+    if gas_limit < BASE_GAS {
+        return Err(PrecompileHalt::OutOfGas);
+    }
+
+    // Read from storage using the journal
+    let value = context
+        .journal_mut()
+        .sload(CUSTOM_PRECOMPILE_ADDRESS, STORAGE_KEY)
+        .map_err(|e| PrecompileHalt::Other(format!("Storage read failed: {e:?}").into()))?
+        .data;
+
+    // Return the value as output
+    Ok(EthPrecompileOutput::new(
+        BASE_GAS,
+        value.to_be_bytes_vec().into(),
+    ))
+}
+
+/// Handles writing to storage and transferring balance
+fn handle_write_storage<CTX: ContextTr>(
+    context: &mut CTX,
+    input: &[u8],
+    gas_limit: u64,
+) -> EthPrecompileResult {
+    // Base gas cost for the operation
+    const BASE_GAS: u64 = 21_000;
+    const SSTORE_GAS: u64 = 20_000;
+
+    if gas_limit < BASE_GAS + SSTORE_GAS {
+        return Err(PrecompileHalt::OutOfGas);
+    }
+
+    // Parse the input as a U256 value
+    let value = U256::from_be_slice(input);
+
+    // Store the value in the precompile's storage
+    context
+        .journal_mut()
+        .sstore(CUSTOM_PRECOMPILE_ADDRESS, STORAGE_KEY, value)
+        .map_err(|e| PrecompileHalt::Other(format!("Storage write failed: {e:?}").into()))?;
+
+    // Get the caller address
+    let caller = context.tx().caller();
+
+    // Transfer 1 wei from the precompile to the caller as a reward
+    // First, ensure the precompile has balance
+    context
+        .journal_mut()
+        .balance_incr(CUSTOM_PRECOMPILE_ADDRESS, U256::from(1))
+        .map_err(|e| PrecompileHalt::Other(format!("Balance increment failed: {e:?}").into()))?;
+
+    // Then transfer to caller
+    let transfer_result = context
+        .journal_mut()
+        .transfer(CUSTOM_PRECOMPILE_ADDRESS, caller, U256::from(1))
+        .map_err(|e| PrecompileHalt::Other(format!("Transfer failed: {e:?}").into()))?;
+
+    if let Some(error) = transfer_result {
+        return Err(PrecompileHalt::Other(
+            format!("Transfer error: {error:?}").into(),
+        ));
+    }
+
+    // Create a log to record the storage write operation
+    // Topic 0: keccak256("StorageWritten(address,uint256)")
+    let topic0 = B256::from_slice(&[
+        0x12, 0x34, 0x56, 0x78, 0x9a, 0xbc, 0xde, 0xf0, 0x12, 0x34, 0x56, 0x78, 0x9a, 0xbc, 0xde,
+        0xf0, 0x12, 0x34, 0x56, 0x78, 0x9a, 0xbc, 0xde, 0xf0, 0x12, 0x34, 0x56, 0x78, 0x9a, 0xbc,
+        0xde, 0xf0,
+    ]);
+    // Topic 1: caller address (indexed) - left-padded to 32 bytes
+    let mut topic1_bytes = [0u8; 32];
+    topic1_bytes[12..32].copy_from_slice(caller.as_slice());
+    let topic1 = B256::from(topic1_bytes);
+    // Data: the value that was written
+    let log_data = value.to_be_bytes_vec();
+
+    let log = Log::new(
+        CUSTOM_PRECOMPILE_ADDRESS,
+        vec![topic0, topic1],
+        log_data.into(),
+    )
+    .expect("Failed to create log");
+
+    context.journal_mut().log(log);
+
+    // Return success with empty output
+    Ok(EthPrecompileOutput::new(
+        BASE_GAS + SSTORE_GAS,
+        Bytes::new(),
+    ))
+}

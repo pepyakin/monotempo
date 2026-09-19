@@ -1,0 +1,52 @@
+[package]
+name = "revme"
+description = "Rust Ethereum Virtual Machine Executable"
+version = "43.0.2"
+authors.workspace = true
+edition.workspace = true
+keywords.workspace = true
+license.workspace = true
+repository.workspace = true
+rust-version.workspace = true
+
+[dependencies]
+# revm
+revm = { workspace = true, features = [
+    "std",
+    "c-kzg",
+    "blst",
+    "serde",
+    "tracer",
+    "parse",
+    "test-types",
+] }
+
+# criterion
+criterion.workspace = true
+
+# alloy
+alloy-consensus = { workspace = true, features = ["std"] }
+alloy-rlp = { workspace = true, features = ["arrayvec", "derive"] }
+alloy-sol-types.workspace = true
+alloy-trie = { workspace = true, features = ["ethereum"] }
+
+# misc
+indicatif.workspace = true
+serde = { workspace = true, features = ["derive", "rc"] }
+serde_json = { workspace = true, features = ["preserve_order"] }
+clap.workspace = true
+thiserror.workspace = true
+walkdir.workspace = true
+k256 = { workspace = true, features = ["ecdsa"] }
+csv = "1.1.6"
+
+[features]
+default = ["map-foldhash"]
+# Optionally enable gmp because it doesn't work on i686 github actions runners
+gmp = ["revm/gmp"]
+p256-aws-lc-rs = ["revm/p256-aws-lc-rs"]
+map-foldhash = ["revm/map-foldhash"]
+
+[[bench]]
+name = "evm"
+harness = false

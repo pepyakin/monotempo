@@ -1,0 +1,58 @@
+use criterion::Criterion;
+use revm::{
+    bytecode::Bytecode,
+    context::{ContextTr, TxEnv},
+    context_interface::JournalTr,
+    database::{BenchmarkDB, BENCH_CALLER, BENCH_TARGET, BENCH_TARGET_BALANCE},
+    primitives::{TxKind, U256},
+    Context, ExecuteEvm, MainBuilder, MainContext,
+};
+
+pub fn run(criterion: &mut Criterion) {
+    let mut evm = Context::mainnet()
+        .with_db(BenchmarkDB::new_bytecode(Bytecode::new()))
+        .modify_cfg_chained(|cfg| cfg.disable_nonce_check = true)
+        .build_mainnet();
+
+    let tx = TxEnv::builder()
+        .caller(BENCH_CALLER)
+        .kind(TxKind::Call(BENCH_TARGET))
+        .value(U256::from(1))
+        .gas_price(1)
+        .gas_priority_fee(None)
+        .build()
+        .unwrap();
+
+    evm.ctx.tx = tx.clone();
+
+    let mut i = 0;
+    criterion.bench_function("transfer", |b| {
+        b.iter_batched(
+            || tx.clone(),
+            |input| {
+                i += 1;
+                evm.transact_one(input).unwrap()
+            },
+            criterion::BatchSize::SmallInput,
+        );
+    });
+
+    let balance = evm
+        .journal_mut()
+        .load_account(BENCH_TARGET)
+        .unwrap()
+        .data
+        .info
+        .balance;
+
+    if balance != BENCH_TARGET_BALANCE + U256::from(i) {
+        panic!("balance of transfers is not correct");
+    }
+
+    // drop the journal
+    let _ = evm.finalize();
+
+    evm.modify_cfg(|cfg| cfg.disable_nonce_check = false);
+
+    criterion.bench_function("transfer_finalize", |b| b.iter(|| evm.replay().unwrap()));
+}

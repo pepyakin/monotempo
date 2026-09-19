@@ -1,0 +1,576 @@
+//! An example that shows how to implement a Foundry-style Solidity test cheatcode inspector.
+//!
+//! The code below mimics relevant parts of the implementation of the [`transact`](https://book.getfoundry.sh/cheatcodes/transact)
+//! and [`rollFork(uint256 forkId, bytes32 transaction)`](https://book.getfoundry.sh/cheatcodes/roll-fork#rollfork) cheatcodes.
+//! Both of these cheatcodes initiate transactions from a call step in the cheatcode inspector which is the most
+//! advanced cheatcode use-case.
+#![cfg_attr(not(test), warn(unused_crate_dependencies))]
+
+use revm::{
+    context::{
+        journaled_state::{account::JournaledAccount, AccountInfoLoad, JournalLoadError},
+        result::InvalidTransaction,
+        BlockEnv, Cfg, CfgEnv, ContextTr, Evm, LocalContext, TxEnv,
+    },
+    context_interface::{
+        journaled_state::{AccountLoad, JournalCheckpoint, TransferError},
+        result::EVMError,
+        Block, JournalTr, Transaction,
+    },
+    database::InMemoryDB,
+    handler::{instructions::EthInstructions, EthPrecompiles},
+    inspector::{inspectors::TracerEip3155, JournalExt},
+    interpreter::{
+        interpreter::EthInterpreter, CallInputs, CallOutcome, SStoreResult, SelfDestructResult,
+        StateLoad,
+    },
+    primitives::{
+        hardfork::SpecId, Address, AddressMap, AddressSet, HashSet, Log, StorageKey, StorageValue,
+        B256, U256,
+    },
+    state::{Account, Bytecode, EvmState},
+    Context, Database, DatabaseCommit, InspectEvm, Inspector, Journal, JournalEntry,
+};
+use std::{convert::Infallible, fmt::Debug};
+
+/// Backend for cheatcodes.
+/// The problematic cheatcodes are only supported in fork mode, so we'll omit the non-fork behavior of the Foundry
+/// `Backend`.
+#[derive(Clone, Debug)]
+struct Backend {
+    /// In fork mode, Foundry stores (`JournaledState`, `Database`) pairs for each fork.
+    journaled_state: Journal<InMemoryDB>,
+    /// Counters to be able to assert that we mutated the object that we expected to mutate.
+    method_with_inspector_counter: usize,
+    method_without_inspector_counter: usize,
+}
+
+impl Backend {
+    fn new(spec: SpecId, db: InMemoryDB) -> Self {
+        let mut journaled_state = Journal::new(db);
+        journaled_state.set_spec_id(spec);
+        Self {
+            journaled_state,
+            method_with_inspector_counter: 0,
+            method_without_inspector_counter: 0,
+        }
+    }
+}
+
+impl JournalTr for Backend {
+    type Database = InMemoryDB;
+    type State = EvmState;
+    type JournaledAccount<'a> = JournaledAccount<'a, InMemoryDB, JournalEntry>;
+
+    fn new(database: InMemoryDB) -> Self {
+        Self::new(SpecId::default(), database)
+    }
+
+    fn db_and_state(&self) -> (&Self::Database, &Self::State) {
+        self.journaled_state.db_and_state()
+    }
+
+    fn db_and_state_mut(&mut self) -> (&mut Self::Database, &mut Self::State) {
+        self.journaled_state.db_and_state_mut()
+    }
+
+    fn sload(
+        &mut self,
+        address: Address,
+        key: StorageKey,
+    ) -> Result<StateLoad<StorageValue>, <Self::Database as Database>::Error> {
+        self.journaled_state.sload(address, key)
+    }
+
+    fn sstore(
+        &mut self,
+        address: Address,
+        key: StorageKey,
+        value: StorageValue,
+    ) -> Result<StateLoad<SStoreResult>, <Self::Database as Database>::Error> {
+        self.journaled_state.sstore(address, key, value)
+    }
+
+    fn tload(&mut self, address: Address, key: StorageKey) -> StorageValue {
+        self.journaled_state.tload(address, key)
+    }
+
+    fn tstore(&mut self, address: Address, key: StorageKey, value: StorageValue) {
+        self.journaled_state.tstore(address, key, value)
+    }
+
+    fn log(&mut self, log: Log) {
+        self.journaled_state.log(log)
+    }
+
+    fn logs(&self) -> &[Log] {
+        self.journaled_state.logs()
+    }
+
+    fn selfdestruct(
+        &mut self,
+        address: Address,
+        target: Address,
+        skip_cold_load: bool,
+    ) -> Result<StateLoad<SelfDestructResult>, JournalLoadError<Infallible>> {
+        self.journaled_state
+            .selfdestruct(address, target, skip_cold_load)
+    }
+
+    fn warm_access_list(&mut self, access_list: AddressMap<HashSet<StorageKey>>) {
+        self.journaled_state.warm_access_list(access_list);
+    }
+
+    fn warm_coinbase_account(&mut self, address: Address) {
+        self.journaled_state.warm_coinbase_account(address)
+    }
+
+    fn warm_precompiles(&mut self, addresses: &AddressSet) {
+        self.journaled_state.warm_precompiles(addresses)
+    }
+
+    fn precompile_addresses(&self) -> &AddressSet {
+        self.journaled_state.precompile_addresses()
+    }
+
+    fn set_spec_id(&mut self, spec_id: SpecId) {
+        self.journaled_state.set_spec_id(spec_id);
+    }
+
+    fn set_eip7708_config(&mut self, disabled: bool, eip8246_delayed_clear_disabled: bool) {
+        self.journaled_state
+            .set_eip7708_config(disabled, eip8246_delayed_clear_disabled);
+    }
+
+    fn touch_account(&mut self, address: Address) {
+        self.journaled_state.touch_account(address);
+    }
+
+    fn transfer(
+        &mut self,
+        from: Address,
+        to: Address,
+        balance: U256,
+    ) -> Result<Option<TransferError>, Infallible> {
+        self.journaled_state.transfer(from, to, balance)
+    }
+
+    fn transfer_loaded(
+        &mut self,
+        from: Address,
+        to: Address,
+        balance: U256,
+    ) -> Option<TransferError> {
+        self.journaled_state.transfer_loaded(from, to, balance)
+    }
+
+    fn load_account(&mut self, address: Address) -> Result<StateLoad<&Account>, Infallible> {
+        self.journaled_state.load_account(address)
+    }
+
+    fn load_account_with_code(
+        &mut self,
+        address: Address,
+    ) -> Result<StateLoad<&Account>, Infallible> {
+        self.journaled_state.load_account_with_code(address)
+    }
+
+    fn load_account_delegated(
+        &mut self,
+        address: Address,
+    ) -> Result<StateLoad<AccountLoad>, Infallible> {
+        self.journaled_state.load_account_delegated(address)
+    }
+
+    fn set_code_with_hash(&mut self, address: Address, code: Bytecode, hash: B256) {
+        self.journaled_state.set_code_with_hash(address, code, hash);
+    }
+
+    fn code(
+        &mut self,
+        address: Address,
+    ) -> Result<StateLoad<revm::primitives::Bytes>, <Self::Database as Database>::Error> {
+        self.journaled_state.code(address)
+    }
+
+    fn code_hash(
+        &mut self,
+        address: Address,
+    ) -> Result<StateLoad<B256>, <Self::Database as Database>::Error> {
+        self.journaled_state.code_hash(address)
+    }
+
+    fn clear(&mut self) {
+        self.journaled_state.clear();
+    }
+
+    fn checkpoint(&mut self) -> JournalCheckpoint {
+        self.journaled_state.checkpoint()
+    }
+
+    fn checkpoint_commit(&mut self) {
+        self.journaled_state.checkpoint_commit()
+    }
+
+    fn checkpoint_revert(&mut self, checkpoint: JournalCheckpoint) {
+        self.journaled_state.checkpoint_revert(checkpoint)
+    }
+
+    fn create_account_checkpoint(
+        &mut self,
+        caller: Address,
+        address: Address,
+        balance: U256,
+        spec_id: SpecId,
+    ) -> Result<JournalCheckpoint, TransferError> {
+        self.journaled_state
+            .create_account_checkpoint(caller, address, balance, spec_id)
+    }
+
+    /// Returns call depth.
+    #[inline]
+    fn depth(&self) -> usize {
+        self.journaled_state.depth()
+    }
+
+    fn finalize(&mut self) -> Self::State {
+        self.journaled_state.finalize()
+    }
+
+    fn caller_accounting_journal_entry(
+        &mut self,
+        address: Address,
+        old_balance: U256,
+        bump_nonce: bool,
+    ) {
+        #[expect(deprecated)]
+        self.journaled_state
+            .caller_accounting_journal_entry(address, old_balance, bump_nonce)
+    }
+
+    fn balance_incr(
+        &mut self,
+        address: Address,
+        balance: U256,
+    ) -> Result<(), <Self::Database as Database>::Error> {
+        self.journaled_state.balance_incr(address, balance)
+    }
+
+    fn nonce_bump_journal_entry(&mut self, address: Address) {
+        #[expect(deprecated)]
+        self.journaled_state.nonce_bump_journal_entry(address)
+    }
+
+    fn take_logs(&mut self) -> Vec<Log> {
+        self.journaled_state.take_logs()
+    }
+
+    fn commit_tx(&mut self) {
+        self.journaled_state.commit_tx()
+    }
+
+    fn discard_tx(&mut self) {
+        self.journaled_state.discard_tx()
+    }
+
+    fn sload_skip_cold_load(
+        &mut self,
+        address: Address,
+        key: StorageKey,
+        skip_cold_load: bool,
+    ) -> Result<StateLoad<StorageValue>, JournalLoadError<<Self::Database as Database>::Error>>
+    {
+        self.journaled_state
+            .sload_skip_cold_load(address, key, skip_cold_load)
+    }
+
+    fn sstore_skip_cold_load(
+        &mut self,
+        address: Address,
+        key: StorageKey,
+        value: StorageValue,
+        skip_cold_load: bool,
+    ) -> Result<StateLoad<SStoreResult>, JournalLoadError<<Self::Database as Database>::Error>>
+    {
+        self.journaled_state
+            .sstore_skip_cold_load(address, key, value, skip_cold_load)
+    }
+
+    fn load_account_mut_skip_cold_load(
+        &mut self,
+        address: Address,
+        skip_cold_load: bool,
+    ) -> Result<StateLoad<Self::JournaledAccount<'_>>, JournalLoadError<Infallible>> {
+        self.journaled_state
+            .load_account_mut_skip_cold_load(address, skip_cold_load)
+    }
+
+    fn load_account_info_skip_cold_load(
+        &mut self,
+        address: Address,
+        load_code: bool,
+        skip_cold_load: bool,
+    ) -> Result<AccountInfoLoad<'_>, JournalLoadError<Infallible>> {
+        self.journaled_state
+            .load_account_info_skip_cold_load(address, load_code, skip_cold_load)
+    }
+
+    fn load_account_mut_optional_code(
+        &mut self,
+        address: Address,
+        load_code: bool,
+    ) -> Result<StateLoad<Self::JournaledAccount<'_>>, Infallible> {
+        self.journaled_state
+            .load_account_mut_optional_code(address, load_code)
+    }
+}
+
+impl JournalExt for Backend {
+    fn journal(&self) -> &[JournalEntry] {
+        self.journaled_state.journal()
+    }
+}
+
+/// Used in Foundry to provide extended functionality to cheatcodes.
+/// The methods are called from the `Cheatcodes` inspector.
+trait DatabaseExt: JournalTr {
+    /// Mimics `DatabaseExt::transact`
+    /// See `commit_transaction` for the generics
+    fn method_that_takes_inspector_as_argument<InspectorT, BlockT, TxT, CfgT>(
+        &mut self,
+        env: Env<BlockT, TxT, CfgT>,
+        inspector: InspectorT,
+    ) -> anyhow::Result<()>
+    where
+        InspectorT: Inspector<Context<BlockT, TxT, CfgT, InMemoryDB, Backend>, EthInterpreter>,
+        BlockT: Block,
+        TxT: Transaction + Clone,
+        CfgT: Cfg;
+
+    /// Mimics `DatabaseExt::roll_fork_to_transaction`
+    fn method_that_constructs_inspector<BlockT, TxT, CfgT>(
+        &mut self,
+        env: Env<BlockT, TxT, CfgT>,
+    ) -> anyhow::Result<()>
+    where
+        BlockT: Block,
+        TxT: Transaction + Clone,
+        CfgT: Cfg;
+}
+
+impl DatabaseExt for Backend {
+    fn method_that_takes_inspector_as_argument<InspectorT, BlockT, TxT, CfgT>(
+        &mut self,
+        env: Env<BlockT, TxT, CfgT>,
+        inspector: InspectorT,
+    ) -> anyhow::Result<()>
+    where
+        InspectorT: Inspector<Context<BlockT, TxT, CfgT, InMemoryDB, Backend>, EthInterpreter>,
+        BlockT: Block,
+        TxT: Transaction + Clone,
+        CfgT: Cfg,
+    {
+        commit_transaction(self, env, inspector)?;
+        self.method_with_inspector_counter += 1;
+        Ok(())
+    }
+
+    fn method_that_constructs_inspector<BlockT, TxT, CfgT>(
+        &mut self,
+        env: Env<BlockT, TxT, CfgT>,
+    ) -> anyhow::Result<()>
+    where
+        BlockT: Block,
+        TxT: Transaction + Clone,
+        CfgT: Cfg,
+    {
+        let inspector = TracerEip3155::new(Box::new(std::io::sink()));
+        commit_transaction(self, env, inspector)?;
+
+        self.method_without_inspector_counter += 1;
+        Ok(())
+    }
+}
+
+/// An REVM inspector that intercepts calls to the cheatcode address and executes them with the help of the
+/// `DatabaseExt` trait.
+#[derive(Clone, Default)]
+struct Cheatcodes<BlockT, TxT, CfgT> {
+    call_count: usize,
+    phantom: core::marker::PhantomData<(BlockT, TxT, CfgT)>,
+}
+
+impl<BlockT, TxT, CfgT> Cheatcodes<BlockT, TxT, CfgT>
+where
+    BlockT: Block + Clone,
+    TxT: Transaction + Clone,
+    CfgT: Cfg + Clone,
+{
+    fn apply_cheatcode(
+        &mut self,
+        context: &mut Context<BlockT, TxT, CfgT, InMemoryDB, Backend>,
+    ) -> anyhow::Result<()> {
+        // We cannot avoid cloning here, because we need to mutably borrow the context to get the journal.
+        let block = context.block.clone();
+        let tx = context.tx.clone();
+        let cfg = context.cfg.clone();
+
+        // `transact` cheatcode would do this
+        context
+            .journal_mut()
+            .method_that_takes_inspector_as_argument(
+                Env {
+                    block: block.clone(),
+                    tx: tx.clone(),
+                    cfg: cfg.clone(),
+                },
+                self,
+            )?;
+
+        // `rollFork(bytes32 transaction)` cheatcode would do this
+        context
+            .journal_mut()
+            .method_that_constructs_inspector(Env { block, tx, cfg })?;
+        Ok(())
+    }
+}
+
+impl<BlockT, TxT, CfgT> Inspector<Context<BlockT, TxT, CfgT, InMemoryDB, Backend>>
+    for Cheatcodes<BlockT, TxT, CfgT>
+where
+    BlockT: Block + Clone,
+    TxT: Transaction + Clone,
+    CfgT: Cfg + Clone,
+{
+    /// Note that precompiles are no longer accessible via `EvmContext::precompiles`.
+    fn call(
+        &mut self,
+        context: &mut Context<BlockT, TxT, CfgT, InMemoryDB, Backend>,
+        _inputs: &mut CallInputs,
+    ) -> Option<CallOutcome> {
+        self.call_count += 1;
+        // Don't apply cheatcodes recursively.
+        if self.call_count == 1 {
+            // Instead of calling unwrap here, we would want to return an appropriate call outcome based on the result
+            // in a real project.
+            self.apply_cheatcode(context).unwrap();
+        }
+        None
+    }
+}
+
+/// EVM environment
+#[derive(Clone, Debug)]
+struct Env<BlockT, TxT, CfgT> {
+    block: BlockT,
+    tx: TxT,
+    cfg: CfgT,
+}
+
+impl Env<BlockEnv, TxEnv, CfgEnv> {
+    fn mainnet() -> Self {
+        // `CfgEnv` is non-exhaustive, so we need to set the field after construction.
+        let mut cfg = CfgEnv::default();
+        cfg.disable_nonce_check = true;
+
+        Self {
+            block: BlockEnv::default(),
+            tx: TxEnv::default(),
+            cfg,
+        }
+    }
+}
+
+/// Executes a transaction and runs the inspector using the `Backend` as the state.
+/// Mimics `commit_transaction` <https://github.com/foundry-rs/foundry/blob/25cc1ac68b5f6977f23d713c01ec455ad7f03d21/crates/evm/core/src/backend/mod.rs#L1931>
+fn commit_transaction<InspectorT, BlockT, TxT, CfgT>(
+    backend: &mut Backend,
+    env: Env<BlockT, TxT, CfgT>,
+    inspector: InspectorT,
+) -> Result<(), EVMError<Infallible, InvalidTransaction>>
+where
+    InspectorT: Inspector<Context<BlockT, TxT, CfgT, InMemoryDB, Backend>, EthInterpreter>,
+    BlockT: Block,
+    TxT: Transaction + Clone,
+    CfgT: Cfg,
+{
+    // Create new journaled state and backend with the same DB and journaled state as the original for the transaction.
+    // This new backend and state will be discarded after the transaction is done and the changes are applied to the
+    // original backend.
+    // Mimics https://github.com/foundry-rs/foundry/blob/25cc1ac68b5f6977f23d713c01ec455ad7f03d21/crates/evm/core/src/backend/mod.rs#L1950-L1953
+    let new_backend = backend.clone();
+    let tx = env.tx.clone();
+
+    let context = Context {
+        tx: env.tx,
+        block: env.block,
+        cfg: env.cfg,
+        journaled_state: new_backend,
+        chain: (),
+        local: LocalContext::default(),
+        error: Ok(()),
+    };
+
+    let mut evm = Evm::new_with_inspector(
+        context,
+        inspector,
+        EthInstructions::new_mainnet_with_spec(SpecId::default()),
+        EthPrecompiles::new(SpecId::default()),
+    );
+
+    let state = evm.inspect_tx(tx)?.state;
+
+    // Persist the changes to the original backend.
+    backend.journaled_state.database.commit(state);
+    update_state(
+        &mut backend.journaled_state.inner.state,
+        &mut backend.journaled_state.database,
+    )?;
+
+    Ok(())
+}
+
+/// Mimics <https://github.com/foundry-rs/foundry/blob/25cc1ac68b5f6977f23d713c01ec455ad7f03d21/crates/evm/core/src/backend/mod.rs#L1968>
+/// Omits persistent accounts (accounts that should be kept persistent when switching forks) for simplicity.
+fn update_state<DB: Database>(state: &mut EvmState, db: &mut DB) -> Result<(), DB::Error> {
+    for (addr, acc) in state.iter_mut() {
+        acc.info = db.basic(*addr)?.unwrap_or_default();
+        for (key, val) in acc.storage.iter_mut() {
+            val.present_value = db.storage(*addr, *key)?;
+        }
+    }
+
+    Ok(())
+}
+
+fn main() -> anyhow::Result<()> {
+    let backend = Backend::new(SpecId::default(), InMemoryDB::default());
+    let mut inspector = Cheatcodes::<BlockEnv, TxEnv, CfgEnv>::default();
+    let env = Env::mainnet();
+    let tx = env.tx.clone();
+
+    let context = Context {
+        tx: env.tx,
+        block: env.block,
+        cfg: env.cfg,
+        journaled_state: backend,
+        chain: (),
+        local: LocalContext::default(),
+        error: Ok(()),
+    };
+
+    let mut evm = Evm::new_with_inspector(
+        context,
+        &mut inspector,
+        EthInstructions::new_mainnet_with_spec(SpecId::default()),
+        EthPrecompiles::new(SpecId::default()),
+    );
+    evm.inspect_tx(tx)?;
+
+    // Sanity check
+    assert_eq!(evm.inspector.call_count, 2);
+    assert_eq!(evm.journaled_state.method_with_inspector_counter, 1);
+    assert_eq!(evm.journaled_state.method_without_inspector_counter, 1);
+
+    Ok(())
+}
