@@ -87,11 +87,21 @@ start a new login shell.
 
 ## CI status
 
-The root [Bazel workflow](.github/workflows/bazel.yml) is manual-only
-(`workflow_dispatch`): launch it with GitHub Actions' **Run workflow** button.
-It checks generated files, builds `//...` and tests `//...`; pushes and pull
-requests do not trigger it automatically. Automatic CI is deferred until an
-adequately provisioned runner is configured for the full monorepo build.
+The root [Bazel workflow](.github/workflows/bazel.yml) checks pull requests and
+pushes to `main`. Its **generated files** job checks that Cargo and Bazel pin
+the same Rust version, runs the generator tests, and verifies generated files
+and Cargo lockfile alignment. It uses the repository's pinned Rust toolchain
+on a self-hosted Linux runner; it does not compile the Rust crates. Both jobs
+target the `self-hosted` and `linux` runner labels. The lightweight checks
+require Git, Python 3.11+ and Rustup on the runner's `PATH`; Rustup installs the
+toolchain selected by `rust-toolchain.toml`.
+
+GitHub Actions' **Run workflow** button runs these lightweight checks too.
+The optional **full_build** input additionally builds `//...` and tests `//...`
+after the checks pass, on a self-hosted Linux runner as well. Before enabling
+it, ensure that runner has roughly 16 cores, 32 GiB RAM and 40 GiB disk, plus
+the host prerequisites described in [the build guide](bazel/README.md#hermeticity).
+Full builds are not part of automatic CI yet.
 
 ## Layout
 

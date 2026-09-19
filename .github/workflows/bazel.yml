@@ -1,25 +1,55 @@
-# Builds and tests the monorepo with Bazel. See README.md and bazel/README.md.
+# Checks the Cargo-to-Bazel metadata on every PR and push to main.
 #
-# Manual for now: a full build of reth needs ~16 cores, 32 GiB RAM and ~40 GiB
-# of disk (LLVM toolchain + outputs), more than GitHub's hosted runners have.
-# Point `runs-on` at a large runner and enable pull_request/push triggers once
-# one is available.
+# Both jobs use a self-hosted Linux runner. Full builds remain opt-in and
+# need ~16 cores, 32 GiB RAM and ~40 GiB of disk.
+# See README.md and bazel/README.md for runner prerequisites.
 
 name: bazel
 
 on:
+  pull_request:
+  push:
+    branches: [main]
   workflow_dispatch:
+    inputs:
+      full_build:
+        description: Build and test the full monorepo (requires a large runner)
+        type: boolean
+        default: false
 
 concurrency:
-  group: ${{ github.workflow }}-${{ github.head_ref || github.run_id }}
+  group: ${{ github.workflow }}-${{ github.event_name }}-${{ github.ref }}
   cancel-in-progress: true
 
 permissions: {}
 
 jobs:
+  generated:
+    name: generated files
+    runs-on: [self-hosted, linux]
+    permissions:
+      contents: read
+    timeout-minutes: 20
+    env:
+      PYTHONDONTWRITEBYTECODE: "1"
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+      - name: Rust toolchain pins agree
+        run: python3 bazel/rust_toolchain_test.py MODULE.bazel rust-toolchain.toml
+      - name: Install pinned Rust toolchain
+        run: rustup toolchain install --no-self-update
+      - name: Generator tests
+        run: python3 -m unittest discover -s bazel -p 'test_*.py'
+      - name: Generated files are up to date
+        run: python3 bazel/generate.py --check
+
   bazel:
     name: build and test
-    runs-on: ubuntu-latest
+    if: github.event_name == 'workflow_dispatch' && inputs.full_build
+    needs: generated
+    runs-on: [self-hosted, linux]
     permissions:
       contents: read
     timeout-minutes: 120
@@ -33,10 +63,6 @@ jobs:
           bazelisk-cache: true
           disk-cache: ${{ github.workflow }}
           repository-cache: true
-      - name: Generated files are up to date
-        run: |
-          python3 -m unittest discover -s bazel -p 'test_*.py'
-          python3 bazel/generate.py --check
       - name: Build
         run: bazel build --config=ci //...
       - name: Test
