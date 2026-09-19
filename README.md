@@ -101,6 +101,10 @@ and `bazel test --config=ci //...` on a self-hosted Linux runner. This runs on
 every pull request and push to `main`, and through GitHub Actions' **Run workflow**
 button. The runner needs roughly 16 cores, 32 GiB RAM and 40 GiB disk, plus
 the host prerequisites described in [the build guide](bazel/README.md#hermeticity).
+The full job installs missing native build packages with `apt-get` on the
+Ubuntu/Debian runner, including the C development files needed by the pinned
+LLVM toolchain. This requires passwordless sudo unless the packages are already
+installed. Rust and Bazelisk are installed by their setup actions.
 Tests tagged `manual` remain excluded from `//...`; see the documented
 [opt-in suites](bazel/README.md#opt-in-test-suites).
 
