@@ -59,7 +59,7 @@ jobs:
       - name: Install native build prerequisites
         run: |
           missing=()
-          for package in build-essential pkg-config autoconf automake libtool cmake patch unzip xz-utils zstd; do
+          for package in build-essential pkg-config libssl-dev autoconf automake libtool cmake patch unzip xz-utils zstd; do
             if [[ "$(dpkg-query -W -f='${Status}' "$package" 2>/dev/null || true)" != 'install ok installed' ]]; then
               missing+=("$package")
             fi
@@ -79,6 +79,6 @@ jobs:
           free -h
           df -h "$GITHUB_WORKSPACE"
       - name: Build
-        run: bazel build --config=ci //...
+        run: bazel build --config=ci --experimental_ui_max_stdouterr_bytes=10485760 //...
       - name: Test
         run: bazel test --config=ci //...
