@@ -37,9 +37,14 @@ jobs:
         with:
           persist-credentials: false
       - name: Rust toolchain pins agree
-        run: python3 bazel/rust_toolchain_test.py MODULE.bazel rust-toolchain.toml
+        id: rust
+        run: |
+          python3 bazel/rust_toolchain_test.py MODULE.bazel rust-toolchain.toml
+          python3 -c 'import tomllib; print("toolchain=" + tomllib.load(open("rust-toolchain.toml", "rb"))["toolchain"]["channel"])' >> "$GITHUB_OUTPUT"
       - name: Install pinned Rust toolchain
-        run: rustup toolchain install --no-self-update
+        uses: dtolnay/rust-toolchain@6bed0761d98439e5a578e2877258200ad565ba87
+        with:
+          toolchain: ${{ steps.rust.outputs.toolchain }}
       - name: Generator tests
         run: python3 -m unittest discover -s bazel -p 'test_*.py'
       - name: Generated files are up to date

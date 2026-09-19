@@ -93,8 +93,8 @@ the same Rust version, runs the generator tests, and verifies generated files
 and Cargo lockfile alignment. It uses the repository's pinned Rust toolchain
 on a self-hosted Linux runner; it does not compile the Rust crates. Both jobs
 target the `self-hosted` and `linux` runner labels. The lightweight checks
-require Git, Python 3.11+ and Rustup on the runner's `PATH`; Rustup installs the
-toolchain selected by `rust-toolchain.toml`.
+require Git, Python 3.11+, Bash and curl on the runner's `PATH`; the Rust setup
+action installs Rustup if needed and the toolchain selected by `rust-toolchain.toml`.
 
 GitHub Actions' **Run workflow** button runs these lightweight checks too.
 The optional **full_build** input additionally builds `//...` and tests `//...`
