@@ -1,0 +1,24 @@
+# GENERATED FILE - DO NOT EDIT. Regenerate with `python3 bazel/generate.py`.
+#
+# Bazel-only derivation of `revm/examples/custom_opcodes/Cargo.toml`: the same
+# package as `cargo metadata` describes it in the revm workspace, with
+# workspace inheritance resolved. Cargo builds are unaffected.
+
+[package]
+name = "example-custom-opcodes"
+version = "0.0.0"
+edition = "2021"
+rust-version = "1.91.0"
+build = false
+autolib = false
+autobins = false
+autoexamples = false
+autotests = false
+autobenches = false
+
+[[bin]]
+name = "example-custom-opcodes"
+path = "src/main.rs"
+
+[dependencies]
+revm = { path = "../../crates/revm", features = ["std", "tracer"], default-features = false }

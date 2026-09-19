@@ -1,0 +1,46 @@
+# GENERATED FILE - DO NOT EDIT.
+#
+# Regenerate with `python3 bazel/generate.py` after changing Cargo.toml.
+
+load("//bazel:rust.bzl", "crate_binary", "crate_cargo_toml_env_vars", "crate_library", "crate_unit_test")
+load("//revm/bazel:workspace.bzl", "WORKSPACE")
+
+FEATURES = []
+
+DECLARED_FEATURES = [
+    "asyncdb",
+]
+
+crate_cargo_toml_env_vars(WORKSPACE)
+
+crate_library(
+    name = "example_my_evm",
+    workspace = WORKSPACE,
+    version = "0.0.0",
+    crate_features = FEATURES,
+    declared_features = DECLARED_FEATURES,
+    deps = [
+        "//revm/crates/revm:revm",
+    ],
+)
+
+crate_binary(
+    name = "example-my-evm",
+    workspace = WORKSPACE,
+    version = "0.0.0",
+    crate_features = FEATURES,
+    declared_features = DECLARED_FEATURES,
+    deps = [
+        "//revm/crates/revm:revm",
+        ":example_my_evm",
+    ],
+)
+
+crate_unit_test(
+    name = "example_my_evm_test",
+    workspace = WORKSPACE,
+    version = "0.0.0",
+    crate = ":example_my_evm",
+    crate_features = FEATURES,
+    declared_features = DECLARED_FEATURES,
+)

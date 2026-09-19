@@ -1,0 +1,55 @@
+# GENERATED FILE - DO NOT EDIT.
+#
+# Regenerate with `python3 bazel/generate.py` after changing Cargo.toml.
+
+load("//bazel:rust.bzl", "crate_cargo_toml_env_vars", "crate_library", "crate_unit_test")
+load("//revm/bazel:workspace.bzl", "WORKSPACE")
+
+FEATURES = [
+    "default",
+    "map-foldhash",
+    "serde",
+    "std",
+]
+
+DECLARED_FEATURES = [
+    "default",
+    "map-foldhash",
+    "serde",
+    "std",
+]
+
+crate_cargo_toml_env_vars(WORKSPACE)
+
+crate_library(
+    name = "revm_state",
+    workspace = WORKSPACE,
+    version = "43.0.0",
+    crate_features = FEATURES,
+    declared_features = DECLARED_FEATURES,
+    deps = [
+        "//alloy-eips/crates/eip7928:alloy_eip7928",
+        "//revm/crates/bytecode:revm_bytecode",
+        "//revm/crates/primitives:revm_primitives",
+        "@crates//:bitflags",
+        "@crates//:nonmax",
+        "@crates//:serde",
+    ],
+    aliases = {
+        "//revm/crates/bytecode:revm_bytecode": "bytecode",
+        "//revm/crates/primitives:revm_primitives": "primitives",
+    },
+)
+
+crate_unit_test(
+    name = "revm_state_test",
+    workspace = WORKSPACE,
+    version = "43.0.0",
+    crate = ":revm_state",
+    crate_features = FEATURES,
+    declared_features = DECLARED_FEATURES,
+    deps = [
+        "@crates//:postcard",
+        "@crates//:serde_json",
+    ],
+)

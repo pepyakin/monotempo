@@ -1,0 +1,88 @@
+# GENERATED FILE - DO NOT EDIT.
+#
+# Regenerate with `python3 bazel/generate.py` after changing Cargo.toml.
+
+load("//bazel:rust.bzl", "crate_binary", "crate_cargo_toml_env_vars", "crate_library", "crate_unit_test")
+load("//revm/bazel:workspace.bzl", "WORKSPACE")
+
+FEATURES = [
+    "default",
+    "map-foldhash",
+]
+
+DECLARED_FEATURES = [
+    "default",
+    "gmp",
+    "map-foldhash",
+    "p256-aws-lc-rs",
+]
+
+crate_cargo_toml_env_vars(WORKSPACE)
+
+crate_library(
+    name = "revme_lib",
+    crate_name = "revme",
+    workspace = WORKSPACE,
+    version = "43.0.2",
+    crate_features = FEATURES,
+    declared_features = DECLARED_FEATURES,
+    workspace_lints = False,
+    deps = [
+        "//alloy-core/crates/sol-types:alloy_sol_types",
+        "//alloy-rlp/crates/rlp:alloy_rlp",
+        "//alloy-trie:alloy_trie",
+        "//alloy/crates/consensus:alloy_consensus",
+        "//revm/crates/revm:revm",
+        "@crates//:clap",
+        "@crates//:codspeed-criterion-compat-5.0.2",
+        "@crates//:csv",
+        "@crates//:indicatif",
+        "@crates//:k256",
+        "@crates//:serde",
+        "@crates//:serde_json",
+        "@crates//:thiserror",
+        "@crates//:walkdir",
+    ],
+    aliases = {
+        "@crates//:codspeed-criterion-compat-5.0.2": "criterion",
+    },
+)
+
+crate_binary(
+    name = "revme",
+    workspace = WORKSPACE,
+    version = "43.0.2",
+    crate_features = FEATURES,
+    declared_features = DECLARED_FEATURES,
+    workspace_lints = False,
+    deps = [
+        "//alloy-core/crates/sol-types:alloy_sol_types",
+        "//alloy-rlp/crates/rlp:alloy_rlp",
+        "//alloy-trie:alloy_trie",
+        "//alloy/crates/consensus:alloy_consensus",
+        "//revm/crates/revm:revm",
+        ":revme_lib",
+        "@crates//:clap",
+        "@crates//:codspeed-criterion-compat-5.0.2",
+        "@crates//:csv",
+        "@crates//:indicatif",
+        "@crates//:k256",
+        "@crates//:serde",
+        "@crates//:serde_json",
+        "@crates//:thiserror",
+        "@crates//:walkdir",
+    ],
+    aliases = {
+        "@crates//:codspeed-criterion-compat-5.0.2": "criterion",
+    },
+)
+
+crate_unit_test(
+    name = "revme_test",
+    workspace = WORKSPACE,
+    version = "43.0.2",
+    crate = ":revme_lib",
+    crate_features = FEATURES,
+    declared_features = DECLARED_FEATURES,
+    workspace_lints = False,
+)

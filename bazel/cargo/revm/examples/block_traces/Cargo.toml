@@ -1,0 +1,30 @@
+# GENERATED FILE - DO NOT EDIT. Regenerate with `python3 bazel/generate.py`.
+#
+# Bazel-only derivation of `revm/examples/block_traces/Cargo.toml`: the same
+# package as `cargo metadata` describes it in the revm workspace, with
+# workspace inheritance resolved. Cargo builds are unaffected.
+
+[package]
+name = "example-block-traces"
+version = "0.0.0"
+edition = "2021"
+rust-version = "1.91.0"
+build = false
+autolib = false
+autobins = false
+autoexamples = false
+autotests = false
+autobenches = false
+
+[[bin]]
+name = "example-block-traces"
+path = "src/main.rs"
+
+[dependencies]
+alloy-consensus = { version = "^2.0.0", default-features = false }
+alloy-eips = { version = "^2.0.0", default-features = false }
+alloy-provider = { version = "^2.0.0" }
+anyhow = { version = "^1.0" }
+indicatif = { version = "^0.18" }
+revm = { path = "../../crates/revm", features = ["std", "alloydb", "tracer"], default-features = false }
+tokio = { version = "^1.47", features = ["rt-multi-thread", "macros"] }

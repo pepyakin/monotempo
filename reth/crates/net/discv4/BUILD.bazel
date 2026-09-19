@@ -58,9 +58,9 @@ crate_unit_test(
     deps = [
         "//reth/crates/tracing:reth_tracing",
         "@crates//:assert_matches",
-        "@crates//:codspeed-criterion-compat",
+        "@crates//:codspeed-criterion-compat-4.7.0",
     ],
     aliases = {
-        "@crates//:codspeed-criterion-compat": "criterion",
+        "@crates//:codspeed-criterion-compat-4.7.0": "criterion",
     },
 )

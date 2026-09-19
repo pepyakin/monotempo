@@ -1,5 +1,5 @@
 {
-  "checksum": "110f6979b14b4d152cffa3599fc87e40b9165177f75d23828731c7dc4aa26dd5",
+  "checksum": "5633584d67ac619cd16583a07832b3d6a24011683f100d1a1b7dc3cc4b911441",
   "conditions": {
     "aarch64-apple-darwin": [
       "aarch64-apple-darwin"
@@ -1847,10 +1847,6 @@
           {
             "id": "derive_more 2.1.1",
             "target": "derive_more"
-          },
-          {
-            "id": "revm 43.0.2",
-            "target": "revm"
           },
           {
             "id": "thiserror 2.0.20",
@@ -4677,7 +4673,7 @@
           "selects": {
             "cfg(windows)": [
               {
-                "id": "windows-sys 0.60.2",
+                "id": "windows-sys 0.61.2",
                 "target": "windows_sys"
               }
             ]
@@ -4777,7 +4773,7 @@
                 "target": "once_cell_polyfill"
               },
               {
-                "id": "windows-sys 0.60.2",
+                "id": "windows-sys 0.61.2",
                 "target": "windows_sys"
               }
             ]
@@ -12787,6 +12783,89 @@
       ],
       "version": "4.7.0"
     },
+    "codspeed 5.0.2": {
+      "build_script_attrs": {
+        "deps": [
+          {
+            "id": "cc 1.4.5",
+            "target": "cc"
+          }
+        ]
+      },
+      "common_attrs": {
+        "deps": [
+          {
+            "id": "anyhow 1.0.104",
+            "target": "anyhow"
+          },
+          {
+            "id": "colored 3.1.1",
+            "target": "colored"
+          },
+          {
+            "id": "getrandom 0.4.3",
+            "target": "getrandom"
+          },
+          {
+            "id": "glob 0.3.3",
+            "target": "glob"
+          },
+          {
+            "id": "libc 0.2.189",
+            "target": "libc"
+          },
+          {
+            "id": "nix 0.31.2",
+            "target": "nix"
+          },
+          {
+            "id": "serde 1.0.229",
+            "target": "serde"
+          },
+          {
+            "id": "serde_json 1.0.151",
+            "target": "serde_json"
+          },
+          {
+            "id": "statrs 0.18.0",
+            "target": "statrs"
+          }
+        ],
+        "edition": "2021",
+        "extra_deps": [
+          ":build_script_build"
+        ]
+      },
+      "library_target_name": "codspeed",
+      "license": "MIT OR Apache-2.0",
+      "license_ids": [
+        "Apache-2.0",
+        "MIT"
+      ],
+      "name": "codspeed",
+      "package_url": "https://github.com/CodSpeedHQ/codspeed-rust",
+      "repository": {
+        "Http": {
+          "sha256": "c0379da47d0de730b2f7900e3f2d9c3b5efc21b46875282305300b4851f03e70",
+          "url": "https://static.crates.io/crates/codspeed/5.0.2/download"
+        }
+      },
+      "targets": [
+        {
+          "Library": {
+            "crate_name": "codspeed",
+            "crate_root": "src/lib.rs"
+          }
+        },
+        {
+          "BuildScript": {
+            "crate_name": "build_script_build",
+            "crate_root": "build.rs"
+          }
+        }
+      ],
+      "version": "5.0.2"
+    },
     "codspeed-criterion-compat 4.7.0": {
       "build_script_attrs": {},
       "common_attrs": {
@@ -12853,6 +12932,73 @@
         }
       ],
       "version": "4.7.0"
+    },
+    "codspeed-criterion-compat 5.0.2": {
+      "build_script_attrs": {},
+      "common_attrs": {
+        "crate_features": [
+          "cargo_bench_support",
+          "default",
+          "plotters",
+          "rayon"
+        ],
+        "deps": [
+          {
+            "id": "clap 4.6.6",
+            "target": "clap"
+          },
+          {
+            "id": "codspeed 5.0.2",
+            "target": "codspeed"
+          },
+          {
+            "alias": "criterion",
+            "id": "codspeed-criterion-compat-walltime 5.0.2",
+            "target": "codspeed_criterion_compat_walltime"
+          },
+          {
+            "id": "colored 3.1.1",
+            "target": "colored"
+          },
+          {
+            "id": "regex 1.12.3",
+            "target": "regex"
+          }
+        ],
+        "edition": "2021",
+        "extra_deps": [
+          ":build_script_build"
+        ]
+      },
+      "library_target_name": "codspeed_criterion_compat",
+      "license": "MIT OR Apache-2.0",
+      "license_ids": [
+        "Apache-2.0",
+        "MIT"
+      ],
+      "name": "codspeed-criterion-compat",
+      "package_url": "https://github.com/CodSpeedHQ/codspeed-rust",
+      "repository": {
+        "Http": {
+          "sha256": "65f64942456bd4514b06ba4c72623bf197931d05d3d1db61b8a0c6289b30b2c7",
+          "url": "https://static.crates.io/crates/codspeed-criterion-compat/5.0.2/download"
+        }
+      },
+      "targets": [
+        {
+          "Library": {
+            "crate_name": "codspeed_criterion_compat",
+            "crate_root": "src/lib.rs"
+          }
+        },
+        {
+          "BuildScript": {
+            "crate_name": "build_script_build",
+            "crate_root": "build.rs"
+          }
+        }
+      ],
+      "version": "5.0.2"
     },
     "codspeed-criterion-compat-walltime 4.7.0": {
       "common_attrs": {
@@ -12967,6 +13113,120 @@
         }
       ],
       "version": "4.7.0"
+    },
+    "codspeed-criterion-compat-walltime 5.0.2": {
+      "common_attrs": {
+        "crate_features": [
+          "cargo_bench_support",
+          "plotters",
+          "rayon"
+        ],
+        "deps": [
+          {
+            "id": "anes 0.1.6",
+            "target": "anes"
+          },
+          {
+            "id": "cast 0.3.0",
+            "target": "cast"
+          },
+          {
+            "id": "ciborium 0.2.2",
+            "target": "ciborium"
+          },
+          {
+            "id": "clap 4.6.6",
+            "target": "clap"
+          },
+          {
+            "id": "codspeed 5.0.2",
+            "target": "codspeed"
+          },
+          {
+            "id": "criterion-plot 0.5.0",
+            "target": "criterion_plot"
+          },
+          {
+            "id": "is-terminal 0.4.17",
+            "target": "is_terminal"
+          },
+          {
+            "id": "itertools 0.10.5",
+            "target": "itertools"
+          },
+          {
+            "id": "num-traits 0.2.19",
+            "target": "num_traits"
+          },
+          {
+            "id": "once_cell 1.21.4",
+            "target": "once_cell"
+          },
+          {
+            "id": "oorandom 11.1.5",
+            "target": "oorandom"
+          },
+          {
+            "id": "plotters 0.3.7",
+            "target": "plotters"
+          },
+          {
+            "id": "rayon 1.12.0",
+            "target": "rayon"
+          },
+          {
+            "id": "regex 1.12.3",
+            "target": "regex"
+          },
+          {
+            "id": "serde 1.0.229",
+            "target": "serde"
+          },
+          {
+            "id": "serde_json 1.0.151",
+            "target": "serde_json"
+          },
+          {
+            "id": "tinytemplate 1.2.1",
+            "target": "tinytemplate"
+          },
+          {
+            "id": "walkdir 2.5.0",
+            "target": "walkdir"
+          }
+        ],
+        "edition": "2018",
+        "proc_macro_deps": [
+          {
+            "id": "serde_derive 1.0.229",
+            "target": "serde_derive"
+          }
+        ]
+      },
+      "library_target_name": "codspeed_criterion_compat_walltime",
+      "license": "Apache-2.0 OR MIT",
+      "license_file": "LICENSE-APACHE",
+      "license_ids": [
+        "Apache-2.0",
+        "MIT"
+      ],
+      "name": "codspeed-criterion-compat-walltime",
+      "package_url": "https://github.com/CodSpeedHQ/codspeed-rust",
+      "repository": {
+        "Http": {
+          "sha256": "e86691354129085562c025293f9e8b35bf9054813bb9981be3a96aa8490c07d1",
+          "url": "https://static.crates.io/crates/codspeed-criterion-compat-walltime/5.0.2/download"
+        }
+      },
+      "targets": [
+        {
+          "Library": {
+            "crate_name": "codspeed_criterion_compat_walltime",
+            "crate_root": "src/lib.rs"
+          }
+        }
+      ],
+      "version": "5.0.2"
     },
     "coins-bip32 0.12.0": {
       "common_attrs": {
@@ -13324,7 +13584,7 @@
           "selects": {
             "cfg(windows)": [
               {
-                "id": "windows-sys 0.48.0",
+                "id": "windows-sys 0.59.0",
                 "target": "windows_sys"
               }
             ]
@@ -13355,6 +13615,45 @@
         }
       ],
       "version": "2.2.0"
+    },
+    "colored 3.1.1": {
+      "common_attrs": {
+        "deps": {
+          "common": [],
+          "selects": {
+            "cfg(windows)": [
+              {
+                "id": "windows-sys 0.61.2",
+                "target": "windows_sys"
+              }
+            ]
+          }
+        },
+        "edition": "2021"
+      },
+      "library_target_name": "colored",
+      "license": "MPL-2.0",
+      "license_file": "LICENSE",
+      "license_ids": [
+        "MPL-2.0"
+      ],
+      "name": "colored",
+      "package_url": "https://github.com/mackwic/colored",
+      "repository": {
+        "Http": {
+          "sha256": "faf9468729b8cbcea668e36183cb69d317348c2e08e994829fb56ebfdfbaac34",
+          "url": "https://static.crates.io/crates/colored/3.1.1/download"
+        }
+      },
+      "targets": [
+        {
+          "Library": {
+            "crate_name": "colored",
+            "crate_root": "src/lib.rs"
+          }
+        }
+      ],
+      "version": "3.1.1"
     },
     "combine 4.6.7": {
       "common_attrs": {
@@ -16000,6 +16299,72 @@
       ],
       "version": "0.8.7"
     },
+    "corosensei 0.3.4": {
+      "build_script_attrs": {
+        "deps": [
+          {
+            "id": "autocfg 1.5.0",
+            "target": "autocfg"
+          }
+        ]
+      },
+      "common_attrs": {
+        "crate_features": [
+          "default-stack",
+          "libc",
+          "unwind",
+          "windows-sys"
+        ],
+        "deps": [
+          {
+            "id": "cfg-if 1.0.4",
+            "target": "cfg_if"
+          },
+          {
+            "id": "libc 0.2.189",
+            "target": "libc"
+          },
+          {
+            "id": "scopeguard 1.2.0",
+            "target": "scopeguard"
+          }
+        ],
+        "edition": "2021",
+        "extra_deps": [
+          ":build_script_build"
+        ]
+      },
+      "library_target_name": "corosensei",
+      "license": "MIT OR Apache-2.0",
+      "license_file": "LICENSE-APACHE",
+      "license_ids": [
+        "Apache-2.0",
+        "MIT"
+      ],
+      "name": "corosensei",
+      "package_url": "https://github.com/Amanieu/corosensei",
+      "repository": {
+        "Http": {
+          "sha256": "6886a0c0f263965933c438626e7179139a62b978a33aa18281cbf0cd5a975f34",
+          "url": "https://static.crates.io/crates/corosensei/0.3.4/download"
+        }
+      },
+      "targets": [
+        {
+          "Library": {
+            "crate_name": "corosensei",
+            "crate_root": "src/lib.rs"
+          }
+        },
+        {
+          "BuildScript": {
+            "crate_name": "build_script_build",
+            "crate_root": "build.rs"
+          }
+        }
+      ],
+      "version": "0.3.4"
+    },
     "cow-utils 0.1.3": {
       "common_attrs": {
         "crate_features": [
@@ -17297,6 +17662,91 @@
       ],
       "version": "0.2.2"
     },
+    "csv 1.4.0": {
+      "common_attrs": {
+        "deps": [
+          {
+            "id": "csv-core 0.1.13",
+            "target": "csv_core"
+          },
+          {
+            "id": "itoa 1.0.18",
+            "target": "itoa"
+          },
+          {
+            "id": "ryu 1.0.23",
+            "target": "ryu"
+          },
+          {
+            "id": "serde_core 1.0.229",
+            "target": "serde_core"
+          }
+        ],
+        "edition": "2021"
+      },
+      "library_target_name": "csv",
+      "license": "Unlicense/MIT",
+      "license_file": "LICENSE-MIT",
+      "license_ids": [
+        "MIT",
+        "Unlicense"
+      ],
+      "name": "csv",
+      "package_url": "https://github.com/BurntSushi/rust-csv",
+      "repository": {
+        "Http": {
+          "sha256": "52cd9d68cf7efc6ddfaaee42e7288d3a99d613d4b50f76ce9827ae0c6e14f938",
+          "url": "https://static.crates.io/crates/csv/1.4.0/download"
+        }
+      },
+      "targets": [
+        {
+          "Library": {
+            "crate_name": "csv",
+            "crate_root": "src/lib.rs"
+          }
+        }
+      ],
+      "version": "1.4.0"
+    },
+    "csv-core 0.1.13": {
+      "common_attrs": {
+        "crate_features": [
+          "default"
+        ],
+        "deps": [
+          {
+            "id": "memchr 2.8.0",
+            "target": "memchr"
+          }
+        ],
+        "edition": "2018"
+      },
+      "library_target_name": "csv_core",
+      "license": "Unlicense/MIT",
+      "license_file": "LICENSE-MIT",
+      "license_ids": [
+        "MIT",
+        "Unlicense"
+      ],
+      "name": "csv-core",
+      "package_url": "https://github.com/BurntSushi/rust-csv",
+      "repository": {
+        "Http": {
+          "sha256": "704a3c26996a80471189265814dbc2c257598b96b8a7feae2d31ace646bb9782",
+          "url": "https://static.crates.io/crates/csv-core/0.1.13/download"
+        }
+      },
+      "targets": [
+        {
+          "Library": {
+            "crate_name": "csv_core",
+            "crate_root": "src/lib.rs"
+          }
+        }
+      ],
+      "version": "0.1.13"
+    },
     "ct-codecs 1.1.6": {
       "common_attrs": {
         "crate_features": [
@@ -18095,7 +18545,7 @@
             "target": "data_encoding"
           },
           {
-            "id": "syn 1.0.109",
+            "id": "syn 2.0.119",
             "target": "syn"
           }
         ],
@@ -19967,10 +20417,6 @@
             "target": "rayon"
           },
           {
-            "id": "revm 43.0.2",
-            "target": "revm"
-          },
-          {
             "id": "serde 1.0.229",
             "target": "serde"
           },
@@ -20655,7 +21101,7 @@
             ],
             "cfg(windows)": [
               {
-                "id": "windows-sys 0.59.0",
+                "id": "windows-sys 0.61.2",
                 "target": "windows_sys"
               }
             ]
@@ -21137,6 +21583,21 @@
       ],
       "version": "11.0.0"
     },
+    "example-bal 0.0.0": {
+      "common_attrs": {
+        "deps": [
+          {
+            "id": "anyhow 1.0.104",
+            "target": "anyhow"
+          }
+        ],
+        "edition": "2021"
+      },
+      "name": "example-bal",
+      "repository": null,
+      "targets": [],
+      "version": "0.0.0"
+    },
     "example-beacon-api-sidecar-fetcher 0.1.0": {
       "common_attrs": {
         "deps": [
@@ -21215,6 +21676,29 @@
       "targets": [],
       "version": "0.0.0"
     },
+    "example-block-traces 0.0.0": {
+      "common_attrs": {
+        "deps": [
+          {
+            "id": "anyhow 1.0.104",
+            "target": "anyhow"
+          },
+          {
+            "id": "indicatif 0.18.4",
+            "target": "indicatif"
+          },
+          {
+            "id": "tokio 1.53.1",
+            "target": "tokio"
+          }
+        ],
+        "edition": "2021"
+      },
+      "name": "example-block-traces",
+      "repository": null,
+      "targets": [],
+      "version": "0.0.0"
+    },
     "example-bsc-p2p 0.0.0": {
       "common_attrs": {
         "deps": [
@@ -21264,6 +21748,36 @@
           }
         }
       ],
+      "version": "0.0.0"
+    },
+    "example-cheatcode-inspector 0.0.0": {
+      "common_attrs": {
+        "deps": [
+          {
+            "id": "anyhow 1.0.104",
+            "target": "anyhow"
+          }
+        ],
+        "edition": "2021"
+      },
+      "name": "example-cheatcode-inspector",
+      "repository": null,
+      "targets": [],
+      "version": "0.0.0"
+    },
+    "example-contract-deployment 0.0.0": {
+      "common_attrs": {
+        "deps": [
+          {
+            "id": "anyhow 1.0.104",
+            "target": "anyhow"
+          }
+        ],
+        "edition": "2021"
+      },
+      "name": "example-contract-deployment",
+      "repository": null,
+      "targets": [],
       "version": "0.0.0"
     },
     "example-custom-auth-http-middleware 0.0.0": {
@@ -21423,6 +21937,15 @@
       "targets": [],
       "version": "0.0.0"
     },
+    "example-custom-opcodes 0.0.0": {
+      "common_attrs": {
+        "edition": "2021"
+      },
+      "name": "example-custom-opcodes",
+      "repository": null,
+      "targets": [],
+      "version": "0.0.0"
+    },
     "example-custom-payload-builder 0.0.0": {
       "common_attrs": {
         "deps": [
@@ -21445,6 +21968,29 @@
       "repository": null,
       "targets": [],
       "version": "0.0.0"
+    },
+    "example-custom-precompile-journal 0.1.0": {
+      "common_attrs": {
+        "deps": [
+          {
+            "id": "anyhow 1.0.104",
+            "target": "anyhow"
+          }
+        ],
+        "edition": "2021"
+      },
+      "library_target_name": "example_custom_precompile_journal",
+      "name": "example-custom-precompile-journal",
+      "repository": null,
+      "targets": [
+        {
+          "Library": {
+            "crate_name": "example_custom_precompile_journal",
+            "crate_root": "src/lib.rs"
+          }
+        }
+      ],
+      "version": "0.1.0"
     },
     "example-custom-rlpx-subprotocol 0.0.0": {
       "common_attrs": {
@@ -21527,6 +22073,35 @@
       "targets": [],
       "version": "0.0.0"
     },
+    "example-database-components 0.0.0": {
+      "common_attrs": {
+        "deps": [
+          {
+            "id": "thiserror 2.0.20",
+            "target": "thiserror"
+          }
+        ],
+        "edition": "2021",
+        "proc_macro_deps": [
+          {
+            "id": "auto_impl 1.3.0",
+            "target": "auto_impl"
+          }
+        ]
+      },
+      "library_target_name": "example_database_components",
+      "name": "example-database-components",
+      "repository": null,
+      "targets": [
+        {
+          "Library": {
+            "crate_name": "example_database_components",
+            "crate_root": "src/lib.rs"
+          }
+        }
+      ],
+      "version": "0.0.0"
+    },
     "example-db-access 0.0.0": {
       "common_attrs": {
         "deps": [
@@ -21538,6 +22113,25 @@
         "edition": "2024"
       },
       "name": "example-db-access",
+      "repository": null,
+      "targets": [],
+      "version": "0.0.0"
+    },
+    "example-erc20-gas 0.0.0": {
+      "common_attrs": {
+        "deps": [
+          {
+            "id": "anyhow 1.0.104",
+            "target": "anyhow"
+          },
+          {
+            "id": "tokio 1.53.1",
+            "target": "tokio"
+          }
+        ],
+        "edition": "2021"
+      },
+      "name": "example-erc20-gas",
       "repository": null,
       "targets": [],
       "version": "0.0.0"
@@ -21609,6 +22203,23 @@
       "name": "example-manual-p2p",
       "repository": null,
       "targets": [],
+      "version": "0.0.0"
+    },
+    "example-my-evm 0.0.0": {
+      "common_attrs": {
+        "edition": "2021"
+      },
+      "library_target_name": "example_my_evm",
+      "name": "example-my-evm",
+      "repository": null,
+      "targets": [
+        {
+          "Library": {
+            "crate_name": "example_my_evm",
+            "crate_root": "src/lib.rs"
+          }
+        }
+      ],
       "version": "0.0.0"
     },
     "example-network 0.0.0": {
@@ -21794,6 +22405,44 @@
         "edition": "2024"
       },
       "name": "example-txpool-tracing",
+      "repository": null,
+      "targets": [],
+      "version": "0.0.0"
+    },
+    "example-uniswap-get-reserves 0.0.0": {
+      "common_attrs": {
+        "deps": [
+          {
+            "id": "anyhow 1.0.104",
+            "target": "anyhow"
+          },
+          {
+            "id": "tokio 1.53.1",
+            "target": "tokio"
+          }
+        ],
+        "edition": "2021"
+      },
+      "name": "example-uniswap-get-reserves",
+      "repository": null,
+      "targets": [],
+      "version": "0.0.0"
+    },
+    "example-uniswap-v2-usdc-swap 0.0.0": {
+      "common_attrs": {
+        "deps": [
+          {
+            "id": "anyhow 1.0.104",
+            "target": "anyhow"
+          },
+          {
+            "id": "tokio 1.53.1",
+            "target": "tokio"
+          }
+        ],
+        "edition": "2021"
+      },
+      "name": "example-uniswap-v2-usdc-swap",
       "repository": null,
       "targets": [],
       "version": "0.0.0"
@@ -28725,6 +29374,7 @@
           "colors",
           "console",
           "default",
+          "json",
           "serde",
           "yaml"
         ],
@@ -29170,7 +29820,7 @@
             ],
             "cfg(windows)": [
               {
-                "id": "windows-sys 0.59.0",
+                "id": "windows-sys 0.61.2",
                 "target": "windows_sys"
               }
             ]
@@ -34603,7 +35253,7 @@
             "cfg(windows)": [
               {
                 "alias": "windows",
-                "id": "windows-sys 0.60.2",
+                "id": "windows-sys 0.61.2",
                 "target": "windows_sys"
               }
             ]
@@ -37602,13 +38252,29 @@
     },
     "phf 0.14.0": {
       "common_attrs": {
+        "crate_features": [
+          "macros",
+          "phf_macros",
+          "serde",
+          "std"
+        ],
         "deps": [
           {
             "id": "phf_shared 0.14.0",
             "target": "phf_shared"
+          },
+          {
+            "id": "serde 1.0.229",
+            "target": "serde"
           }
         ],
-        "edition": "2024"
+        "edition": "2024",
+        "proc_macro_deps": [
+          {
+            "id": "phf_macros 0.14.0",
+            "target": "phf_macros"
+          }
+        ]
       },
       "library_target_name": "phf",
       "license": "MIT",
@@ -37846,6 +38512,9 @@
     },
     "phf_shared 0.14.0": {
       "common_attrs": {
+        "crate_features": [
+          "std"
+        ],
         "deps": [
           {
             "id": "siphasher 1.0.2",
@@ -42903,10 +43572,6 @@
             "target": "metrics"
           },
           {
-            "id": "revm 43.0.2",
-            "target": "revm"
-          },
-          {
             "id": "tokio 1.53.1",
             "target": "tokio"
           },
@@ -42957,10 +43622,6 @@
           {
             "id": "rand 0.9.4",
             "target": "rand"
-          },
-          {
-            "id": "revm 43.0.2",
-            "target": "revm"
           },
           {
             "id": "serde 1.0.229",
@@ -44191,10 +44852,6 @@
             "target": "jsonrpsee"
           },
           {
-            "id": "revm 43.0.2",
-            "target": "revm"
-          },
-          {
             "id": "serde_json 1.0.151",
             "target": "serde_json"
           },
@@ -44450,10 +45107,6 @@
           {
             "id": "rayon 1.12.0",
             "target": "rayon"
-          },
-          {
-            "id": "revm 43.0.2",
-            "target": "revm"
           },
           {
             "id": "schnellru 0.2.4",
@@ -45133,10 +45786,6 @@
       "common_attrs": {
         "deps": [
           {
-            "id": "revm 43.0.2",
-            "target": "revm"
-          },
-          {
             "id": "tracing 0.1.44",
             "target": "tracing"
           }
@@ -45269,10 +45918,6 @@
           {
             "id": "rayon 1.12.0",
             "target": "rayon"
-          },
-          {
-            "id": "revm 43.0.2",
-            "target": "revm"
           }
         ],
         "edition": "2024",
@@ -45302,12 +45947,6 @@
           "default",
           "std",
           "test-utils"
-        ],
-        "deps": [
-          {
-            "id": "revm 43.0.2",
-            "target": "revm"
-          }
         ],
         "deps_dev": [
           {
@@ -45351,12 +45990,6 @@
           {
             "id": "tracing 0.1.44",
             "target": "tracing"
-          }
-        ],
-        "deps_dev": [
-          {
-            "id": "revm 43.0.2",
-            "target": "revm"
           }
         ],
         "edition": "2024"
@@ -45419,10 +46052,6 @@
           {
             "id": "derive_more 2.1.1",
             "target": "derive_more"
-          },
-          {
-            "id": "revm 43.0.2",
-            "target": "revm"
           },
           {
             "id": "serde 1.0.229",
@@ -45670,10 +46299,6 @@
           {
             "id": "pretty_assertions 1.4.1",
             "target": "pretty_assertions"
-          },
-          {
-            "id": "revm 43.0.2",
-            "target": "revm"
           },
           {
             "id": "serde 1.0.229",
@@ -46700,10 +47325,6 @@
             "target": "jsonrpsee"
           },
           {
-            "id": "revm 43.0.2",
-            "target": "revm"
-          },
-          {
             "id": "serde 1.0.229",
             "target": "serde"
           },
@@ -47229,18 +47850,6 @@
             "target": "rayon"
           },
           {
-            "id": "revm-bytecode 43.0.0",
-            "target": "revm_bytecode"
-          },
-          {
-            "id": "revm-primitives 43.0.0",
-            "target": "revm_primitives"
-          },
-          {
-            "id": "revm-state 43.0.0",
-            "target": "revm_state"
-          },
-          {
             "id": "secp256k1 0.30.0",
             "target": "secp256k1"
           },
@@ -47315,10 +47924,6 @@
             {
               "id": "rayon 1.12.0",
               "target": "rayon"
-            },
-            {
-              "id": "revm 43.0.2",
-              "target": "revm"
             },
             {
               "id": "rocksdb 0.24.0",
@@ -47525,12 +48130,6 @@
           "test-utils",
           "witness"
         ],
-        "deps": [
-          {
-            "id": "revm 43.0.2",
-            "target": "revm"
-          }
-        ],
         "edition": "2024"
       },
       "library_target_name": "reth_revm",
@@ -47583,10 +48182,6 @@
           {
             "id": "pin-project 1.1.13",
             "target": "pin_project"
-          },
-          {
-            "id": "revm 43.0.2",
-            "target": "revm"
           },
           {
             "id": "serde 1.0.229",
@@ -47945,10 +48540,6 @@
             "target": "parking_lot"
           },
           {
-            "id": "revm 43.0.2",
-            "target": "revm"
-          },
-          {
             "id": "serde_json 1.0.151",
             "target": "serde_json"
           },
@@ -48023,10 +48614,6 @@
           {
             "id": "reqwest 0.13.4",
             "target": "reqwest"
-          },
-          {
-            "id": "revm 43.0.2",
-            "target": "revm"
           },
           {
             "id": "schnellru 0.2.4",
@@ -48216,10 +48803,6 @@
     "reth-snap-sync 2.5.2": {
       "common_attrs": {
         "deps": [
-          {
-            "id": "revm 43.0.2",
-            "target": "revm"
-          },
           {
             "id": "serde 1.0.229",
             "target": "serde"
@@ -48576,10 +49159,6 @@
         ],
         "deps": [
           {
-            "id": "revm 43.0.2",
-            "target": "revm"
-          },
-          {
             "id": "serde_json 1.0.151",
             "target": "serde_json"
           }
@@ -48627,10 +49206,6 @@
             "target": "derive_more"
           },
           {
-            "id": "revm 43.0.2",
-            "target": "revm"
-          },
-          {
             "id": "thiserror 2.0.20",
             "target": "thiserror"
           }
@@ -48669,10 +49244,6 @@
             "target": "rayon"
           },
           {
-            "id": "revm 43.0.2",
-            "target": "revm"
-          },
-          {
             "id": "tracing 0.1.44",
             "target": "tracing"
           }
@@ -48698,10 +49269,6 @@
           {
             "id": "dashmap 6.2.1",
             "target": "dashmap"
-          },
-          {
-            "id": "revm 43.0.2",
-            "target": "revm"
           },
           {
             "id": "tokio 1.53.1",
@@ -49066,10 +49633,6 @@
             "target": "rand"
           },
           {
-            "id": "revm 43.0.2",
-            "target": "revm"
-          },
-          {
             "id": "rustc-hash 2.1.3",
             "target": "rustc_hash"
           },
@@ -49185,10 +49748,6 @@
             "target": "parking_lot"
           },
           {
-            "id": "revm 43.0.2",
-            "target": "revm"
-          },
-          {
             "id": "tracing 0.1.44",
             "target": "tracing"
           },
@@ -49296,10 +49855,6 @@
             "target": "rayon"
           },
           {
-            "id": "revm 43.0.2",
-            "target": "revm"
-          },
-          {
             "id": "serde 1.0.229",
             "target": "serde"
           },
@@ -49367,10 +49922,6 @@
             "target": "proptest_arbitrary_interop"
           },
           {
-            "id": "revm 43.0.2",
-            "target": "revm"
-          },
-          {
             "id": "serde_json 1.0.151",
             "target": "serde_json"
           },
@@ -49418,10 +49969,6 @@
           {
             "id": "metrics 0.24.6",
             "target": "metrics"
-          },
-          {
-            "id": "revm 43.0.2",
-            "target": "revm"
           },
           {
             "id": "thiserror 2.0.20",
@@ -49571,10 +50118,13 @@
     "revm 43.0.2": {
       "common_attrs": {
         "crate_features": [
+          "alloydb",
           "arbitrary",
           "asm-keccak",
           "blst",
           "c-kzg",
+          "default",
+          "map-foldhash",
           "memory_limit",
           "optional_balance_check",
           "optional_block_gas_limit",
@@ -49583,84 +50133,29 @@
           "optional_fee_charge",
           "optional_no_base_fee",
           "p256-aws-lc-rs",
+          "parse",
           "portable",
           "secp256k1",
           "serde",
-          "std"
+          "std",
+          "test-types",
+          "tracer"
         ],
-        "deps": [
+        "deps_dev": [
           {
-            "alias": "bytecode",
-            "id": "revm-bytecode 43.0.0",
-            "target": "revm_bytecode"
+            "id": "serde 1.0.229",
+            "target": "serde"
           },
           {
-            "alias": "context",
-            "id": "revm-context 43.0.2",
-            "target": "revm_context"
-          },
-          {
-            "alias": "context_interface",
-            "id": "revm-context-interface 43.0.1",
-            "target": "revm_context_interface"
-          },
-          {
-            "alias": "database",
-            "id": "revm-database 43.0.0",
-            "target": "revm_database"
-          },
-          {
-            "alias": "database_interface",
-            "id": "revm-database-interface 43.0.0",
-            "target": "revm_database_interface"
-          },
-          {
-            "alias": "handler",
-            "id": "revm-handler 43.0.2",
-            "target": "revm_handler"
-          },
-          {
-            "alias": "inspector",
-            "id": "revm-inspector 43.0.2",
-            "target": "revm_inspector"
-          },
-          {
-            "alias": "interpreter",
-            "id": "revm-interpreter 43.0.1",
-            "target": "revm_interpreter"
-          },
-          {
-            "alias": "precompile",
-            "id": "revm-precompile 43.0.2",
-            "target": "revm_precompile"
-          },
-          {
-            "alias": "primitives",
-            "id": "revm-primitives 43.0.0",
-            "target": "revm_primitives"
-          },
-          {
-            "alias": "state",
-            "id": "revm-state 43.0.0",
-            "target": "revm_state"
+            "id": "serde_json 1.0.151",
+            "target": "serde_json"
           }
         ],
         "edition": "2021"
       },
       "library_target_name": "revm",
-      "license": "MIT",
-      "license_file": "LICENSE",
-      "license_ids": [
-        "MIT"
-      ],
       "name": "revm",
-      "package_url": "https://github.com/bluealloy/revm",
-      "repository": {
-        "Http": {
-          "sha256": "55f2322f5ea197fac72c2cdc88cb501b2a7db0b0009911133fd3dda45bfceedd",
-          "url": "https://static.crates.io/crates/revm/43.0.2/download"
-        }
-      },
+      "repository": null,
       "targets": [
         {
           "Library": {
@@ -49674,6 +50169,10 @@
     "revm-bytecode 43.0.0": {
       "common_attrs": {
         "crate_features": [
+          "default",
+          "parse",
+          "paste",
+          "phf",
           "serde",
           "std"
         ],
@@ -49683,31 +50182,39 @@
             "target": "bitvec"
           },
           {
-            "alias": "primitives",
-            "id": "revm-primitives 43.0.0",
-            "target": "revm_primitives"
+            "id": "phf 0.14.0",
+            "target": "phf"
           },
           {
             "id": "serde 1.0.229",
             "target": "serde"
           }
         ],
-        "edition": "2021"
+        "deps_dev": [
+          {
+            "id": "anyhow 1.0.104",
+            "target": "anyhow"
+          },
+          {
+            "id": "rand 0.10.2",
+            "target": "rand"
+          },
+          {
+            "id": "serde_json 1.0.151",
+            "target": "serde_json"
+          }
+        ],
+        "edition": "2021",
+        "proc_macro_deps": [
+          {
+            "id": "paste 1.0.15",
+            "target": "paste"
+          }
+        ]
       },
       "library_target_name": "revm_bytecode",
-      "license": "MIT",
-      "license_file": "LICENSE",
-      "license_ids": [
-        "MIT"
-      ],
       "name": "revm-bytecode",
-      "package_url": "https://github.com/bluealloy/revm",
-      "repository": {
-        "Http": {
-          "sha256": "c8d38e16b72ec1c836ec8490562bfb21003165ea8bc496086bf345680a6e6c41",
-          "url": "https://static.crates.io/crates/revm-bytecode/43.0.0/download"
-        }
-      },
+      "repository": null,
       "targets": [
         {
           "Library": {
@@ -49721,6 +50228,8 @@
     "revm-context 43.0.2": {
       "common_attrs": {
         "crate_features": [
+          "default",
+          "map-foldhash",
           "memory_limit",
           "optional_balance_check",
           "optional_block_gas_limit",
@@ -49741,31 +50250,6 @@
             "target": "cfg_if"
           },
           {
-            "alias": "bytecode",
-            "id": "revm-bytecode 43.0.0",
-            "target": "revm_bytecode"
-          },
-          {
-            "alias": "context_interface",
-            "id": "revm-context-interface 43.0.1",
-            "target": "revm_context_interface"
-          },
-          {
-            "alias": "database_interface",
-            "id": "revm-database-interface 43.0.0",
-            "target": "revm_database_interface"
-          },
-          {
-            "alias": "primitives",
-            "id": "revm-primitives 43.0.0",
-            "target": "revm_primitives"
-          },
-          {
-            "alias": "state",
-            "id": "revm-state 43.0.0",
-            "target": "revm_state"
-          },
-          {
             "id": "serde 1.0.229",
             "target": "serde"
           }
@@ -49779,19 +50263,8 @@
         ]
       },
       "library_target_name": "revm_context",
-      "license": "MIT",
-      "license_file": "LICENSE",
-      "license_ids": [
-        "MIT"
-      ],
       "name": "revm-context",
-      "package_url": "https://github.com/bluealloy/revm",
-      "repository": {
-        "Http": {
-          "sha256": "c16835bc2ead203219a18fcc84c2c71879ad6b890e8a71150cf7f10e4e355dc4",
-          "url": "https://static.crates.io/crates/revm-context/43.0.2/download"
-        }
-      },
+      "repository": null,
       "targets": [
         {
           "Library": {
@@ -49805,6 +50278,7 @@
     "revm-context-interface 43.0.1": {
       "common_attrs": {
         "crate_features": [
+          "default",
           "serde",
           "std"
         ],
@@ -49814,30 +50288,11 @@
             "target": "either"
           },
           {
-            "alias": "database_interface",
-            "id": "revm-database-interface 43.0.0",
-            "target": "revm_database_interface"
-          },
-          {
-            "alias": "primitives",
-            "id": "revm-primitives 43.0.0",
-            "target": "revm_primitives"
-          },
-          {
-            "alias": "state",
-            "id": "revm-state 43.0.0",
-            "target": "revm_state"
-          },
-          {
             "id": "serde 1.0.229",
             "target": "serde"
           }
         ],
         "edition": "2021",
-        "extra_deps": [
-          "@@//alloy-eips/crates/eip2930:alloy_eip2930",
-          "@@//alloy-eips/crates/eip7702:alloy_eip7702"
-        ],
         "proc_macro_deps": [
           {
             "id": "auto_impl 1.3.0",
@@ -49846,19 +50301,8 @@
         ]
       },
       "library_target_name": "revm_context_interface",
-      "license": "MIT",
-      "license_file": "LICENSE",
-      "license_ids": [
-        "MIT"
-      ],
       "name": "revm-context-interface",
-      "package_url": "https://github.com/bluealloy/revm",
-      "repository": {
-        "Http": {
-          "sha256": "e3b4109bdceaca5ee6e27bf41f6b156f2b15892dc5bb47d3530bc4d3b3060077",
-          "url": "https://static.crates.io/crates/revm-context-interface/43.0.1/download"
-        }
-      },
+      "repository": null,
       "targets": [
         {
           "Library": {
@@ -49872,6 +50316,9 @@
     "revm-database 43.0.0": {
       "common_attrs": {
         "crate_features": [
+          "alloydb",
+          "default",
+          "map-foldhash",
           "serde",
           "std"
         ],
@@ -49885,46 +50332,25 @@
             "target": "either"
           },
           {
-            "alias": "bytecode",
-            "id": "revm-bytecode 43.0.0",
-            "target": "revm_bytecode"
-          },
-          {
-            "alias": "database_interface",
-            "id": "revm-database-interface 43.0.0",
-            "target": "revm_database_interface"
-          },
-          {
-            "alias": "primitives",
-            "id": "revm-primitives 43.0.0",
-            "target": "revm_primitives"
-          },
-          {
-            "alias": "state",
-            "id": "revm-state 43.0.0",
-            "target": "revm_state"
-          },
-          {
             "id": "serde 1.0.229",
             "target": "serde"
+          },
+          {
+            "id": "tokio 1.53.1",
+            "target": "tokio"
+          }
+        ],
+        "deps_dev": [
+          {
+            "id": "serde_json 1.0.151",
+            "target": "serde_json"
           }
         ],
         "edition": "2021"
       },
       "library_target_name": "revm_database",
-      "license": "MIT",
-      "license_file": "LICENSE",
-      "license_ids": [
-        "MIT"
-      ],
       "name": "revm-database",
-      "package_url": "https://github.com/bluealloy/revm",
-      "repository": {
-        "Http": {
-          "sha256": "31d764afa9a1c9278c05d40461b07319d21ccb39c1bdf0e9dde7e5ea7d9be53d",
-          "url": "https://static.crates.io/crates/revm-database/43.0.0/download"
-        }
-      },
+      "repository": null,
       "targets": [
         {
           "Library": {
@@ -49938,23 +50364,19 @@
     "revm-database-interface 43.0.0": {
       "common_attrs": {
         "crate_features": [
+          "asyncdb",
+          "default",
           "serde",
           "std"
         ],
         "deps": [
           {
+            "id": "corosensei 0.3.4",
+            "target": "corosensei"
+          },
+          {
             "id": "either 1.18.0",
             "target": "either"
-          },
-          {
-            "alias": "primitives",
-            "id": "revm-primitives 43.0.0",
-            "target": "revm_primitives"
-          },
-          {
-            "alias": "state",
-            "id": "revm-state 43.0.0",
-            "target": "revm_state"
           },
           {
             "id": "serde 1.0.229",
@@ -49963,6 +50385,10 @@
           {
             "id": "thiserror 2.0.20",
             "target": "thiserror"
+          },
+          {
+            "id": "tokio 1.53.1",
+            "target": "tokio"
           }
         ],
         "edition": "2021",
@@ -49974,19 +50400,8 @@
         ]
       },
       "library_target_name": "revm_database_interface",
-      "license": "MIT",
-      "license_file": "LICENSE",
-      "license_ids": [
-        "MIT"
-      ],
       "name": "revm-database-interface",
-      "package_url": "https://github.com/bluealloy/revm",
-      "repository": {
-        "Http": {
-          "sha256": "d2a27e4440c2ef4932afdaa28a1d1ac8601504c7030c1a387b5e307d07d864d1",
-          "url": "https://static.crates.io/crates/revm-database-interface/43.0.0/download"
-        }
-      },
+      "repository": null,
       "targets": [
         {
           "Library": {
@@ -49997,53 +50412,40 @@
       ],
       "version": "43.0.0"
     },
+    "revm-ee-tests 43.0.0": {
+      "common_attrs": {
+        "crate_features": [
+          "default"
+        ],
+        "deps_dev": [
+          {
+            "id": "insta 1.48.0",
+            "target": "insta"
+          }
+        ],
+        "edition": "2021"
+      },
+      "library_target_name": "revm_ee_tests",
+      "name": "revm-ee-tests",
+      "repository": null,
+      "targets": [
+        {
+          "Library": {
+            "crate_name": "revm_ee_tests",
+            "crate_root": "src/lib.rs"
+          }
+        }
+      ],
+      "version": "43.0.0"
+    },
     "revm-handler 43.0.2": {
       "common_attrs": {
         "crate_features": [
+          "default",
           "serde",
           "std"
         ],
         "deps": [
-          {
-            "alias": "bytecode",
-            "id": "revm-bytecode 43.0.0",
-            "target": "revm_bytecode"
-          },
-          {
-            "alias": "context",
-            "id": "revm-context 43.0.2",
-            "target": "revm_context"
-          },
-          {
-            "alias": "context_interface",
-            "id": "revm-context-interface 43.0.1",
-            "target": "revm_context_interface"
-          },
-          {
-            "alias": "database_interface",
-            "id": "revm-database-interface 43.0.0",
-            "target": "revm_database_interface"
-          },
-          {
-            "alias": "interpreter",
-            "id": "revm-interpreter 43.0.1",
-            "target": "revm_interpreter"
-          },
-          {
-            "alias": "precompile",
-            "id": "revm-precompile 43.0.2",
-            "target": "revm_precompile"
-          },
-          {
-            "alias": "primitives",
-            "id": "revm-primitives 43.0.0",
-            "target": "revm_primitives"
-          },
-          {
-            "alias": "state",
-            "id": "revm-state 43.0.0",
-            "target": "revm_state"
-          },
           {
             "id": "serde 1.0.229",
             "target": "serde"
@@ -50062,19 +50464,8 @@
         ]
       },
       "library_target_name": "revm_handler",
-      "license": "MIT",
-      "license_file": "LICENSE",
-      "license_ids": [
-        "MIT"
-      ],
       "name": "revm-handler",
-      "package_url": "https://github.com/bluealloy/revm",
-      "repository": {
-        "Http": {
-          "sha256": "73a7409031d87ec281b74efff65d7a4dbea9d80727a55dbc7e4b3fd77b5e03fb",
-          "url": "https://static.crates.io/crates/revm-handler/43.0.2/download"
-        }
-      },
+      "repository": null,
       "targets": [
         {
           "Library": {
@@ -50088,8 +50479,10 @@
     "revm-inspector 43.0.2": {
       "common_attrs": {
         "crate_features": [
+          "default",
           "serde",
-          "std"
+          "std",
+          "tracer"
         ],
         "deps": [
           {
@@ -50097,38 +50490,12 @@
             "target": "either"
           },
           {
-            "alias": "context",
-            "id": "revm-context 43.0.2",
-            "target": "revm_context"
-          },
-          {
-            "alias": "database_interface",
-            "id": "revm-database-interface 43.0.0",
-            "target": "revm_database_interface"
-          },
-          {
-            "alias": "handler",
-            "id": "revm-handler 43.0.2",
-            "target": "revm_handler"
-          },
-          {
-            "alias": "interpreter",
-            "id": "revm-interpreter 43.0.1",
-            "target": "revm_interpreter"
-          },
-          {
-            "alias": "primitives",
-            "id": "revm-primitives 43.0.0",
-            "target": "revm_primitives"
-          },
-          {
-            "alias": "state",
-            "id": "revm-state 43.0.0",
-            "target": "revm_state"
-          },
-          {
             "id": "serde 1.0.229",
             "target": "serde"
+          },
+          {
+            "id": "serde_json 1.0.151",
+            "target": "serde_json"
           }
         ],
         "edition": "2021",
@@ -50140,19 +50507,8 @@
         ]
       },
       "library_target_name": "revm_inspector",
-      "license": "MIT",
-      "license_file": "LICENSE",
-      "license_ids": [
-        "MIT"
-      ],
       "name": "revm-inspector",
-      "package_url": "https://github.com/bluealloy/revm",
-      "repository": {
-        "Http": {
-          "sha256": "7a56f37224afd628f7244aa6965609ada04b440ed8ab7a19f55e4291df5a0112",
-          "url": "https://static.crates.io/crates/revm-inspector/43.0.2/download"
-        }
-      },
+      "repository": null,
       "targets": [
         {
           "Library": {
@@ -50188,10 +50544,6 @@
           {
             "id": "colorchoice 1.0.5",
             "target": "colorchoice"
-          },
-          {
-            "id": "revm 43.0.2",
-            "target": "revm"
           },
           {
             "id": "serde 1.0.229",
@@ -50234,52 +50586,28 @@
     "revm-interpreter 43.0.1": {
       "common_attrs": {
         "crate_features": [
+          "default",
           "memory_limit",
           "serde",
           "std"
         ],
         "deps": [
           {
-            "alias": "bytecode",
-            "id": "revm-bytecode 43.0.0",
-            "target": "revm_bytecode"
-          },
-          {
-            "alias": "context_interface",
-            "id": "revm-context-interface 43.0.1",
-            "target": "revm_context_interface"
-          },
-          {
-            "alias": "primitives",
-            "id": "revm-primitives 43.0.0",
-            "target": "revm_primitives"
-          },
-          {
-            "alias": "state",
-            "id": "revm-state 43.0.0",
-            "target": "revm_state"
-          },
-          {
             "id": "serde 1.0.229",
             "target": "serde"
+          }
+        ],
+        "deps_dev": [
+          {
+            "id": "serde_json 1.0.151",
+            "target": "serde_json"
           }
         ],
         "edition": "2021"
       },
       "library_target_name": "revm_interpreter",
-      "license": "MIT",
-      "license_file": "LICENSE",
-      "license_ids": [
-        "MIT"
-      ],
       "name": "revm-interpreter",
-      "package_url": "https://github.com/bluealloy/revm",
-      "repository": {
-        "Http": {
-          "sha256": "932f7fe05a2cdeb08195dd7e88a09a4da7c3660cdc6e62720839c77ba77f65aa",
-          "url": "https://static.crates.io/crates/revm-interpreter/43.0.1/download"
-        }
-      },
+      "repository": null,
       "targets": [
         {
           "Library": {
@@ -50295,6 +50623,7 @@
         "crate_features": [
           "blst",
           "c-kzg",
+          "default",
           "p256-aws-lc-rs",
           "portable",
           "secp256k1",
@@ -50354,16 +50683,6 @@
             "target": "p256"
           },
           {
-            "alias": "context_interface",
-            "id": "revm-context-interface 43.0.1",
-            "target": "revm_context_interface"
-          },
-          {
-            "alias": "primitives",
-            "id": "revm-primitives 43.0.0",
-            "target": "revm_primitives"
-          },
-          {
             "id": "ripemd 0.2.0",
             "target": "ripemd"
           },
@@ -50376,22 +50695,29 @@
             "target": "sha2"
           }
         ],
+        "deps_dev": [
+          {
+            "id": "ark-std 0.6.0",
+            "target": "ark_std"
+          },
+          {
+            "id": "codspeed-criterion-compat 5.0.2",
+            "target": "codspeed_criterion_compat"
+          },
+          {
+            "id": "rand 0.10.2",
+            "target": "rand"
+          },
+          {
+            "id": "rstest 0.26.1",
+            "target": "rstest"
+          }
+        ],
         "edition": "2021"
       },
       "library_target_name": "revm_precompile",
-      "license": "MIT",
-      "license_file": "LICENSE",
-      "license_ids": [
-        "MIT"
-      ],
       "name": "revm-precompile",
-      "package_url": "https://github.com/bluealloy/revm",
-      "repository": {
-        "Http": {
-          "sha256": "ac4dc0279f2a44770faa8c93d008df684440cf573c91b8e0e39d0d581abf7b3d",
-          "url": "https://static.crates.io/crates/revm-precompile/43.0.2/download"
-        }
-      },
+      "repository": null,
       "targets": [
         {
           "Library": {
@@ -50407,6 +50733,8 @@
         "crate_features": [
           "arbitrary",
           "asm-keccak",
+          "default",
+          "map-foldhash",
           "serde",
           "std"
         ],
@@ -50420,25 +50748,11 @@
             "target": "serde"
           }
         ],
-        "edition": "2021",
-        "extra_deps": [
-          "@@//alloy-core/crates/primitives:alloy_primitives"
-        ]
+        "edition": "2021"
       },
       "library_target_name": "revm_primitives",
-      "license": "MIT",
-      "license_file": "LICENSE",
-      "license_ids": [
-        "MIT"
-      ],
       "name": "revm-primitives",
-      "package_url": "https://github.com/bluealloy/revm",
-      "repository": {
-        "Http": {
-          "sha256": "f1f4ba1a5757fe4398262290422c371556fcebf236f762f7ed7ff2c56768a63c",
-          "url": "https://static.crates.io/crates/revm-primitives/43.0.0/download"
-        }
-      },
+      "repository": null,
       "targets": [
         {
           "Library": {
@@ -50452,6 +50766,8 @@
     "revm-state 43.0.0": {
       "common_attrs": {
         "crate_features": [
+          "default",
+          "map-foldhash",
           "serde",
           "std"
         ],
@@ -50465,39 +50781,25 @@
             "target": "nonmax"
           },
           {
-            "alias": "bytecode",
-            "id": "revm-bytecode 43.0.0",
-            "target": "revm_bytecode"
-          },
-          {
-            "alias": "primitives",
-            "id": "revm-primitives 43.0.0",
-            "target": "revm_primitives"
-          },
-          {
             "id": "serde 1.0.229",
             "target": "serde"
           }
         ],
-        "edition": "2021",
-        "extra_deps": [
-          "@@//alloy-eips/crates/eip7928:alloy_eip7928"
-        ]
+        "deps_dev": [
+          {
+            "id": "postcard 1.1.3",
+            "target": "postcard"
+          },
+          {
+            "id": "serde_json 1.0.151",
+            "target": "serde_json"
+          }
+        ],
+        "edition": "2021"
       },
       "library_target_name": "revm_state",
-      "license": "MIT",
-      "license_file": "LICENSE",
-      "license_ids": [
-        "MIT"
-      ],
       "name": "revm-state",
-      "package_url": "https://github.com/bluealloy/revm",
-      "repository": {
-        "Http": {
-          "sha256": "7cd02082cf1baca01e8bc17456c45136bdc66632395a98db1c1a2afe4c6ea87f",
-          "url": "https://static.crates.io/crates/revm-state/43.0.0/download"
-        }
-      },
+      "repository": null,
       "targets": [
         {
           "Library": {
@@ -50507,6 +50809,103 @@
         }
       ],
       "version": "43.0.0"
+    },
+    "revm-statetest-types 43.0.1": {
+      "common_attrs": {
+        "crate_features": [
+          "map-foldhash"
+        ],
+        "deps": [
+          {
+            "id": "k256 0.13.4",
+            "target": "k256"
+          },
+          {
+            "id": "serde 1.0.229",
+            "target": "serde"
+          },
+          {
+            "id": "serde_json 1.0.151",
+            "target": "serde_json"
+          },
+          {
+            "id": "thiserror 2.0.20",
+            "target": "thiserror"
+          }
+        ],
+        "edition": "2021"
+      },
+      "library_target_name": "revm_statetest_types",
+      "name": "revm-statetest-types",
+      "repository": null,
+      "targets": [
+        {
+          "Library": {
+            "crate_name": "revm_statetest_types",
+            "crate_root": "src/lib.rs"
+          }
+        }
+      ],
+      "version": "43.0.1"
+    },
+    "revme 43.0.2": {
+      "common_attrs": {
+        "crate_features": [
+          "default",
+          "map-foldhash"
+        ],
+        "deps": [
+          {
+            "id": "clap 4.6.6",
+            "target": "clap"
+          },
+          {
+            "id": "codspeed-criterion-compat 5.0.2",
+            "target": "codspeed_criterion_compat"
+          },
+          {
+            "id": "csv 1.4.0",
+            "target": "csv"
+          },
+          {
+            "id": "indicatif 0.18.4",
+            "target": "indicatif"
+          },
+          {
+            "id": "k256 0.13.4",
+            "target": "k256"
+          },
+          {
+            "id": "serde 1.0.229",
+            "target": "serde"
+          },
+          {
+            "id": "serde_json 1.0.151",
+            "target": "serde_json"
+          },
+          {
+            "id": "thiserror 2.0.20",
+            "target": "thiserror"
+          },
+          {
+            "id": "walkdir 2.5.0",
+            "target": "walkdir"
+          }
+        ],
+        "edition": "2021"
+      },
+      "library_target_name": "revme",
+      "name": "revme",
+      "repository": null,
+      "targets": [
+        {
+          "Library": {
+            "crate_name": "revme",
+            "crate_root": "src/lib.rs"
+          }
+        }
+      ],
+      "version": "43.0.2"
     },
     "rfc6979 0.4.0": {
       "common_attrs": {
@@ -51924,7 +52323,7 @@
                 "target": "errno"
               },
               {
-                "id": "windows-sys 0.59.0",
+                "id": "windows-sys 0.61.2",
                 "target": "windows_sys"
               }
             ],
@@ -52348,7 +52747,7 @@
             ],
             "cfg(windows)": [
               {
-                "id": "windows-sys 0.59.0",
+                "id": "windows-sys 0.61.2",
                 "target": "windows_sys"
               }
             ]
@@ -54015,12 +54414,18 @@
         "crate_features": [
           "alloc",
           "default",
+          "indexmap",
+          "preserve_order",
           "raw_value",
           "std",
           "unbounded_depth"
         ],
         "deps": {
           "common": [
+            {
+              "id": "indexmap 2.14.2",
+              "target": "indexmap"
+            },
             {
               "id": "itoa 1.0.18",
               "target": "itoa"
@@ -55757,7 +56162,7 @@
             ],
             "cfg(windows)": [
               {
-                "id": "windows-sys 0.60.2",
+                "id": "windows-sys 0.61.2",
                 "target": "windows_sys"
               }
             ]
@@ -57173,7 +57578,7 @@
             ],
             "cfg(windows)": [
               {
-                "id": "windows-sys 0.59.0",
+                "id": "windows-sys 0.61.2",
                 "target": "windows_sys"
               }
             ]
@@ -57275,10 +57680,6 @@
           {
             "id": "reqwest 0.13.4",
             "target": "reqwest"
-          },
-          {
-            "id": "revm 43.0.2",
-            "target": "revm"
           },
           {
             "id": "rustls 0.23.45",
@@ -57984,10 +58385,6 @@
             "target": "rand"
           },
           {
-            "id": "revm 43.0.2",
-            "target": "revm"
-          },
-          {
             "id": "serde_json 1.0.151",
             "target": "serde_json"
           },
@@ -58502,10 +58899,6 @@
             "target": "keccak_const"
           },
           {
-            "id": "revm 43.0.2",
-            "target": "revm"
-          },
-          {
             "id": "scoped-tls 1.0.1",
             "target": "scoped_tls"
           },
@@ -58669,10 +59062,6 @@
             "target": "p256"
           },
           {
-            "id": "revm 43.0.2",
-            "target": "revm"
-          },
-          {
             "id": "serde 1.0.229",
             "target": "serde"
           },
@@ -58727,10 +59116,6 @@
           {
             "id": "derive_more 2.1.1",
             "target": "derive_more"
-          },
-          {
-            "id": "revm 43.0.2",
-            "target": "revm"
           },
           {
             "id": "thiserror 2.0.20",
@@ -58918,10 +59303,6 @@
             "target": "parking_lot"
           },
           {
-            "id": "revm 43.0.2",
-            "target": "revm"
-          },
-          {
             "id": "thiserror 2.0.20",
             "target": "thiserror"
           },
@@ -59065,10 +59446,6 @@
           {
             "id": "rayon 1.12.0",
             "target": "rayon"
-          },
-          {
-            "id": "revm 43.0.2",
-            "target": "revm"
           },
           {
             "id": "secp256k1 0.30.0",
@@ -65608,7 +65985,7 @@
           "selects": {
             "cfg(windows)": [
               {
-                "id": "windows-sys 0.48.0",
+                "id": "windows-sys 0.61.2",
                 "target": "windows_sys"
               }
             ]
@@ -69410,10 +69787,17 @@
     "anyhow 1.0.104",
     "aquamarine 0.6.0",
     "arbitrary 1.4.2",
+    "ark-bls12-381 0.6.0",
+    "ark-bn254 0.6.0",
+    "ark-ec 0.6.0",
+    "ark-ff 0.6.0",
+    "ark-serialize 0.6.0",
+    "arrayref 0.3.9",
     "arrayvec 0.7.6",
     "async-compression 0.4.44",
     "async-stream 0.3.6",
     "async-trait 0.1.92",
+    "aurora-engine-modexp 1.2.0",
     "auto_impl 1.3.0",
     "aws-config 1.12.0",
     "aws-lc-rs 1.18.1",
@@ -69425,7 +69809,9 @@
     "bincode 1.3.3",
     "bindgen 0.72.1",
     "bitflags 2.13.1",
+    "bitvec 1.0.1",
     "blake3 1.8.7",
+    "blst 0.3.16",
     "boa_engine 0.21.1",
     "boa_gc 0.21.1",
     "boyer-moore-magiclen 0.2.24",
@@ -69437,6 +69823,7 @@
     "chrono 0.4.45",
     "cipher 0.4.4",
     "clap 4.6.6",
+    "codspeed-criterion-compat 5.0.2",
     "coins-bip32 0.12.0",
     "coins-bip39 0.12.0",
     "coins-ledger 0.13.2",
@@ -69457,15 +69844,18 @@
     "commonware-utils 2026.9.0",
     "concat-kdf 0.1.0",
     "const-hex 1.19.3",
+    "corosensei 0.3.4",
     "crc 3.4.0",
     "crossbeam-channel 0.5.17",
     "crossbeam-queue 0.3.14",
     "crossbeam-utils 0.8.23",
     "crossterm 0.29.0",
+    "csv 1.4.0",
     "ctr 0.9.2",
     "darling 0.23.0",
     "dashmap 6.2.1",
     "data-encoding 2.11.1",
+    "derive-where 1.6.1",
     "derive_arbitrary 1.4.2",
     "derive_more 2.1.1",
     "digest 0.10.7",
@@ -69542,6 +69932,7 @@
     "minisign-verify 0.2.5",
     "modular-bitfield 0.13.1",
     "moka 0.12.16",
+    "nonmax 0.5.5",
     "notify 8.2.0",
     "num-traits 0.2.19",
     "num_enum 0.7.6",
@@ -69584,11 +69975,8 @@
     "ratatui 0.30.2",
     "rayon 1.12.0",
     "reqwest 0.13.4",
-    "revm 43.0.2",
-    "revm-bytecode 43.0.0",
-    "revm-primitives 43.0.0",
-    "revm-state 43.0.0",
     "ringbuffer 0.16.0",
+    "ripemd 0.2.0",
     "rmp-serde 1.3.1",
     "roaring 0.11.5",
     "rocksdb 0.24.0",
@@ -69606,6 +69994,7 @@
     "serde_json 1.0.151",
     "serde_with 3.21.0",
     "sha2 0.10.9",
+    "sha2 0.11.0",
     "sha3 0.11.0",
     "slotmap 1.1.1",
     "smallvec 1.16.1",
@@ -69658,6 +70047,7 @@
     "zstd 0.13.3"
   ],
   "direct_dev_deps": [
+    "ark-std 0.6.0",
     "assert_matches 1.5.0",
     "bcs 0.2.1",
     "bincode 2.0.1",
@@ -69672,6 +70062,7 @@
     "insta 1.48.0",
     "minisign 0.8.0",
     "p384 0.13.1",
+    "postcard 1.1.3",
     "rstest 0.26.1",
     "rustversion 1.0.22",
     "similar-asserts 1.7.0",
@@ -69749,9 +70140,13 @@
     "custom-hardforks 0.1.0": "bazel/cargo/reth/examples/custom-hardforks",
     "ef-test-runner 2.5.2": "bazel/cargo/reth/testing/runner",
     "ef-tests 2.5.2": "bazel/cargo/reth/testing/ef-tests",
+    "example-bal 0.0.0": "bazel/cargo/revm/examples/bal_example",
     "example-beacon-api-sidecar-fetcher 0.1.0": "bazel/cargo/reth/examples/beacon-api-sidecar-fetcher",
     "example-beacon-api-sse 0.0.0": "bazel/cargo/reth/examples/beacon-api-sse",
+    "example-block-traces 0.0.0": "bazel/cargo/revm/examples/block_traces",
     "example-bsc-p2p 0.0.0": "bazel/cargo/reth/examples/bsc-p2p",
+    "example-cheatcode-inspector 0.0.0": "bazel/cargo/revm/examples/cheatcode_inspector",
+    "example-contract-deployment 0.0.0": "bazel/cargo/revm/examples/contract_deployment",
     "example-custom-auth-http-middleware 0.0.0": "bazel/cargo/reth/examples/custom-auth-http-middleware",
     "example-custom-beacon-withdrawals 0.0.0": "bazel/cargo/reth/examples/custom-beacon-withdrawals",
     "example-custom-dev-node 0.0.0": "bazel/cargo/reth/examples/custom-dev-node",
@@ -69759,14 +70154,19 @@
     "example-custom-evm 0.0.0": "bazel/cargo/reth/examples/custom-evm",
     "example-custom-inspector 0.0.0": "bazel/cargo/reth/examples/custom-inspector",
     "example-custom-node-components 0.0.0": "bazel/cargo/reth/examples/custom-node-components",
+    "example-custom-opcodes 0.0.0": "bazel/cargo/revm/examples/custom_opcodes",
     "example-custom-payload-builder 0.0.0": "bazel/cargo/reth/examples/custom-payload-builder",
+    "example-custom-precompile-journal 0.1.0": "bazel/cargo/revm/examples/custom_precompile_journal",
     "example-custom-rlpx-subprotocol 0.0.0": "bazel/cargo/reth/examples/custom-rlpx-subprotocol",
     "example-custom-rpc-middleware 0.0.0": "bazel/cargo/reth/examples/custom-rpc-middleware",
     "example-custom-state-root 0.0.0": "bazel/cargo/reth/examples/custom-state-root",
+    "example-database-components 0.0.0": "bazel/cargo/revm/examples/database_components",
     "example-db-access 0.0.0": "bazel/cargo/reth/examples/db-access",
+    "example-erc20-gas 0.0.0": "bazel/cargo/revm/examples/erc20_gas",
     "example-exex-test 0.0.0": "bazel/cargo/reth/examples/exex-test",
     "example-full-contract-state 2.5.2": "bazel/cargo/reth/examples/full-contract-state",
     "example-manual-p2p 0.0.0": "bazel/cargo/reth/examples/manual-p2p",
+    "example-my-evm 0.0.0": "bazel/cargo/revm/examples/my_evm",
     "example-network 0.0.0": "bazel/cargo/reth/examples/network",
     "example-network-proxy 0.0.0": "bazel/cargo/reth/examples/network-proxy",
     "example-network-txpool 0.0.0": "bazel/cargo/reth/examples/network-txpool",
@@ -69776,6 +70176,8 @@
     "example-polygon-p2p 0.0.0": "bazel/cargo/reth/examples/polygon-p2p",
     "example-rpc-db 0.0.0": "bazel/cargo/reth/examples/rpc-db",
     "example-txpool-tracing 0.0.0": "bazel/cargo/reth/examples/txpool-tracing",
+    "example-uniswap-get-reserves 0.0.0": "bazel/cargo/revm/examples/uniswap_get_reserves",
+    "example-uniswap-v2-usdc-swap 0.0.0": "bazel/cargo/revm/examples/uniswap_v2_usdc_swap",
     "exex-subscription 2.5.2": "bazel/cargo/reth/examples/exex-subscription",
     "reth 2.5.2": "bazel/cargo/reth/bin/reth",
     "reth-basic-payload-builder 2.5.2": "bazel/cargo/reth/crates/payload/basic",
@@ -69893,7 +70295,22 @@
     "reth-trie-parallel 2.5.2": "bazel/cargo/reth/crates/trie/parallel",
     "reth-trie-sparse 2.5.2": "bazel/cargo/reth/crates/trie/sparse",
     "reth-zstd-compressors 0.7.1": "bazel/cargo/reth-core/crates/zstd-compressors",
+    "revm 43.0.2": "bazel/cargo/revm/crates/revm",
+    "revm-bytecode 43.0.0": "bazel/cargo/revm/crates/bytecode",
+    "revm-context 43.0.2": "bazel/cargo/revm/crates/context",
+    "revm-context-interface 43.0.1": "bazel/cargo/revm/crates/context/interface",
+    "revm-database 43.0.0": "bazel/cargo/revm/crates/database",
+    "revm-database-interface 43.0.0": "bazel/cargo/revm/crates/database/interface",
+    "revm-ee-tests 43.0.0": "bazel/cargo/revm/crates/ee-tests",
+    "revm-handler 43.0.2": "bazel/cargo/revm/crates/handler",
+    "revm-inspector 43.0.2": "bazel/cargo/revm/crates/inspector",
     "revm-inspectors 0.43.0": "bazel/cargo/revm-inspectors",
+    "revm-interpreter 43.0.1": "bazel/cargo/revm/crates/interpreter",
+    "revm-precompile 43.0.2": "bazel/cargo/revm/crates/precompile",
+    "revm-primitives 43.0.0": "bazel/cargo/revm/crates/primitives",
+    "revm-state 43.0.0": "bazel/cargo/revm/crates/state",
+    "revm-statetest-types 43.0.1": "bazel/cargo/revm/crates/statetest-types",
+    "revme 43.0.2": "bazel/cargo/revm/bins/revme",
     "syn-solidity 1.7.3": "bazel/cargo/alloy-core/crates/syn-solidity",
     "tempo 1.14.0": "bazel/cargo/tempo/bin/tempo",
     "tempo-alloy 1.11.0": "bazel/cargo/tempo/crates/alloy",

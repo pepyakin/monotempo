@@ -1,0 +1,105 @@
+# GENERATED FILE - DO NOT EDIT. Regenerate with `python3 bazel/generate.py`.
+#
+# Bazel-only derivation of `revm/crates/revm/Cargo.toml`: the same
+# package as `cargo metadata` describes it in the revm workspace, with
+# workspace inheritance resolved. Cargo builds are unaffected.
+
+[package]
+name = "revm"
+version = "43.0.2"
+edition = "2021"
+rust-version = "1.91.0"
+build = false
+autolib = false
+autobins = false
+autoexamples = false
+autotests = false
+autobenches = false
+
+[lib]
+name = "revm"
+path = "src/lib.rs"
+
+[features]
+default = ["std", "secp256k1", "portable", "tracer", "c-kzg", "blst"]
+std = [
+    "interpreter/std",
+    "precompile/std",
+    "handler/std",
+    "context/std",
+    "context-interface/std",
+    "bytecode/std",
+    "database/std",
+    "database-interface/std",
+    "inspector/std",
+    "primitives/std",
+    "state/std",
+    "serde/std",
+    "serde_json/std",
+]
+hashbrown = ["interpreter/hashbrown", "precompile/hashbrown"]
+map-foldhash = ["primitives/map-foldhash", "statetest-types?/map-foldhash"]
+serde = [
+    "interpreter/serde",
+    "database-interface/serde",
+    "primitives/serde",
+    "handler/serde",
+    "context-interface/serde",
+    "bytecode/serde",
+    "context/serde",
+    "database/serde",
+    "inspector/serde",
+    "state/serde",
+]
+arbitrary = ["primitives/arbitrary"]
+asm-keccak = ["primitives/asm-keccak"]
+sha3-keccak = ["primitives/sha3-keccak"]
+asyncdb = ["std", "context/asyncdb", "database-interface/asyncdb", "handler/asyncdb"]
+alloydb = ["database/alloydb"]
+serde-json = ["serde", "inspector/tracer"]
+tracer = ["inspector/tracer"]
+parse = ["bytecode/parse"]
+dev = [
+    "memory_limit",
+    "optional_balance_check",
+    "optional_block_gas_limit",
+    "optional_eip3541",
+    "optional_eip3607",
+    "optional_eip7623",
+    "optional_no_base_fee",
+]
+memory_limit = ["context/memory_limit", "interpreter/memory_limit"]
+optional_balance_check = ["context/optional_balance_check"]
+optional_block_gas_limit = ["context/optional_block_gas_limit"]
+optional_eip3541 = ["context/optional_eip3541"]
+optional_eip3607 = ["context/optional_eip3607"]
+optional_eip7623 = ["context/optional_eip7623"]
+optional_no_base_fee = ["context/optional_no_base_fee"]
+optional_fee_charge = ["context/optional_fee_charge"]
+optional_priority_fee_check = ["context/optional_priority_fee_check"]
+secp256k1 = ["precompile/secp256k1"]
+c-kzg = ["precompile/c-kzg"]
+blst = ["precompile/blst"]
+bn = ["precompile/bn"]
+portable = ["precompile/portable"]
+gmp = ["precompile/gmp"]
+p256-aws-lc-rs = ["precompile/p256-aws-lc-rs"]
+test-types = ["dep:statetest-types"]
+
+[dependencies]
+bytecode = { package = "revm-bytecode", path = "../bytecode", default-features = false }
+context = { package = "revm-context", path = "../context", default-features = false }
+context-interface = { package = "revm-context-interface", path = "../context/interface", default-features = false }
+database = { package = "revm-database", path = "../database", default-features = false }
+database-interface = { package = "revm-database-interface", path = "../database/interface", default-features = false }
+handler = { package = "revm-handler", path = "../handler", default-features = false }
+inspector = { package = "revm-inspector", path = "../inspector", default-features = false }
+interpreter = { package = "revm-interpreter", path = "../interpreter", default-features = false }
+precompile = { package = "revm-precompile", path = "../precompile", default-features = false }
+primitives = { package = "revm-primitives", path = "../primitives", default-features = false }
+state = { package = "revm-state", path = "../state", default-features = false }
+statetest-types = { package = "revm-statetest-types", path = "../statetest-types", optional = true, default-features = false }
+
+[dev-dependencies]
+serde = { version = "^1.0", features = ["derive", "rc", "derive"], default-features = false }
+serde_json = { version = "^1.0", features = ["alloc", "preserve_order"], default-features = false }

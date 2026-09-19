@@ -1,0 +1,63 @@
+# GENERATED FILE - DO NOT EDIT.
+#
+# Regenerate with `python3 bazel/generate.py` after changing Cargo.toml.
+
+load("//bazel:rust.bzl", "crate_cargo_toml_env_vars", "crate_library", "crate_unit_test")
+load("//revm/bazel:workspace.bzl", "WORKSPACE")
+
+FEATURES = [
+    "alloydb",
+    "default",
+    "map-foldhash",
+    "serde",
+    "std",
+]
+
+DECLARED_FEATURES = [
+    "alloydb",
+    "default",
+    "map-foldhash",
+    "serde",
+    "std",
+]
+
+crate_cargo_toml_env_vars(WORKSPACE)
+
+crate_library(
+    name = "revm_database",
+    workspace = WORKSPACE,
+    version = "43.0.0",
+    crate_features = FEATURES,
+    declared_features = DECLARED_FEATURES,
+    deps = [
+        "//alloy/crates/eips:alloy_eips",
+        "//alloy/crates/provider:alloy_provider",
+        "//alloy/crates/transport:alloy_transport",
+        "//revm/crates/bytecode:revm_bytecode",
+        "//revm/crates/database/interface:revm_database_interface",
+        "//revm/crates/primitives:revm_primitives",
+        "//revm/crates/state:revm_state",
+        "@crates//:derive_more",
+        "@crates//:either",
+        "@crates//:serde",
+        "@crates//:tokio",
+    ],
+    aliases = {
+        "//revm/crates/bytecode:revm_bytecode": "bytecode",
+        "//revm/crates/database/interface:revm_database_interface": "database_interface",
+        "//revm/crates/primitives:revm_primitives": "primitives",
+        "//revm/crates/state:revm_state": "state",
+    },
+)
+
+crate_unit_test(
+    name = "revm_database_test",
+    workspace = WORKSPACE,
+    version = "43.0.0",
+    crate = ":revm_database",
+    crate_features = FEATURES,
+    declared_features = DECLARED_FEATURES,
+    deps = [
+        "@crates//:serde_json",
+    ],
+)

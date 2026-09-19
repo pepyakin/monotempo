@@ -1,0 +1,81 @@
+# GENERATED FILE - DO NOT EDIT. Regenerate with `python3 bazel/generate.py`.
+#
+# Bazel-only derivation of `revm/crates/context/Cargo.toml`: the same
+# package as `cargo metadata` describes it in the revm workspace, with
+# workspace inheritance resolved. Cargo builds are unaffected.
+
+[package]
+name = "revm-context"
+version = "43.0.2"
+edition = "2021"
+rust-version = "1.91.0"
+build = false
+autolib = false
+autobins = false
+autoexamples = false
+autotests = false
+autobenches = false
+
+[lib]
+name = "revm_context"
+path = "src/lib.rs"
+
+[features]
+default = ["std"]
+std = [
+    "serde?/std",
+    "bytecode/std",
+    "context-interface/std",
+    "database/std",
+    "database-interface/std",
+    "primitives/std",
+    "state/std",
+    "bitvec/std",
+]
+serde = [
+    "dep:serde",
+    "primitives/serde",
+    "state/serde",
+    "context-interface/serde",
+    "bytecode/serde",
+    "database/serde",
+    "database-interface/serde",
+    "derive-where/serde",
+    "bitvec/serde",
+]
+dev = [
+    "memory_limit",
+    "optional_balance_check",
+    "optional_block_gas_limit",
+    "optional_eip3541",
+    "optional_eip3607",
+    "optional_eip7623",
+    "optional_no_base_fee",
+    "optional_priority_fee_check",
+    "optional_fee_charge",
+]
+asyncdb = ["std", "database-interface/asyncdb"]
+memory_limit = []
+optional_balance_check = []
+optional_block_gas_limit = []
+optional_eip3541 = []
+optional_eip3607 = []
+optional_eip7623 = []
+optional_no_base_fee = []
+optional_priority_fee_check = []
+optional_fee_charge = []
+map-foldhash = ["primitives/map-foldhash", "state/map-foldhash"]
+
+[dependencies]
+bitvec = { version = "^1", default-features = false }
+bytecode = { package = "revm-bytecode", path = "../bytecode", default-features = false }
+cfg-if = { version = "^1.0", default-features = false }
+context-interface = { package = "revm-context-interface", path = "interface", default-features = false }
+database-interface = { package = "revm-database-interface", path = "../database/interface", default-features = false }
+derive-where = { version = "^1.6", default-features = false }
+primitives = { package = "revm-primitives", path = "../primitives", default-features = false }
+serde = { version = "^1.0", features = ["derive", "rc", "derive", "rc"], optional = true, default-features = false }
+state = { package = "revm-state", path = "../state", default-features = false }
+
+[dev-dependencies]
+database = { package = "revm-database", path = "../database", default-features = false }

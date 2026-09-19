@@ -1,0 +1,41 @@
+# GENERATED FILE - DO NOT EDIT. Regenerate with `python3 bazel/generate.py`.
+#
+# Bazel-only derivation of `revm/crates/bytecode/Cargo.toml`: the same
+# package as `cargo metadata` describes it in the revm workspace, with
+# workspace inheritance resolved. Cargo builds are unaffected.
+
+[package]
+name = "revm-bytecode"
+version = "43.0.0"
+edition = "2021"
+rust-version = "1.91.0"
+build = false
+autolib = false
+autobins = false
+autoexamples = false
+autotests = false
+autobenches = false
+
+[lib]
+name = "revm_bytecode"
+path = "src/lib.rs"
+
+[features]
+default = ["std", "parse"]
+std = ["serde?/std", "serde_json/std", "primitives/std", "bitvec/std", "phf?/std"]
+hashbrown = ["primitives/hashbrown"]
+serde = ["dep:serde", "primitives/serde", "bitvec/serde", "phf?/serde"]
+parse = ["phf", "paste"]
+serde-json = ["serde"]
+
+[dependencies]
+bitvec = { version = "^1", features = ["alloc"], default-features = false }
+paste = { version = "^1.0", optional = true }
+phf = { version = "^0.14", features = ["macros"], optional = true, default-features = false }
+primitives = { package = "revm-primitives", path = "../primitives", default-features = false }
+serde = { version = "^1.0", features = ["derive", "rc", "derive", "rc"], optional = true, default-features = false }
+
+[dev-dependencies]
+anyhow = { version = "^1.0" }
+rand = { version = "^0.10" }
+serde_json = { version = "^1.0", default-features = false }

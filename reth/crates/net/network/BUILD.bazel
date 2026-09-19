@@ -98,12 +98,12 @@ crate_unit_test(
         "//reth/crates/tracing:reth_tracing",
         "//reth/crates/trie/trie:reth_trie",
         "//reth/testing/testing-utils:reth_testing_utils",
-        "@crates//:codspeed-criterion-compat",
+        "@crates//:codspeed-criterion-compat-4.7.0",
         "@crates//:test-case",
         "@crates//:url",
     ],
     aliases = {
-        "@crates//:codspeed-criterion-compat": "criterion",
+        "@crates//:codspeed-criterion-compat-4.7.0": "criterion",
     },
 )
 
@@ -151,7 +151,7 @@ crate_integration_test(
         "//reth/crates/trie/trie:reth_trie",
         "//reth/testing/testing-utils:reth_testing_utils",
         ":reth_network",
-        "@crates//:codspeed-criterion-compat",
+        "@crates//:codspeed-criterion-compat-4.7.0",
         "@crates//:derive_more",
         "@crates//:discv5",
         "@crates//:enr",
@@ -182,7 +182,7 @@ crate_integration_test(
         "@crates//:auto_impl",
     ],
     aliases = {
-        "@crates//:codspeed-criterion-compat": "criterion",
+        "@crates//:codspeed-criterion-compat-4.7.0": "criterion",
         "@crates//:rand_08-0.8.6": "rand_08",
     },
 )

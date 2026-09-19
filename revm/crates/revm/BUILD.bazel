@@ -1,0 +1,116 @@
+# GENERATED FILE - DO NOT EDIT.
+#
+# Regenerate with `python3 bazel/generate.py` after changing Cargo.toml.
+
+load("//bazel:rust.bzl", "crate_cargo_toml_env_vars", "crate_library", "crate_unit_test")
+load("//revm/bazel:workspace.bzl", "WORKSPACE")
+
+FEATURES = [
+    "alloydb",
+    "arbitrary",
+    "asm-keccak",
+    "blst",
+    "c-kzg",
+    "default",
+    "map-foldhash",
+    "memory_limit",
+    "optional_balance_check",
+    "optional_block_gas_limit",
+    "optional_eip3541",
+    "optional_eip3607",
+    "optional_fee_charge",
+    "optional_no_base_fee",
+    "p256-aws-lc-rs",
+    "parse",
+    "portable",
+    "secp256k1",
+    "serde",
+    "std",
+    "test-types",
+    "tracer",
+]
+
+DECLARED_FEATURES = [
+    "alloydb",
+    "arbitrary",
+    "asm-keccak",
+    "asyncdb",
+    "blst",
+    "bn",
+    "c-kzg",
+    "default",
+    "dev",
+    "gmp",
+    "hashbrown",
+    "map-foldhash",
+    "memory_limit",
+    "optional_balance_check",
+    "optional_block_gas_limit",
+    "optional_eip3541",
+    "optional_eip3607",
+    "optional_eip7623",
+    "optional_fee_charge",
+    "optional_no_base_fee",
+    "optional_priority_fee_check",
+    "p256-aws-lc-rs",
+    "parse",
+    "portable",
+    "secp256k1",
+    "serde",
+    "serde-json",
+    "sha3-keccak",
+    "std",
+    "test-types",
+    "tracer",
+]
+
+crate_cargo_toml_env_vars(WORKSPACE)
+
+crate_library(
+    name = "revm",
+    workspace = WORKSPACE,
+    version = "43.0.2",
+    crate_features = FEATURES,
+    declared_features = DECLARED_FEATURES,
+    deps = [
+        "//revm/crates/bytecode:revm_bytecode",
+        "//revm/crates/context/interface:revm_context_interface",
+        "//revm/crates/context:revm_context",
+        "//revm/crates/database/interface:revm_database_interface",
+        "//revm/crates/database:revm_database",
+        "//revm/crates/handler:revm_handler",
+        "//revm/crates/inspector:revm_inspector",
+        "//revm/crates/interpreter:revm_interpreter",
+        "//revm/crates/precompile:revm_precompile",
+        "//revm/crates/primitives:revm_primitives",
+        "//revm/crates/state:revm_state",
+        "//revm/crates/statetest-types:revm_statetest_types",
+    ],
+    aliases = {
+        "//revm/crates/bytecode:revm_bytecode": "bytecode",
+        "//revm/crates/context/interface:revm_context_interface": "context_interface",
+        "//revm/crates/context:revm_context": "context",
+        "//revm/crates/database/interface:revm_database_interface": "database_interface",
+        "//revm/crates/database:revm_database": "database",
+        "//revm/crates/handler:revm_handler": "handler",
+        "//revm/crates/inspector:revm_inspector": "inspector",
+        "//revm/crates/interpreter:revm_interpreter": "interpreter",
+        "//revm/crates/precompile:revm_precompile": "precompile",
+        "//revm/crates/primitives:revm_primitives": "primitives",
+        "//revm/crates/state:revm_state": "state",
+        "//revm/crates/statetest-types:revm_statetest_types": "statetest_types",
+    },
+)
+
+crate_unit_test(
+    name = "revm_test",
+    workspace = WORKSPACE,
+    version = "43.0.2",
+    crate = ":revm",
+    crate_features = FEATURES,
+    declared_features = DECLARED_FEATURES,
+    deps = [
+        "@crates//:serde",
+        "@crates//:serde_json",
+    ],
+)

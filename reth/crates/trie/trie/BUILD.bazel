@@ -48,10 +48,10 @@ crate_library(
         "//reth/crates/storage/errors:reth_storage_errors",
         "//reth/crates/trie/common:reth_trie_common",
         "//reth/crates/trie/sparse:reth_trie_sparse",
+        "//revm/crates/revm:revm",
         "@crates//:itertools",
         "@crates//:metrics",
         "@crates//:parking_lot",
-        "@crates//:revm",
         "@crates//:tracing",
         "@crates//:triehash",
     ],
@@ -69,13 +69,13 @@ crate_unit_test(
     deps = [
         "//reth/crates/tracing:reth_tracing",
         "@crates//:assert_matches",
-        "@crates//:codspeed-criterion-compat",
+        "@crates//:codspeed-criterion-compat-4.7.0",
         "@crates//:pretty_assertions",
         "@crates//:proptest",
         "@crates//:proptest-arbitrary-interop",
         "@crates//:rand-0.9.4",
     ],
     aliases = {
-        "@crates//:codspeed-criterion-compat": "criterion",
+        "@crates//:codspeed-criterion-compat-4.7.0": "criterion",
     },
 )

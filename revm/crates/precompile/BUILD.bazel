@@ -1,0 +1,82 @@
+# GENERATED FILE - DO NOT EDIT.
+#
+# Regenerate with `python3 bazel/generate.py` after changing Cargo.toml.
+
+load("//bazel:rust.bzl", "crate_cargo_toml_env_vars", "crate_library", "crate_unit_test")
+load("//revm/bazel:workspace.bzl", "WORKSPACE")
+
+FEATURES = [
+    "blst",
+    "c-kzg",
+    "default",
+    "p256-aws-lc-rs",
+    "portable",
+    "secp256k1",
+    "std",
+]
+
+DECLARED_FEATURES = [
+    "asm-keccak",
+    "blst",
+    "bn",
+    "c-kzg",
+    "default",
+    "gmp",
+    "hashbrown",
+    "p256-aws-lc-rs",
+    "portable",
+    "secp256k1",
+    "std",
+]
+
+crate_cargo_toml_env_vars(WORKSPACE)
+
+crate_library(
+    name = "revm_precompile",
+    workspace = WORKSPACE,
+    version = "43.0.2",
+    crate_features = FEATURES,
+    declared_features = DECLARED_FEATURES,
+    deps = [
+        "//revm/crates/context/interface:revm_context_interface",
+        "//revm/crates/primitives:revm_primitives",
+        "@crates//:ark-bls12-381",
+        "@crates//:ark-bn254",
+        "@crates//:ark-ec",
+        "@crates//:ark-ff",
+        "@crates//:ark-serialize",
+        "@crates//:arrayref",
+        "@crates//:aurora-engine-modexp",
+        "@crates//:aws-lc-rs",
+        "@crates//:blst",
+        "@crates//:c-kzg",
+        "@crates//:cfg-if",
+        "@crates//:k256",
+        "@crates//:p256",
+        "@crates//:ripemd",
+        "@crates//:secp256k1-0.31.1",
+        "@crates//:sha2-0.11.0",
+    ],
+    aliases = {
+        "//revm/crates/context/interface:revm_context_interface": "context_interface",
+        "//revm/crates/primitives:revm_primitives": "primitives",
+    },
+)
+
+crate_unit_test(
+    name = "revm_precompile_test",
+    workspace = WORKSPACE,
+    version = "43.0.2",
+    crate = ":revm_precompile",
+    crate_features = FEATURES,
+    declared_features = DECLARED_FEATURES,
+    deps = [
+        "@crates//:ark-std",
+        "@crates//:codspeed-criterion-compat-5.0.2",
+        "@crates//:rand-0.10.2",
+        "@crates//:rstest",
+    ],
+    aliases = {
+        "@crates//:codspeed-criterion-compat-5.0.2": "criterion",
+    },
+)

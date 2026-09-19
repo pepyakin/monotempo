@@ -40,7 +40,7 @@ script inputs, test tags) live in `<project>/bazel/project.toml`.
 Each project is its own Cargo workspace for `cargo`, but Bazel resolves the
 version-aligned projects as one workspace (`bazel/cargo/`, generated, with its own committed
 `Cargo.lock`) and one crate_universe repository, `@crates`. reth depends on the
-in-tree alloy, reth-core, alloy-evm, revm-inspectors and alloy foundations through
+in-tree alloy, reth-core, alloy-evm, revm-inspectors, revm and alloy foundations through
 `[patch.crates-io]` in `reth/Cargo.toml`. Each shared project patches its direct
 and transitive in-tree dependencies; the generator turns that into local dependencies in reth's
 `BUILD.bazel` files, and into `crate.annotation(deps = ...)` entries in the

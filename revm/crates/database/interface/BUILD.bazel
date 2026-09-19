@@ -1,0 +1,55 @@
+# GENERATED FILE - DO NOT EDIT.
+#
+# Regenerate with `python3 bazel/generate.py` after changing Cargo.toml.
+
+load("//bazel:rust.bzl", "crate_cargo_toml_env_vars", "crate_library", "crate_unit_test")
+load("//revm/bazel:workspace.bzl", "WORKSPACE")
+
+FEATURES = [
+    "asyncdb",
+    "default",
+    "serde",
+    "std",
+]
+
+DECLARED_FEATURES = [
+    "asyncdb",
+    "default",
+    "serde",
+    "std",
+]
+
+crate_cargo_toml_env_vars(WORKSPACE)
+
+crate_library(
+    name = "revm_database_interface",
+    workspace = WORKSPACE,
+    version = "43.0.0",
+    crate_features = FEATURES,
+    declared_features = DECLARED_FEATURES,
+    deps = [
+        "//revm/crates/primitives:revm_primitives",
+        "//revm/crates/state:revm_state",
+        "@crates//:corosensei",
+        "@crates//:either",
+        "@crates//:serde",
+        "@crates//:thiserror",
+        "@crates//:tokio",
+    ],
+    proc_macro_deps = [
+        "@crates//:auto_impl",
+    ],
+    aliases = {
+        "//revm/crates/primitives:revm_primitives": "primitives",
+        "//revm/crates/state:revm_state": "state",
+    },
+)
+
+crate_unit_test(
+    name = "revm_database_interface_test",
+    workspace = WORKSPACE,
+    version = "43.0.0",
+    crate = ":revm_database_interface",
+    crate_features = FEATURES,
+    declared_features = DECLARED_FEATURES,
+)

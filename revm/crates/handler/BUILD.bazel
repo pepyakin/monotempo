@@ -1,0 +1,72 @@
+# GENERATED FILE - DO NOT EDIT.
+#
+# Regenerate with `python3 bazel/generate.py` after changing Cargo.toml.
+
+load("//bazel:rust.bzl", "crate_cargo_toml_env_vars", "crate_library", "crate_unit_test")
+load("//revm/bazel:workspace.bzl", "WORKSPACE")
+
+FEATURES = [
+    "default",
+    "serde",
+    "std",
+]
+
+DECLARED_FEATURES = [
+    "asyncdb",
+    "default",
+    "serde",
+    "serde-json",
+    "std",
+]
+
+crate_cargo_toml_env_vars(WORKSPACE)
+
+crate_library(
+    name = "revm_handler",
+    workspace = WORKSPACE,
+    version = "43.0.2",
+    crate_features = FEATURES,
+    declared_features = DECLARED_FEATURES,
+    deps = [
+        "//revm/crates/bytecode:revm_bytecode",
+        "//revm/crates/context/interface:revm_context_interface",
+        "//revm/crates/context:revm_context",
+        "//revm/crates/database/interface:revm_database_interface",
+        "//revm/crates/interpreter:revm_interpreter",
+        "//revm/crates/precompile:revm_precompile",
+        "//revm/crates/primitives:revm_primitives",
+        "//revm/crates/state:revm_state",
+        "@crates//:serde",
+    ],
+    proc_macro_deps = [
+        "@crates//:auto_impl",
+        "@crates//:derive-where",
+    ],
+    aliases = {
+        "//revm/crates/bytecode:revm_bytecode": "bytecode",
+        "//revm/crates/context/interface:revm_context_interface": "context_interface",
+        "//revm/crates/context:revm_context": "context",
+        "//revm/crates/database/interface:revm_database_interface": "database_interface",
+        "//revm/crates/interpreter:revm_interpreter": "interpreter",
+        "//revm/crates/precompile:revm_precompile": "precompile",
+        "//revm/crates/primitives:revm_primitives": "primitives",
+        "//revm/crates/state:revm_state": "state",
+    },
+)
+
+crate_unit_test(
+    name = "revm_handler_test",
+    workspace = WORKSPACE,
+    version = "43.0.2",
+    crate = ":revm_handler",
+    crate_features = FEATURES,
+    declared_features = DECLARED_FEATURES,
+    deps = [
+        "//alloy/crates/signer-local:alloy_signer_local",
+        "//alloy/crates/signer:alloy_signer",
+        "//revm/crates/database:revm_database",
+    ],
+    aliases = {
+        "//revm/crates/database:revm_database": "database",
+    },
+)

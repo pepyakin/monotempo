@@ -1,0 +1,32 @@
+# GENERATED FILE - DO NOT EDIT. Regenerate with `python3 bazel/generate.py`.
+#
+# Bazel-only derivation of `revm/examples/custom_precompile_journal/Cargo.toml`: the same
+# package as `cargo metadata` describes it in the revm workspace, with
+# workspace inheritance resolved. Cargo builds are unaffected.
+
+[package]
+name = "example-custom-precompile-journal"
+version = "0.1.0"
+edition = "2021"
+rust-version = "1.91.0"
+build = false
+autolib = false
+autobins = false
+autoexamples = false
+autotests = false
+autobenches = false
+
+[lib]
+name = "example_custom_precompile_journal"
+path = "src/lib.rs"
+
+[[bin]]
+name = "example-custom-precompile-journal"
+path = "src/main.rs"
+
+[features]
+asyncdb = ["revm/asyncdb"]
+
+[dependencies]
+anyhow = { version = "^1.0" }
+revm = { path = "../../crates/revm", features = ["std", "optional_eip3607"], default-features = false }

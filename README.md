@@ -22,20 +22,20 @@ change to one file only rebuilds (and retests) the crates that depend on it.
 | `alloy-chains/` | EIP-155 chain definitions | [alloy-rs/chains](https://github.com/alloy-rs/chains) | imported at v0.2.37 |
 | `alloy-hardforks/` | Hardfork definitions | [alloy-rs/hardforks](https://github.com/alloy-rs/hardforks) | imported at alloy-hardforks-v0.4.8; all consumers use the local version |
 | `alloy-eips/` | EIP-2124, 2930, 7702, 7928 and 8141 types | [alloy-rs/eips](https://github.com/alloy-rs/eips) | imported at alloy-eip7928-v0.4.10 (individual crates have independent versions) |
-| `revm/` or `evm2/` | The EVM used by reth | [bluealloy/revm](https://github.com/bluealloy/revm) (what reth and tempo use today) or [alloy-rs/evm2](https://github.com/alloy-rs/evm2) (its successor, in development) | not yet imported; which one is still open |
+| `revm/` | The EVM used by reth and tempo | [bluealloy/revm](https://github.com/bluealloy/revm) | imported at the revm 43.0.2 release commit (`4535a5786f`, untagged upstream); reth, tempo, alloy-evm, revm-inspectors and reth-core build against it. Its successor [alloy-rs/evm2](https://github.com/alloy-rs/evm2) is not imported. |
 
 Until a project is imported, reth consumes it as an external crate from
 crates.io through crate_universe, exactly as its `Cargo.lock` says. Importing a
 project means moving it under its directory here and pointing the dependants
 at it with `[patch.crates-io]` in their `Cargo.toml`, as reth does for alloy;
-the Bazel build follows the patch. External crates such as revm also consume
-the in-tree foundations through generated crate_universe annotations.
+the Bazel build follows the patch. External crates that depend on in-tree
+crates consume them through generated crate_universe annotations.
 The EIPs import pins one coherent revision: EIP-2124 0.2.0, EIP-2930 0.2.4,
 EIP-7702 0.6.3, EIP-7928 0.4.10 and EIP-8141 0.1.0. Alloy node-bindings uses
 the local hardforks 0.4.8 API; no external 0.2.x copy is retained.
 
 Tempo builds against the local reth, Alloy, reth-core, alloy-evm,
-revm-inspectors and Alloy foundations. All projects share one Bazel dependency
+revm-inspectors, revm and Alloy foundations. All projects share one Bazel dependency
 resolution, `@crates`. Editing an imported dependency rebuilds its affected
 Tempo consumers; no separate upstream reth or Alloy copy is used by Tempo.
 

@@ -31,7 +31,7 @@ crate_library(
         "@crates//:pin-project",
         "@crates//:rand_08-0.8.6",
         "@crates//:secp256k1-0.30.0",
-        "@crates//:sha2",
+        "@crates//:sha2-0.10.9",
         "@crates//:thiserror",
         "@crates//:tokio",
         "@crates//:tokio-stream",

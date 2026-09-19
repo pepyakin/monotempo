@@ -1,0 +1,7 @@
+# Bazel configuration of the revm project, read by //bazel:generate.py.
+#
+# Everything Bazel needs to know about revm that cannot be derived from its
+# Cargo manifests. Nothing so far: the precompile backends revm enables by
+# default (secp256k1, blst, c-kzg) are external crates whose build scripts
+# already run hermetically for reth; `gmp` and `p256-aws-lc-rs` are opt-in
+# features no project enables.

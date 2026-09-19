@@ -24,7 +24,7 @@ crate_library(
         "@crates//:eyre",
         "@crates//:futures-util",
         "@crates//:reqwest",
-        "@crates//:sha2",
+        "@crates//:sha2-0.10.9",
         "@crates//:tokio",
     ],
 )
@@ -58,7 +58,7 @@ crate_integration_test(
         "@crates//:futures",
         "@crates//:futures-util",
         "@crates//:reqwest",
-        "@crates//:sha2",
+        "@crates//:sha2-0.10.9",
         "@crates//:tempfile",
         "@crates//:test-case",
         "@crates//:tokio",

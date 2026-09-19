@@ -1,0 +1,38 @@
+# GENERATED FILE - DO NOT EDIT.
+#
+# Regenerate with `python3 bazel/generate.py` after changing Cargo.toml.
+
+load("//bazel:rust.bzl", "crate_binary", "crate_cargo_toml_env_vars", "crate_unit_test")
+load("//revm/bazel:workspace.bzl", "WORKSPACE")
+
+FEATURES = []
+
+DECLARED_FEATURES = []
+
+crate_cargo_toml_env_vars(WORKSPACE)
+
+crate_binary(
+    name = "example-block-traces",
+    workspace = WORKSPACE,
+    version = "0.0.0",
+    crate_features = FEATURES,
+    declared_features = DECLARED_FEATURES,
+    deps = [
+        "//alloy/crates/consensus:alloy_consensus",
+        "//alloy/crates/eips:alloy_eips",
+        "//alloy/crates/provider:alloy_provider",
+        "//revm/crates/revm:revm",
+        "@crates//:anyhow",
+        "@crates//:indicatif",
+        "@crates//:tokio",
+    ],
+)
+
+crate_unit_test(
+    name = "example_block_traces_test",
+    workspace = WORKSPACE,
+    version = "0.0.0",
+    crate = ":example-block-traces",
+    crate_features = FEATURES,
+    declared_features = DECLARED_FEATURES,
+)

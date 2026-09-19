@@ -53,12 +53,12 @@ crate_unit_test(
     crate_features = FEATURES,
     declared_features = DECLARED_FEATURES,
     deps = [
-        "@crates//:codspeed-criterion-compat",
+        "@crates//:codspeed-criterion-compat-4.7.0",
         "@crates//:hash-db",
         "@crates//:plain_hasher",
         "@crates//:triehash",
     ],
     aliases = {
-        "@crates//:codspeed-criterion-compat": "criterion",
+        "@crates//:codspeed-criterion-compat-4.7.0": "criterion",
     },
 )

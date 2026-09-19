@@ -35,7 +35,7 @@ crate_library(
         "//reth/crates/trie/common:reth_trie_common",
         "@crates//:either",
         "@crates//:serde",
-        "@crates//:sha2",
+        "@crates//:sha2-0.10.9",
         "@crates//:thiserror",
         "@crates//:tokio",
     ],

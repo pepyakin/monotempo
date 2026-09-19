@@ -1,0 +1,33 @@
+# GENERATED FILE - DO NOT EDIT.
+#
+# Regenerate with `python3 bazel/generate.py` after changing Cargo.toml.
+
+load("//bazel:rust.bzl", "crate_binary", "crate_cargo_toml_env_vars", "crate_unit_test")
+load("//revm/bazel:workspace.bzl", "WORKSPACE")
+
+FEATURES = []
+
+DECLARED_FEATURES = []
+
+crate_cargo_toml_env_vars(WORKSPACE)
+
+crate_binary(
+    name = "example-cheatcode-inspector",
+    workspace = WORKSPACE,
+    version = "0.0.0",
+    crate_features = FEATURES,
+    declared_features = DECLARED_FEATURES,
+    deps = [
+        "//revm/crates/revm:revm",
+        "@crates//:anyhow",
+    ],
+)
+
+crate_unit_test(
+    name = "example_cheatcode_inspector_test",
+    workspace = WORKSPACE,
+    version = "0.0.0",
+    crate = ":example-cheatcode-inspector",
+    crate_features = FEATURES,
+    declared_features = DECLARED_FEATURES,
+)

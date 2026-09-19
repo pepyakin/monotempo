@@ -38,7 +38,7 @@ crate_library(
         "//reth/crates/revm:reth_revm",
         "//reth/crates/storage/storage-api:reth_storage_api",
         "//reth/crates/transaction-pool:reth_transaction_pool",
-        "@crates//:revm",
+        "//revm/crates/revm:revm",
         "@crates//:tracing",
     ],
 )

@@ -136,7 +136,7 @@ crate_unit_test(
         "@crates//:insta",
         "@crates//:p256",
         "@crates//:rand_09-0.9.4",
-        "@crates//:sha2",
+        "@crates//:sha2-0.10.9",
         "@crates//:test-case",
     ],
     aliases = {
@@ -216,7 +216,7 @@ crate_integration_test(
         "@crates//:reqwest",
         "@crates//:serde",
         "@crates//:serde_json",
-        "@crates//:sha2",
+        "@crates//:sha2-0.10.9",
         "@crates//:sysinfo",
         "@crates//:test-case",
         "@crates//:thiserror",

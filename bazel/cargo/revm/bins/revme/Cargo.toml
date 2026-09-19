@@ -1,0 +1,51 @@
+# GENERATED FILE - DO NOT EDIT. Regenerate with `python3 bazel/generate.py`.
+#
+# Bazel-only derivation of `revm/bins/revme/Cargo.toml`: the same
+# package as `cargo metadata` describes it in the revm workspace, with
+# workspace inheritance resolved. Cargo builds are unaffected.
+
+[package]
+name = "revme"
+version = "43.0.2"
+edition = "2021"
+rust-version = "1.91.0"
+build = false
+autolib = false
+autobins = false
+autoexamples = false
+autotests = false
+autobenches = false
+
+[lib]
+name = "revme"
+path = "src/lib.rs"
+
+[[bin]]
+name = "revme"
+path = "src/main.rs"
+
+[[bench]]
+name = "evm"
+path = "benches/evm.rs"
+
+[features]
+default = ["map-foldhash"]
+gmp = ["revm/gmp"]
+p256-aws-lc-rs = ["revm/p256-aws-lc-rs"]
+map-foldhash = ["revm/map-foldhash"]
+
+[dependencies]
+alloy-consensus = { version = "^2.0.0", features = ["std"], default-features = false }
+alloy-rlp = { version = "^0.3.12", features = ["arrayvec", "derive"], default-features = false }
+alloy-sol-types = { version = "^1.5.2", default-features = false }
+alloy-trie = { version = "^0.9", features = ["ethereum"], default-features = false }
+clap = { version = "^4.5", features = ["derive"] }
+codspeed-criterion-compat = { version = "^5.0" }
+csv = { version = "^1.1.6" }
+indicatif = { version = "^0.18" }
+k256 = { version = "^0.13.4", features = ["ecdsa"], default-features = false }
+revm = { path = "../../crates/revm", features = ["std", "c-kzg", "blst", "serde", "tracer", "parse", "test-types"], default-features = false }
+serde = { version = "^1.0", features = ["derive", "rc", "derive", "rc"], default-features = false }
+serde_json = { version = "^1.0", features = ["preserve_order"], default-features = false }
+thiserror = { version = "^2.0", default-features = false }
+walkdir = { version = "^2.5" }

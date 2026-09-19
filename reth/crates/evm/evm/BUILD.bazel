@@ -39,12 +39,12 @@ crate_library(
         "//reth/crates/storage/errors:reth_storage_errors",
         "//reth/crates/storage/storage-api:reth_storage_api",
         "//reth/crates/trie/common:reth_trie_common",
+        "//revm/crates/revm:revm",
         "@crates//:derive_more",
         "@crates//:fixed-cache",
         "@crates//:futures-util",
         "@crates//:metrics",
         "@crates//:rayon",
-        "@crates//:revm",
     ],
     proc_macro_deps = [
         "@crates//:auto_impl",

@@ -175,8 +175,8 @@ workspace, makes the alloy crates workspace members, so reth's generated
 `BUILD.bazel` files depend on `//alloy/crates/<x>:alloy_<x>` directly and an
 edit to alloy rebuilds (and retests) exactly the reth crates that use it.
 
-The same goes for `reth-core/`, `alloy-evm/` and `revm-inspectors/`: reth
-patches their crates to the tree, and they in turn patch `alloy-*` to
+The same goes for `reth-core/`, `alloy-evm/`, `revm-inspectors/` and `revm/`:
+reth patches their crates to the tree, and they in turn patch `alloy-*` to
 `../alloy/crates/*`, so a project's `[patch.crates-io]` lists every in-tree
 project it uses, directly or through another in-tree project. A project may
 be a single crate without a `[workspace]` (`revm-inspectors/`); its own
@@ -189,8 +189,9 @@ dependencies on workspace members out of the crates it renders). The
 generator writes such edges back as
 `crate.annotation(crate = ..., version = "=...", deps = ["@@//alloy/..."])` in
 `bazel/cargo/member_deps.MODULE.bazel`, which the root `MODULE.bazel`
-`include()`s. These annotations connect external revm and other crates to
-the in-tree alloy foundations, preserving type identity across the graph.
+`include()`s. These annotations connect external crates (`ruint`, `nybbles`,
+`discv5`, ...) to the in-tree alloy foundations, preserving type identity
+across the graph.
 Changing which external crates reach into the tree needs a repin
 (`CARGO_BAZEL_REPIN=1 bazel mod deps`) after the generator.
 

@@ -30,8 +30,8 @@ crate_library(
         "//reth-core/crates/primitives-traits:reth_primitives_traits",
         "//reth/crates/prune/types:reth_prune_types",
         "//reth/crates/static-file/types:reth_static_file_types",
+        "//revm/crates/revm:revm",
         "@crates//:derive_more",
-        "@crates//:revm",
         "@crates//:thiserror",
     ],
 )

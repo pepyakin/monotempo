@@ -1,0 +1,36 @@
+# GENERATED FILE - DO NOT EDIT.
+#
+# Regenerate with `python3 bazel/generate.py` after changing Cargo.toml.
+
+load("//bazel:rust.bzl", "crate_cargo_toml_env_vars", "crate_library", "crate_unit_test")
+load("//revm/bazel:workspace.bzl", "WORKSPACE")
+
+FEATURES = []
+
+DECLARED_FEATURES = []
+
+crate_cargo_toml_env_vars(WORKSPACE)
+
+crate_library(
+    name = "example_database_components",
+    workspace = WORKSPACE,
+    version = "0.0.0",
+    crate_features = FEATURES,
+    declared_features = DECLARED_FEATURES,
+    deps = [
+        "//revm/crates/revm:revm",
+        "@crates//:thiserror",
+    ],
+    proc_macro_deps = [
+        "@crates//:auto_impl",
+    ],
+)
+
+crate_unit_test(
+    name = "example_database_components_test",
+    workspace = WORKSPACE,
+    version = "0.0.0",
+    crate = ":example_database_components",
+    crate_features = FEATURES,
+    declared_features = DECLARED_FEATURES,
+)

@@ -1,0 +1,28 @@
+# GENERATED FILE - DO NOT EDIT. Regenerate with `python3 bazel/generate.py`.
+#
+# Bazel-only derivation of `revm/examples/erc20_gas/Cargo.toml`: the same
+# package as `cargo metadata` describes it in the revm workspace, with
+# workspace inheritance resolved. Cargo builds are unaffected.
+
+[package]
+name = "example-erc20-gas"
+version = "0.0.0"
+edition = "2021"
+rust-version = "1.91.0"
+build = false
+autolib = false
+autobins = false
+autoexamples = false
+autotests = false
+autobenches = false
+
+[[bin]]
+name = "example-erc20-gas"
+path = "src/main.rs"
+
+[dependencies]
+alloy-provider = { version = "^2.0.0" }
+alloy-sol-types = { version = "^1.5.2", features = ["std"], default-features = false }
+anyhow = { version = "^1.0" }
+revm = { path = "../../crates/revm", features = ["std", "alloydb"], default-features = false }
+tokio = { version = "^1.47", features = ["rt-multi-thread", "macros"] }

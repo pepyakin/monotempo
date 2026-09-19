@@ -59,34 +59,6 @@ crate.annotation(
 
 crate.annotation(
     deps = [
-        "@@//alloy-eips/crates/eip2930:alloy_eip2930",
-        "@@//alloy-eips/crates/eip7702:alloy_eip7702",
-    ],
-    crate = "revm-context-interface",
-    repositories = ["crates"],
-    version = "=43.0.1",
-)
-
-crate.annotation(
-    deps = [
-        "@@//alloy-core/crates/primitives:alloy_primitives",
-    ],
-    crate = "revm-primitives",
-    repositories = ["crates"],
-    version = "=43.0.0",
-)
-
-crate.annotation(
-    deps = [
-        "@@//alloy-eips/crates/eip7928:alloy_eip7928",
-    ],
-    crate = "revm-state",
-    repositories = ["crates"],
-    version = "=43.0.0",
-)
-
-crate.annotation(
-    deps = [
         "@@//alloy-rlp/crates/rlp:alloy_rlp",
     ],
     crate = "ruint",

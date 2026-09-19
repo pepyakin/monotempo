@@ -1,0 +1,50 @@
+# GENERATED FILE - DO NOT EDIT. Regenerate with `python3 bazel/generate.py`.
+#
+# Bazel-only derivation of `revm/crates/interpreter/Cargo.toml`: the same
+# package as `cargo metadata` describes it in the revm workspace, with
+# workspace inheritance resolved. Cargo builds are unaffected.
+
+[package]
+name = "revm-interpreter"
+version = "43.0.1"
+edition = "2021"
+rust-version = "1.91.0"
+build = false
+autolib = false
+autobins = false
+autoexamples = false
+autotests = false
+autobenches = false
+
+[lib]
+name = "revm_interpreter"
+path = "src/lib.rs"
+
+[[test]]
+name = "miri_read_slice_oob"
+path = "tests/miri_read_slice_oob.rs"
+
+[features]
+default = ["std"]
+std = [
+    "serde?/std",
+    "primitives/std",
+    "context-interface/std",
+    "bytecode/std",
+    "state/std",
+    "serde_json/std",
+]
+hashbrown = ["primitives/hashbrown"]
+serde = ["dep:serde", "primitives/serde", "bytecode/serde", "context-interface/serde", "state/serde"]
+arbitrary = ["std", "primitives/arbitrary"]
+memory_limit = []
+
+[dependencies]
+bytecode = { package = "revm-bytecode", path = "../bytecode", default-features = false }
+context-interface = { package = "revm-context-interface", path = "../context/interface", default-features = false }
+primitives = { package = "revm-primitives", path = "../primitives", default-features = false }
+serde = { version = "^1.0", features = ["derive", "rc", "derive", "rc"], optional = true, default-features = false }
+state = { package = "revm-state", path = "../state", default-features = false }
+
+[dev-dependencies]
+serde_json = { version = "^1.0", features = ["alloc"], default-features = false }

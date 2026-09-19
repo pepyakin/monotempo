@@ -44,7 +44,7 @@ crate_library(
         "//reth/crates/storage/errors:reth_storage_errors",
         "//reth/crates/tokio-util:reth_tokio_util",
         "//reth/crates/trie/common:reth_trie_common",
-        "@crates//:revm",
+        "//revm/crates/revm:revm",
         "@crates//:serde_json",
     ],
     proc_macro_deps = [

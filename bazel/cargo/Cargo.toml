@@ -219,6 +219,32 @@ members = [
     "reth-core/crates/primitives-traits",
     "reth-core/crates/rpc-traits",
     "reth-core/crates/zstd-compressors",
+    "revm/bins/revme",
+    "revm/crates/bytecode",
+    "revm/crates/context",
+    "revm/crates/context/interface",
+    "revm/crates/database",
+    "revm/crates/database/interface",
+    "revm/crates/ee-tests",
+    "revm/crates/handler",
+    "revm/crates/inspector",
+    "revm/crates/interpreter",
+    "revm/crates/precompile",
+    "revm/crates/primitives",
+    "revm/crates/revm",
+    "revm/crates/state",
+    "revm/crates/statetest-types",
+    "revm/examples/bal_example",
+    "revm/examples/block_traces",
+    "revm/examples/cheatcode_inspector",
+    "revm/examples/contract_deployment",
+    "revm/examples/custom_opcodes",
+    "revm/examples/custom_precompile_journal",
+    "revm/examples/database_components",
+    "revm/examples/erc20_gas",
+    "revm/examples/my_evm",
+    "revm/examples/uniswap_get_reserves",
+    "revm/examples/uniswap_v2_usdc_swap",
     "revm-inspectors",
     "tempo/bin/tempo",
     "tempo/bin/tempo-sidecar",
@@ -302,6 +328,18 @@ alloy-transport-http = { path = "alloy/crates/transport-http" }
 alloy-transport-ipc = { path = "alloy/crates/transport-ipc" }
 alloy-transport-ws = { path = "alloy/crates/transport-ws" }
 alloy-tx-macros = { path = "alloy/crates/tx-macros" }
+revm = { path = "revm/crates/revm" }
+revm-bytecode = { path = "revm/crates/bytecode" }
+revm-context = { path = "revm/crates/context" }
+revm-context-interface = { path = "revm/crates/context/interface" }
+revm-database = { path = "revm/crates/database" }
+revm-database-interface = { path = "revm/crates/database/interface" }
+revm-handler = { path = "revm/crates/handler" }
+revm-inspector = { path = "revm/crates/inspector" }
+revm-interpreter = { path = "revm/crates/interpreter" }
+revm-precompile = { path = "revm/crates/precompile" }
+revm-primitives = { path = "revm/crates/primitives" }
+revm-state = { path = "revm/crates/state" }
 alloy-evm = { path = "alloy-evm/crates/evm" }
 reth-codecs = { path = "reth-core/crates/codecs" }
 reth-codecs-derive = { path = "reth-core/crates/codecs-derive" }
@@ -318,4 +356,4 @@ alloy-signer-trezor = { path = "alloy/crates/signer-trezor" }
 # Digest of every member manifest. crate_universe only re-resolves when a
 # manifest it was given changes, and it is given this one alone.
 [workspace.metadata.bazel]
-members-digest = "b240d73bef7ea0a990d9bd3e12ce1f7343ca9ab329b98e4cbae320cdb1faa51b"
+members-digest = "55e174e30cdc0dfa9de3be5bba36de67394462a88ca5f7e865b37140b75e8a40"

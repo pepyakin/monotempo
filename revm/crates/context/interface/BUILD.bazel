@@ -1,0 +1,55 @@
+# GENERATED FILE - DO NOT EDIT.
+#
+# Regenerate with `python3 bazel/generate.py` after changing Cargo.toml.
+
+load("//bazel:rust.bzl", "crate_cargo_toml_env_vars", "crate_library", "crate_unit_test")
+load("//revm/bazel:workspace.bzl", "WORKSPACE")
+
+FEATURES = [
+    "default",
+    "serde",
+    "std",
+]
+
+DECLARED_FEATURES = [
+    "default",
+    "serde",
+    "serde-json",
+    "std",
+]
+
+crate_cargo_toml_env_vars(WORKSPACE)
+
+crate_library(
+    name = "revm_context_interface",
+    workspace = WORKSPACE,
+    version = "43.0.1",
+    crate_features = FEATURES,
+    declared_features = DECLARED_FEATURES,
+    deps = [
+        "//alloy-eips/crates/eip2930:alloy_eip2930",
+        "//alloy-eips/crates/eip7702:alloy_eip7702",
+        "//revm/crates/database/interface:revm_database_interface",
+        "//revm/crates/primitives:revm_primitives",
+        "//revm/crates/state:revm_state",
+        "@crates//:either",
+        "@crates//:serde",
+    ],
+    proc_macro_deps = [
+        "@crates//:auto_impl",
+    ],
+    aliases = {
+        "//revm/crates/database/interface:revm_database_interface": "database_interface",
+        "//revm/crates/primitives:revm_primitives": "primitives",
+        "//revm/crates/state:revm_state": "state",
+    },
+)
+
+crate_unit_test(
+    name = "revm_context_interface_test",
+    workspace = WORKSPACE,
+    version = "43.0.1",
+    crate = ":revm_context_interface",
+    crate_features = FEATURES,
+    declared_features = DECLARED_FEATURES,
+)

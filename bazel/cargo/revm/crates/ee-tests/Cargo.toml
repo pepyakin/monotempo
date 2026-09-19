@@ -1,0 +1,31 @@
+# GENERATED FILE - DO NOT EDIT. Regenerate with `python3 bazel/generate.py`.
+#
+# Bazel-only derivation of `revm/crates/ee-tests/Cargo.toml`: the same
+# package as `cargo metadata` describes it in the revm workspace, with
+# workspace inheritance resolved. Cargo builds are unaffected.
+
+[package]
+name = "revm-ee-tests"
+version = "43.0.0"
+edition = "2021"
+rust-version = "1.91.0"
+build = false
+autolib = false
+autobins = false
+autoexamples = false
+autotests = false
+autobenches = false
+
+[lib]
+name = "revm_ee_tests"
+path = "src/lib.rs"
+
+[features]
+default = []
+optional_balance_check = ["revm/optional_balance_check"]
+
+[dependencies]
+revm = { path = "../revm", features = ["serde", "std"], default-features = false }
+
+[dev-dependencies]
+insta = { version = "^1.43", features = ["json"], default-features = false }

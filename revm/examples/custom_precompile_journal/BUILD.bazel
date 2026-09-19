@@ -1,0 +1,51 @@
+# GENERATED FILE - DO NOT EDIT.
+#
+# Regenerate with `python3 bazel/generate.py` after changing Cargo.toml.
+
+load("//bazel:rust.bzl", "crate_binary", "crate_cargo_toml_env_vars", "crate_library", "crate_unit_test")
+load("//revm/bazel:workspace.bzl", "WORKSPACE")
+
+FEATURES = []
+
+DECLARED_FEATURES = [
+    "asyncdb",
+]
+
+crate_cargo_toml_env_vars(WORKSPACE)
+
+crate_library(
+    name = "example_custom_precompile_journal",
+    workspace = WORKSPACE,
+    version = "0.1.0",
+    crate_features = FEATURES,
+    declared_features = DECLARED_FEATURES,
+    workspace_lints = False,
+    deps = [
+        "//revm/crates/revm:revm",
+        "@crates//:anyhow",
+    ],
+)
+
+crate_binary(
+    name = "example-custom-precompile-journal",
+    workspace = WORKSPACE,
+    version = "0.1.0",
+    crate_features = FEATURES,
+    declared_features = DECLARED_FEATURES,
+    workspace_lints = False,
+    deps = [
+        "//revm/crates/revm:revm",
+        ":example_custom_precompile_journal",
+        "@crates//:anyhow",
+    ],
+)
+
+crate_unit_test(
+    name = "example_custom_precompile_journal_test",
+    workspace = WORKSPACE,
+    version = "0.1.0",
+    crate = ":example_custom_precompile_journal",
+    crate_features = FEATURES,
+    declared_features = DECLARED_FEATURES,
+    workspace_lints = False,
+)

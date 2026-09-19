@@ -39,7 +39,7 @@ crate_library(
         "//reth/crates/evm/evm:reth_evm",
         "//reth/crates/evm/execution-types:reth_execution_types",
         "//reth/crates/storage/errors:reth_storage_errors",
-        "@crates//:revm",
+        "//revm/crates/revm:revm",
     ],
 )
 
@@ -77,8 +77,8 @@ crate_integration_test(
         "//reth/crates/evm/execution-types:reth_execution_types",
         "//reth/crates/storage/errors:reth_storage_errors",
         "//reth/testing/testing-utils:reth_testing_utils",
+        "//revm/crates/revm:revm",
         ":reth_evm_ethereum",
-        "@crates//:revm",
         "@crates//:secp256k1-0.30.0",
     ],
 )

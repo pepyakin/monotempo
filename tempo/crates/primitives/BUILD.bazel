@@ -53,6 +53,7 @@ crate_library(
         "//reth/crates/ethereum/primitives:reth_ethereum_primitives",
         "//reth/crates/rpc/rpc-convert:reth_rpc_convert",
         "//reth/crates/storage/db-api:reth_db_api",
+        "//revm/crates/revm:revm",
         "//tempo/crates/contracts:tempo_contracts",
         "@crates//:arbitrary",
         "@crates//:aws-lc-rs",
@@ -62,10 +63,9 @@ crate_library(
         "@crates//:modular-bitfield",
         "@crates//:once_cell",
         "@crates//:p256",
-        "@crates//:revm",
         "@crates//:serde",
         "@crates//:serde_json",
-        "@crates//:sha2",
+        "@crates//:sha2-0.10.9",
     ],
 )
 

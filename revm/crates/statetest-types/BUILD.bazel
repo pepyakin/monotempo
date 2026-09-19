@@ -1,0 +1,52 @@
+# GENERATED FILE - DO NOT EDIT.
+#
+# Regenerate with `python3 bazel/generate.py` after changing Cargo.toml.
+
+load("//bazel:rust.bzl", "crate_cargo_toml_env_vars", "crate_library", "crate_unit_test")
+load("//revm/bazel:workspace.bzl", "WORKSPACE")
+
+FEATURES = [
+    "map-foldhash",
+]
+
+DECLARED_FEATURES = [
+    "map-foldhash",
+]
+
+crate_cargo_toml_env_vars(WORKSPACE)
+
+crate_library(
+    name = "revm_statetest_types",
+    workspace = WORKSPACE,
+    version = "43.0.1",
+    crate_features = FEATURES,
+    declared_features = DECLARED_FEATURES,
+    deps = [
+        "//alloy-eips/crates/eip7928:alloy_eip7928",
+        "//revm/crates/context/interface:revm_context_interface",
+        "//revm/crates/context:revm_context",
+        "//revm/crates/database:revm_database",
+        "//revm/crates/primitives:revm_primitives",
+        "//revm/crates/state:revm_state",
+        "@crates//:k256",
+        "@crates//:serde",
+        "@crates//:serde_json",
+        "@crates//:thiserror",
+    ],
+    aliases = {
+        "//revm/crates/context/interface:revm_context_interface": "context_interface",
+        "//revm/crates/context:revm_context": "context",
+        "//revm/crates/database:revm_database": "database",
+        "//revm/crates/primitives:revm_primitives": "primitives",
+        "//revm/crates/state:revm_state": "state",
+    },
+)
+
+crate_unit_test(
+    name = "revm_statetest_types_test",
+    workspace = WORKSPACE,
+    version = "43.0.1",
+    crate = ":revm_statetest_types",
+    crate_features = FEATURES,
+    declared_features = DECLARED_FEATURES,
+)

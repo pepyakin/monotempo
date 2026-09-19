@@ -1,0 +1,83 @@
+# GENERATED FILE - DO NOT EDIT.
+#
+# Regenerate with `python3 bazel/generate.py` after changing Cargo.toml.
+
+load("//bazel:rust.bzl", "crate_cargo_toml_env_vars", "crate_library", "crate_unit_test")
+load("//revm/bazel:workspace.bzl", "WORKSPACE")
+
+FEATURES = [
+    "default",
+    "map-foldhash",
+    "memory_limit",
+    "optional_balance_check",
+    "optional_block_gas_limit",
+    "optional_eip3541",
+    "optional_eip3607",
+    "optional_fee_charge",
+    "optional_no_base_fee",
+    "serde",
+    "std",
+]
+
+DECLARED_FEATURES = [
+    "asyncdb",
+    "default",
+    "dev",
+    "map-foldhash",
+    "memory_limit",
+    "optional_balance_check",
+    "optional_block_gas_limit",
+    "optional_eip3541",
+    "optional_eip3607",
+    "optional_eip7623",
+    "optional_fee_charge",
+    "optional_no_base_fee",
+    "optional_priority_fee_check",
+    "serde",
+    "std",
+]
+
+crate_cargo_toml_env_vars(WORKSPACE)
+
+crate_library(
+    name = "revm_context",
+    workspace = WORKSPACE,
+    version = "43.0.2",
+    crate_features = FEATURES,
+    declared_features = DECLARED_FEATURES,
+    deps = [
+        "//revm/crates/bytecode:revm_bytecode",
+        "//revm/crates/context/interface:revm_context_interface",
+        "//revm/crates/database/interface:revm_database_interface",
+        "//revm/crates/primitives:revm_primitives",
+        "//revm/crates/state:revm_state",
+        "@crates//:bitvec",
+        "@crates//:cfg-if",
+        "@crates//:serde",
+    ],
+    proc_macro_deps = [
+        "@crates//:derive-where",
+    ],
+    aliases = {
+        "//revm/crates/bytecode:revm_bytecode": "bytecode",
+        "//revm/crates/context/interface:revm_context_interface": "context_interface",
+        "//revm/crates/database/interface:revm_database_interface": "database_interface",
+        "//revm/crates/primitives:revm_primitives": "primitives",
+        "//revm/crates/state:revm_state": "state",
+    },
+)
+
+crate_unit_test(
+    name = "revm_context_test",
+    workspace = WORKSPACE,
+    version = "43.0.2",
+    crate = ":revm_context",
+    crate_features = FEATURES,
+    declared_features = DECLARED_FEATURES,
+    deps = [
+        "//revm/crates/database:revm_database",
+    ],
+    aliases = {
+        "//revm/crates/database:revm_database": "database",
+    },
+)

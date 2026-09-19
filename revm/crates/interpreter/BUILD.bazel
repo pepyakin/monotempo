@@ -1,0 +1,81 @@
+# GENERATED FILE - DO NOT EDIT.
+#
+# Regenerate with `python3 bazel/generate.py` after changing Cargo.toml.
+
+load("//bazel:rust.bzl", "crate_cargo_toml_env_vars", "crate_integration_test", "crate_library", "crate_unit_test")
+load("//revm/bazel:workspace.bzl", "WORKSPACE")
+
+FEATURES = [
+    "default",
+    "memory_limit",
+    "serde",
+    "std",
+]
+
+DECLARED_FEATURES = [
+    "arbitrary",
+    "default",
+    "hashbrown",
+    "memory_limit",
+    "serde",
+    "std",
+]
+
+crate_cargo_toml_env_vars(WORKSPACE)
+
+crate_library(
+    name = "revm_interpreter",
+    workspace = WORKSPACE,
+    version = "43.0.1",
+    crate_features = FEATURES,
+    declared_features = DECLARED_FEATURES,
+    deps = [
+        "//revm/crates/bytecode:revm_bytecode",
+        "//revm/crates/context/interface:revm_context_interface",
+        "//revm/crates/primitives:revm_primitives",
+        "//revm/crates/state:revm_state",
+        "@crates//:serde",
+    ],
+    aliases = {
+        "//revm/crates/bytecode:revm_bytecode": "bytecode",
+        "//revm/crates/context/interface:revm_context_interface": "context_interface",
+        "//revm/crates/primitives:revm_primitives": "primitives",
+        "//revm/crates/state:revm_state": "state",
+    },
+)
+
+crate_unit_test(
+    name = "revm_interpreter_test",
+    workspace = WORKSPACE,
+    version = "43.0.1",
+    crate = ":revm_interpreter",
+    crate_features = FEATURES,
+    declared_features = DECLARED_FEATURES,
+    deps = [
+        "@crates//:serde_json",
+    ],
+)
+
+crate_integration_test(
+    name = "revm_interpreter_miri_read_slice_oob_test",
+    workspace = WORKSPACE,
+    version = "43.0.1",
+    crate_root = "tests/miri_read_slice_oob.rs",
+    crate_features = FEATURES,
+    declared_features = DECLARED_FEATURES,
+    deps = [
+        "//revm/crates/bytecode:revm_bytecode",
+        "//revm/crates/context/interface:revm_context_interface",
+        "//revm/crates/primitives:revm_primitives",
+        "//revm/crates/state:revm_state",
+        ":revm_interpreter",
+        "@crates//:serde",
+        "@crates//:serde_json",
+    ],
+    aliases = {
+        "//revm/crates/bytecode:revm_bytecode": "bytecode",
+        "//revm/crates/context/interface:revm_context_interface": "context_interface",
+        "//revm/crates/primitives:revm_primitives": "primitives",
+        "//revm/crates/state:revm_state": "state",
+    },
+)

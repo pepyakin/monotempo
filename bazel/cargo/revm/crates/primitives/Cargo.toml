@@ -1,0 +1,37 @@
+# GENERATED FILE - DO NOT EDIT. Regenerate with `python3 bazel/generate.py`.
+#
+# Bazel-only derivation of `revm/crates/primitives/Cargo.toml`: the same
+# package as `cargo metadata` describes it in the revm workspace, with
+# workspace inheritance resolved. Cargo builds are unaffected.
+
+[package]
+name = "revm-primitives"
+version = "43.0.0"
+edition = "2021"
+rust-version = "1.91.0"
+build = false
+autolib = false
+autobins = false
+autoexamples = false
+autotests = false
+autobenches = false
+
+[lib]
+name = "revm_primitives"
+path = "src/lib.rs"
+
+[features]
+default = ["std"]
+std = ["alloy-primitives/std", "serde?/std", "once_cell/std"]
+serde = ["dep:serde", "alloy-primitives/serde"]
+map-foldhash = ["alloy-primitives/map-foldhash"]
+hashbrown = ["alloy-primitives/map-hashbrown"]
+arbitrary = ["std", "alloy-primitives/arbitrary"]
+asm-keccak = ["alloy-primitives/asm-keccak"]
+sha3-keccak = ["alloy-primitives/sha3-keccak"]
+rand = ["alloy-primitives/rand"]
+
+[dependencies]
+alloy-primitives = { version = "^1.5.2", features = ["map-indexmap", "rlp", "map"], default-features = false }
+once_cell = { version = "^1.21", features = ["alloc", "race"], default-features = false }
+serde = { version = "^1.0", features = ["derive", "rc", "derive", "rc"], optional = true, default-features = false }

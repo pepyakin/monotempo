@@ -54,7 +54,7 @@ crate_library(
         "@crates//:ethereum_ssz",
         "@crates//:serde",
         "@crates//:serde_with",
-        "@crates//:sha2",
+        "@crates//:sha2-0.10.9",
     ],
     proc_macro_deps = [
         "@crates//:auto_impl",
