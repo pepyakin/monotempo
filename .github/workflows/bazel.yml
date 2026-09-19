@@ -59,9 +59,8 @@ jobs:
       - uses: dtolnay/rust-toolchain@stable
       - uses: bazel-contrib/setup-bazel@0.15.0
         with:
-          bazelisk-cache: true
-          disk-cache: ${{ github.workflow }}
-          repository-cache: true
+          bazelisk-version: 1.29.0
+          # The self-hosted runner retains Bazel's local caches between jobs.
       - name: Runner capacity
         run: |
           nproc
