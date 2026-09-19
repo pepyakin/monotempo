@@ -96,12 +96,13 @@ target the `self-hosted` and `linux` runner labels. The lightweight checks
 require Git, Python 3.11+, Bash and curl on the runner's `PATH`; the Rust setup
 action installs Rustup if needed and the toolchain selected by `rust-toolchain.toml`.
 
-GitHub Actions' **Run workflow** button runs these lightweight checks too.
-The optional **full_build** input additionally builds `//...` and tests `//...`
-after the checks pass, on a self-hosted Linux runner as well. Before enabling
-it, ensure that runner has roughly 16 cores, 32 GiB RAM and 40 GiB disk, plus
+After those checks pass, the **build and test** job runs `bazel build --config=ci //...`
+and `bazel test --config=ci //...` on a self-hosted Linux runner. This runs on
+every pull request and push to `main`, and through GitHub Actions' **Run workflow**
+button. The runner needs roughly 16 cores, 32 GiB RAM and 40 GiB disk, plus
 the host prerequisites described in [the build guide](bazel/README.md#hermeticity).
-Full builds are not part of automatic CI yet.
+Tests tagged `manual` remain excluded from `//...`; see the documented
+[opt-in suites](bazel/README.md#opt-in-test-suites).
 
 ## Layout
 
