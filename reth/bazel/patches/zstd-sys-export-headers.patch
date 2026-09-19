@@ -1,0 +1,23 @@
+zstd-sys copies public headers to OUT_DIR/include, but exports its private
+source/runfiles directory through DEP_ZSTD_INCLUDE. Bazel passes dependency
+build-script outputs to consumers, not their runfiles trees, so RocksDB cannot
+read that directory. Export the copied headers instead.
+
+--- a/build.rs
++++ b/build.rs
+@@ -280,13 +280,10 @@
+             panic!("Folder 'zstd/lib' does not exists. Maybe you forgot to clone the 'zstd' submodule?");
+         }
+ 
+-        let manifest_dir = PathBuf::from(
+-            env::var_os("CARGO_MANIFEST_DIR")
+-                .expect("Manifest dir is always set by cargo"),
+-        );
++        let out_dir = PathBuf::from(env::var_os("OUT_DIR").unwrap());
+ 
+         compile_zstd();
+-        (vec![], vec![manifest_dir.join("zstd/lib")])
++        (vec![], vec![out_dir.join("include")])
+     };
+ 
+     let includes: Vec<_> = headerpaths
