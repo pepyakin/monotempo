@@ -259,6 +259,31 @@ derived manifest too, preserving public feature names and optionality.
   shell and the usual POSIX tools from the host (`build_script_use_default_shell_env`
   annotation in `reth.MODULE.bazel`).
 
+## Reproducibility
+
+Two clean builds (different output bases, so different sandbox paths) produce
+byte-identical rlibs, archives and binaries. This matters beyond bit-for-bit
+releases: Bazel keys the cache on inputs, so a non-deterministic rlib makes
+every action downstream of it a cache miss whenever it is rebuilt, and lets two
+CI machines that both miss on the same action never share anything below it.
+
+* Rust code is deterministic out of the box; rules_rust passes
+  `--remap-path-prefix=${pwd}=.` to rustc.
+* C/C++/asm compiled by `cc`-based build scripts gets
+  `CFLAGS`/`CXXFLAGS=-ffile-prefix-map=${pwd}=.`, from the `crate = "*"`
+  annotation in `MODULE.bazel` (external crates) and `crate_build_script` in
+  `rust.bzl` (in-tree crates). Without it, debug info embeds the per-action
+  sandbox directory.
+* cc-rs is patched (`bazel/patches/cc-out-dir-relative-object-names.patch`) to
+  hash sources generated into `OUT_DIR` relative to it; otherwise the object
+  name inside sha3-asm's `libkeccak.a` changes with the sandbox directory.
+* Not covered: the host glibc the toolchain links against (see Hermeticity),
+  and `--config=dev` incremental artifacts.
+
+To check, build the same targets into a second output base and compare:
+`bazel --output_base=/tmp/ob build <targets>` then `sha256sum` the files under
+both `bazel-out/k8-fastbuild/bin`.
+
 ## Incrementality
 
 Each crate is one Bazel target with explicit deps, so Bazel knows exactly which

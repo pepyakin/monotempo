@@ -23,6 +23,17 @@ _COMPILE_DATA_DIRS = ["src", "res", "assets"]
 # Non-Rust files tests may read at run time (relative to CARGO_MANIFEST_DIR).
 _TEST_DATA_DIRS = _COMPILE_DATA_DIRS + ["tests", "testdata", "test-data", "test_data"]
 
+# Keeps the per-action sandbox path out of objects that `cc`-based build scripts
+# (reth-mdbx-sys, ...) compile, so their output is bit-identical across clean
+# builds; rustc gets the equivalent `--remap-path-prefix` from rules_rust. `$$`
+# escapes Bazel's "Make" variable expansion; the build-script runner then
+# substitutes `${pwd}`. Same flags as the `crate = "*"` annotation in
+# //MODULE.bazel, which covers external crates.
+_REPRODUCIBLE_CC_ENV = {
+    "CFLAGS": "-ffile-prefix-map=$${pwd}=.",
+    "CXXFLAGS": "-ffile-prefix-map=$${pwd}=.",
+}
+
 # Manifests some proc macros read at compile time: `proc-macro-crate` (used by
 # jsonrpsee's `#[rpc]`, among others) opens `$CARGO_MANIFEST_DIR/Cargo.toml` to
 # find out what the crate calls its dependencies, and follows `workspace = true`
@@ -395,8 +406,12 @@ def crate_build_script(
         deps: `[build-dependencies]`.
         data: Files the script reads (relative to `CARGO_MANIFEST_DIR`).
         build_script_env: Extra environment for the script; supports `$(execpath ...)`.
+            `CFLAGS`/`CXXFLAGS` are appended to the reproducibility defaults.
         **kwargs: Forwarded to `cargo_build_script`.
     """
+    env = dict(_REPRODUCIBLE_CC_ENV)
+    for key, value in build_script_env.items():
+        env[key] = (env[key] + " " + value) if key in env else value
     cargo_build_script(
         name = name,
         srcs = ["build.rs"],
@@ -405,7 +420,7 @@ def crate_build_script(
         crate_features = crate_features,
         deps = deps,
         data = data,
-        build_script_env = build_script_env,
+        build_script_env = env,
         rustc_env_files = [":cargo_toml_env_vars"],
         **kwargs
     )

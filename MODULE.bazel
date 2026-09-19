@@ -94,6 +94,34 @@ crate.from_cargo(
 )
 use_repo(crate, "crates")
 
+# Reproducible C/C++/asm objects from `cc`-based build scripts (sha3-asm,
+# secp256k1-sys, aws-lc-sys, ring, blst, zstd-sys, ...). rules_rust remaps the
+# execroot for rustc (`--remap-path-prefix=${pwd}=.`) but forwards the C
+# toolchain's flags unchanged, so without this the objects' debug info embeds the
+# per-action sandbox path (`.../sandbox/linux-sandbox/<n>/execroot/_main/...`)
+# and every clean build produces different rlibs and binaries, and everything
+# downstream of them misses the cache. `$$` escapes Bazel's "Make" variable
+# expansion; the build-script runner then substitutes `${pwd}` with the
+# execroot. cc-rs appends CFLAGS/CXXFLAGS to its own flags. In-tree crates get
+# the same flags from `crate_build_script` in bazel/rust.bzl.
+crate.annotation(
+    build_script_env = {
+        "CFLAGS": "-ffile-prefix-map=$${pwd}=.",
+        "CXXFLAGS": "-ffile-prefix-map=$${pwd}=.",
+    },
+    crate = "*",
+    repositories = ["crates"],
+)
+
+# Same goal, second leak: cc-rs hashes the absolute OUT_DIR into the object
+# names of sources generated there (sha3-asm). See the patch.
+crate.annotation(
+    crate = "cc",
+    patch_args = ["-p1"],
+    patches = ["//bazel/patches:cc-out-dir-relative-object-names.patch"],
+    repositories = ["crates"],
+)
+
 # External crates that a `[patch.crates-io]` entry points back into the tree
 # (crates.io `alloy-evm` -> in-tree `alloy-consensus`). Generated.
 include("//bazel/cargo:member_deps.MODULE.bazel")
