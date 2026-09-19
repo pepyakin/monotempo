@@ -1,9 +1,0 @@
-[submodule "tempo/tips/verify/lib/forge-std"]
-	path = tempo/tips/verify/lib/forge-std
-	url = https://github.com/foundry-rs/forge-std
-[submodule "tempo/tips/verify/lib/tempo-std"]
-	path = tempo/tips/verify/lib/tempo-std
-	url = https://github.com/tempoxyz/tempo-std
-[submodule "tempo/tips/verify/lib/solady"]
-	path = tempo/tips/verify/lib/solady
-	url = https://github.com/vectorized/solady

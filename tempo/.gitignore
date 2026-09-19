@@ -30,6 +30,9 @@ plan.md
 # Docs
 tips/verify/cache/
 tips/verify/out/
+tips/verify/lib/forge-std
+tips/verify/lib/tempo-std
+tips/verify/lib/solady
 tips/verify/*.log
 tips/verify/soljson-latest.js
 

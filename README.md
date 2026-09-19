@@ -56,6 +56,13 @@ bazel test //...                                 # everything (cached per crate)
 
 Outputs land in `bazel-bin/`, e.g. `bazel-bin/reth/bin/reth/reth`.
 
+Tempo's Solidity verification libraries are pinned Bazel `http_archive`s rather
+than Git submodules. Run `./tempo/tips/verify/fetch-libs.sh` before using Foundry;
+see [the Solidity verification guide](tempo/tips/verify/README.md) for setup and
+updates. This fetches dependencies only; the Solidity tests remain outside
+`bazel test //...` and require Tempo-capable Forge. The archive approach may be
+revisited in the future, including vendoring or fuller Bazel integration.
+
 [bazelisk]: https://github.com/bazelbuild/bazelisk
 
 ## Amp orbs

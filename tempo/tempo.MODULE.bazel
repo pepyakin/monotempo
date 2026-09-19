@@ -1,4 +1,41 @@
-"""Tempo-specific annotations for the shared dependency resolution."""
+"""Tempo-specific dependencies and annotations for the shared resolution."""
+
+# Solidity libraries formerly stored as Git submodules. Keep revisions aligned
+# with tips/verify/foundry.lock; see tips/verify/README.md for the update workflow.
+http_archive = use_repo_rule("@bazel_tools//tools/build_defs/repo:http.bzl", "http_archive")
+
+solidity_library_build = """
+package(default_visibility = ["//visibility:public"])
+exports_files(["foundry.toml"])
+filegroup(name = "srcs", srcs = glob(["src/**"]))
+"""
+
+http_archive(
+    name = "tempo_verify_forge_std",
+    urls = ["https://codeload.github.com/foundry-rs/forge-std/tar.gz/e72518ef87be67df939a70b0ff1cb349e92b6dde"],
+    sha256 = "9cbecdff9bbc08322737110a571272a6a1d9ff98584703c70d24d61a2b93391c",
+    strip_prefix = "forge-std-e72518ef87be67df939a70b0ff1cb349e92b6dde",
+    type = "tar.gz",
+    build_file_content = solidity_library_build,
+)
+
+http_archive(
+    name = "tempo_verify_tempo_std",
+    urls = ["https://codeload.github.com/tempoxyz/tempo-std/tar.gz/96f882963ce3b0e0abc7ec2b41d03d42457877bb"],
+    sha256 = "7ed59fab2b7f22a4725d23fd95025b8468c3665623f161843fa28d9f282bffbd",
+    strip_prefix = "tempo-std-96f882963ce3b0e0abc7ec2b41d03d42457877bb",
+    type = "tar.gz",
+    build_file_content = solidity_library_build,
+)
+
+http_archive(
+    name = "tempo_verify_solady",
+    urls = ["https://codeload.github.com/vectorized/solady/tar.gz/90db92ce173856605d24a554969f2c67cadbc7e9"],
+    sha256 = "5dfe1ca80598a347c01f409e5443a1581189078cfe75e0f244d670f83f28f7ea",
+    strip_prefix = "solady-90db92ce173856605d24a554969f2c67cadbc7e9",
+    type = "tar.gz",
+    build_file_content = solidity_library_build,
+)
 
 tempo_annotations = use_extension("@rules_rust//crate_universe:extensions.bzl", "crate")
 
