@@ -83,9 +83,18 @@ CI runs `bazel/generate.py --check` and builds with `--config=ci`
 (`--lockfile_mode=error`), so a stale generated file or lockfile fails the
 build with a message naming the file.
 
-The generator needs `cargo` on `PATH` (any recent toolchain; it only runs
-`cargo metadata`: `--locked` on each project, and unlocked on the Bazel
-Cargo workspace so that `bazel/cargo/Cargo.lock` follows the projects).
+The generator needs `cargo` on `PATH`. With rustup, the root
+`rust-toolchain.toml` selects the same Rust version as Bazel for Cargo commands
+in every project. It includes clippy and rustfmt; workflows requiring nightly
+still use `cargo +nightly`. When upgrading Rust, update both `RUST_VERSION` in
+`MODULE.bazel` and `channel` in `rust-toolchain.toml`.
+`bazel test //bazel:rust_toolchain_test` checks that they match and is included
+in `bazel test //...`. This lightweight metadata test uses Python 3.11+ from
+the host, as does the generator; it does not compile Rust.
+
+The generator only runs `cargo metadata`: `--locked` on each project, and
+unlocked on the Bazel Cargo workspace so that `bazel/cargo/Cargo.lock` follows
+the projects.
 
 ## `bazel/project.toml`
 
@@ -233,8 +242,9 @@ derived manifest too, preserving public feature names and optionality.
 
 ## Hermeticity
 
-* Rust: `rust.toolchain(versions = ["1.95.0"])`, matching the workspaces'
-  `rust-version`. No rustup involved.
+* Rust: `rust.toolchain(versions = [RUST_VERSION])`, pinned in `MODULE.bazel`.
+  Bazel downloads its own toolchain without rustup; Cargo's rustup pin in the
+  root `rust-toolchain.toml` matches it.
 * C/C++: `toolchains_llvm` downloads clang 20.1.7. It is used for `cc` build
   scripts (libmdbx, jemalloc, secp256k1, aws-lc, ...) and provides `libclang`
   for bindgen in `reth-mdbx-sys` and `librocksdb-sys`. The toolchain targets

@@ -1,4 +1,20 @@
+load("@bazel_skylib//rules:native_binary.bzl", "native_test")
+
 package(default_visibility = ["//visibility:public"])
+
+native_test(
+    name = "rust_toolchain_test",
+    size = "small",
+    src = "rust_toolchain_test.py",
+    args = [
+        "$(rootpath //:MODULE.bazel)",
+        "$(rootpath //:rust-toolchain.toml)",
+    ],
+    data = [
+        "//:MODULE.bazel",
+        "//:rust-toolchain.toml",
+    ],
+)
 
 # clang's builtin headers (`stdarg.h`, `stddef.h`, ...). bindgen must be told
 # where they are because the prebuilt libclang cannot locate them itself.

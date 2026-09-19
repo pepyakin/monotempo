@@ -1,0 +1,5 @@
+# Keep channel in sync with RUST_VERSION in MODULE.bazel.
+[toolchain]
+channel = "1.96.1"
+profile = "minimal"
+components = ["clippy", "rustfmt"]
