@@ -111,6 +111,7 @@ crate_unit_test(
         "@crates//:rand_08-0.8.6": "rand_08",
     },
     process_per_test = True,
+    flaky = True,
 )
 
 crate_integration_test(

@@ -227,4 +227,8 @@ crate_unit_test(
     crate = ":tempo_lib",
     crate_features = FEATURES,
     declared_features = DECLARED_FEATURES,
+    tags = [
+        "manual",
+        "requires-network",
+    ],
 )

@@ -84,4 +84,7 @@ crate_unit_test(
         "//tempo/crates/node:tests/assets/test-genesis.json",
     ],
     process_per_test = True,
+    tags = [
+        "manual",
+    ],
 )

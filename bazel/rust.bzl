@@ -138,7 +138,7 @@ def _test_kwargs(workspace, crate_features, declared_features, workspace_lints, 
         dict(kwargs, rustc_env = rustc_env, env = env),
     )
 
-def _rust_test(name, per_process, size, tags, **kwargs):
+def _rust_test(name, per_process, size, tags, flaky = False, **kwargs):
     """Defines the test target, optionally behind a `process_per_test` wrapper.
 
     With `per_process`, the `rust_test` itself becomes `<name>_bin` (tagged
@@ -147,14 +147,15 @@ def _rust_test(name, per_process, size, tags, **kwargs):
     process.
     """
     if not per_process:
-        rust_test(name = name, size = size, tags = tags, **kwargs)
+        rust_test(name = name, size = size, tags = tags, flaky = flaky, **kwargs)
         return
-    rust_test(name = name + "_bin", tags = ["manual"], **kwargs)
+    rust_test(name = name + "_bin", tags = ["manual"], flaky = flaky, **kwargs)
     process_per_test(
         name = name,
         test = ":" + name + "_bin",
         size = size,
         tags = tags,
+        flaky = flaky,
     )
 
 def crate_library(

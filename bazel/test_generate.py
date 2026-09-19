@@ -117,6 +117,38 @@ class RenderTargetsTest(unittest.TestCase):
         self.assertNotIn('"CARGO_PKG_NAME"', library)
         self.assertEqual(tests.count('"CARGO_PKG_NAME": "example"'), 2)
 
+    def test_flaky_is_scoped_to_the_named_test_target(self):
+        crate = self.crate([
+            generate.Target("lib", "example", "src/lib.rs", []),
+            generate.Target("test", "integration", "tests/integration.rs", []),
+        ])
+        for target in ("crate", "integration", "absent"):
+            with self.subTest(target=target):
+                crate.project.test_flaky = {"example": {target: True}}
+                output = generate.render_build_file(crate, {})
+                library, tests = output.split("crate_unit_test(\n")
+                unit, integration = tests.split("crate_integration_test(\n")
+                self.assertNotIn("flaky =", library)
+                self.assertEqual("flaky = True" in unit, target == "crate")
+                self.assertEqual("flaky = True" in integration, target == "integration")
+        crate.project.test_flaky = {"example": {"crate": False}}
+        self.assertNotIn("flaky =", generate.render_build_file(crate, {}))
+
+    def test_ci_exceptions_do_not_disable_other_test_targets(self):
+        tempo = generate.Project.load(generate.WORKSPACE_ROOT / "tempo/bazel/project.toml")
+        self.assertEqual(tempo.tags_for("tempo", "crate"), ["manual", "requires-network"])
+        self.assertEqual(tempo.tags_for("tempo-node", "it"), ["manual"])
+        self.assertEqual(tempo.tags_for("tempo-e2e", "crate"), ["manual"])
+        self.assertIsNone(tempo.tags_for("tempo-node", "crate"))
+        self.assertIsNone(tempo.tags_for("tempo-node", "other"))
+        reth = generate.Project.load(generate.WORKSPACE_ROOT / "reth/bazel/project.toml")
+        self.assertEqual(reth.test_flaky, {
+            "reth-engine-tree": {"crate": True},
+            "reth-trie-common": {"crate": True},
+        })
+        for name in reth.test_flaky:
+            self.assertIsNone(reth.tags_for(name, "crate"))
+
     def test_target_outside_package_stays_inside_derived_package(self):
         project = self.crate([]).project
         package_dir = project.root / "crates/example"

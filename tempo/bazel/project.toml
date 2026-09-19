@@ -3,6 +3,16 @@ rust_bzl = "//tempo/bazel:rust.bzl"
 cargo_test_names = true
 process_per_test = ["tempo-e2e"]
 
+# The CLI's p2p_proxy::tests::fetch_* tests call rpc.moderato.tempo.xyz.
+# Keep explicit runs network-enabled, but exclude them from wildcard CI runs.
+[test_tags]
+tempo = ["manual", "requires-network"]
+# These suites already run serially, one process per test, with enormous
+# timeouts. Node integration still exceeds 45 minutes; e2e can use 26 GiB RSS.
+# Run them explicitly on a large runner rather than alongside default CI tests.
+tempo-node.it = ["manual"]
+tempo-e2e.crate = ["manual"]
+
 [build_scripts.tempo-node.env]
 VERGEN_IDEMPOTENT = "1"
 

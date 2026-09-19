@@ -116,8 +116,35 @@ written in full. Keys:
   keeps a test out of `bazel test //...`); or `test_tags.<crate>.<target>`
   for one target, `<target>` being an integration test name or `crate` for
   the unit tests.
+* `test_flaky.<crate>.<target> = true`: Bazel runs that test target up to
+  three times, reports recovered failures as `FLAKY`, and still fails if all
+  attempts fail. `<target>` is an integration test name or `crate` for unit
+  tests. For process-isolated tests, retries apply to the public wrapper.
 
 See `reth/bazel/project.toml` for a commented example.
+
+## Opt-in test suites
+
+`bazel test //...` excludes tests tagged `manual`. Tempo's CLI unit-test
+target calls `rpc.moderato.tempo.xyz`; run it explicitly with network access
+(its `requires-network` tag lifts the sandbox network block):
+
+```bash
+bazel test //tempo/bin/tempo:tempo_test
+```
+
+Tempo's node integration and E2E suites are also opt-in: the node suite can
+exceed 45 minutes, and E2E has reached 26 GiB RSS. They retain `enormous`
+timeouts, Cargo snapshot names, and serial process-per-test execution. Use a
+large runner and avoid running these suites concurrently:
+
+```bash
+bazel test --local_test_jobs=1 //tempo/crates/node:tempo_node_it_test //tempo/crates/e2e:tempo_e2e_test
+```
+
+The node's unit tests remain in the default run. Reth's engine-tree and
+trie-common unit-test targets also remain enabled, with bounded retries for
+known randomized-fixture flakes; these retries are not fixes for the flakes.
 
 ## The Bazel Cargo workspace (`bazel/cargo/`)
 

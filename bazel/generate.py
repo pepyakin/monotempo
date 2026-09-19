@@ -134,6 +134,8 @@ class Project:
     filegroups: dict[str, dict[str, list[str]]] = field(default_factory=dict)
     # Runtime environment required by a crate's tests.
     test_env: dict[str, dict[str, str]] = field(default_factory=dict)
+    # Bazel retry policy per integration test name, or "crate" for unit tests.
+    test_flaky: dict[str, dict[str, bool]] = field(default_factory=dict)
     # Projects with specialized build/test policy can supply their own macros.
     rust_bzl: str | None = None
     cargo_test_names: bool = False
@@ -180,6 +182,7 @@ class Project:
             "test_tags",
             "filegroups",
             "test_env",
+            "test_flaky",
             "rust_bzl",
             "cargo_test_names",
         }
@@ -204,6 +207,7 @@ class Project:
             test_tags=cfg.get("test_tags", {}),
             filegroups=cfg.get("filegroups", {}),
             test_env=cfg.get("test_env", {}),
+            test_flaky=cfg.get("test_flaky", {}),
             rust_bzl=cfg.get("rust_bzl"),
             cargo_test_names=cfg.get("cargo_test_names", False),
         )
@@ -1187,6 +1191,7 @@ def render_build_file(crate: Crate, crates: dict[str, Crate], *, cargo_test_name
                     ("test_fuzz", test_fuzz),
                     ("process_per_test", process_per_test),
                     ("tags", render_tags(project.tags_for(crate.name, "crate"))),
+                    ("flaky", "True" if project.test_flaky.get(crate.name, {}).get("crate") else None),
                 ],
             )
         )
@@ -1223,6 +1228,7 @@ def render_build_file(crate: Crate, crates: dict[str, Crate], *, cargo_test_name
                     ("test_fuzz", test_fuzz),
                     ("process_per_test", process_per_test),
                     ("tags", render_tags(project.tags_for(crate.name, t.name))),
+                    ("flaky", "True" if project.test_flaky.get(crate.name, {}).get(t.name) else None),
                 ],
             )
         )

@@ -62,3 +62,14 @@ ef-tests = ["manual"]
 # `requires-network` lifts the sandbox's network block when it is run
 # explicitly; `manual` keeps the default test run hermetic.
 reth-era-utils = ["manual", "requires-network"]
+
+# Retry only the affected unit-test targets, not their integration suites.
+# Keep failures visible: Bazel reports FLAKY on recovery and fails after three
+# failed attempts. Remove these once the randomized fixtures are corrected.
+[test_flaky]
+# persistence::tests::test_read_only_consistency_across_reorg intermittently
+# generates an empty first block, then asserts that its signer account exists.
+reth-engine-tree.crate = true
+# hash_builder::state::HashBuilderStateTests::proptest intermittently aborts
+# with "initial arbitrary call failed" while generating its compact fixture.
+reth-trie-common.crate = true
