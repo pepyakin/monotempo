@@ -56,6 +56,18 @@ jobs:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
         with:
           persist-credentials: false
+      - name: Install native build prerequisites
+        run: |
+          missing=()
+          for package in build-essential pkg-config autoconf automake libtool cmake patch unzip xz-utils zstd; do
+            if [[ "$(dpkg-query -W -f='${Status}' "$package" 2>/dev/null || true)" != 'install ok installed' ]]; then
+              missing+=("$package")
+            fi
+          done
+          if ((${#missing[@]})); then
+            sudo -n apt-get update -qq
+            sudo -n env DEBIAN_FRONTEND=noninteractive apt-get install -y --no-install-recommends "${missing[@]}"
+          fi
       - uses: dtolnay/rust-toolchain@stable
       - uses: bazel-contrib/setup-bazel@0.15.0
         with:
