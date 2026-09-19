@@ -70,12 +70,13 @@ rerunning setup reuses them rather than reinstalling everything.
 A cold setup can take several minutes to unpack LLVM; warm reruns are much
 faster (about 23 seconds on a 4-core orb, versus 5 minutes from scratch).
 
-`.agents/resume` only checks that the tools remain available. Normal tests need
-no persistent service or credentials; tests requiring external nodes or network
-access remain opt-in. Setup does not enable `--config=dev` or change local Bazel
-overrides. Use targeted builds/tests on small orbs: a full monorepo build still
-needs roughly 16 cores, 32 GiB RAM and 40 GiB disk. To repair an orb manually,
-run `.agents/setup` from the repository, then start a new login shell.
+`.agents/resume` only checks that the tools remain available. Setup configures
+no persistent services or credentials. Bazel's sandbox disables network access;
+tests that contact public RPC endpoints can fail there. Setup does not enable
+`--config=dev` or change local Bazel overrides. Use targeted builds/tests on small
+orbs: a full monorepo build still needs roughly 16 cores, 32 GiB RAM and 40 GiB
+disk. To repair an orb manually, run `.agents/setup` from the repository, then
+start a new login shell.
 
 ## CI status
 
