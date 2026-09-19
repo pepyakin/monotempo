@@ -1,0 +1,11 @@
+#!/usr/bin/env bash
+set -euo pipefail
+
+# Toolchains and download caches survive pause/resume. There are no shared
+# services or user-specific logins to restore; never install anything here.
+for tool in bazel cargo rustc python3; do
+    if ! command -v "$tool" > /dev/null; then
+        printf 'Missing %s; rerun .agents/setup to repair this orb.\n' "$tool" >&2
+        exit 1
+    fi
+done

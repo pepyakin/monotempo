@@ -1,0 +1,94 @@
+#!/usr/bin/env bash
+set -euo pipefail
+
+repo_root="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
+cd "$repo_root"
+
+step() {
+    local label="$1" started=$SECONDS
+    shift
+    printf '\n==> %s\n' "$label"
+    "$@"
+    printf '==> %s finished in %ss\n' "$label" "$((SECONDS - started))"
+}
+
+install_packages() {
+    local package
+    local missing=()
+    for package in ca-certificates curl git python3 build-essential pkg-config \
+        autoconf automake libtool cmake patch unzip xz-utils zstd; do
+        if [[ "$(dpkg-query -W -f='${Status}' "$package" 2>/dev/null || true)" != 'install ok installed' ]]; then
+            missing+=("$package")
+        fi
+    done
+    if ((${#missing[@]})); then
+        sudo apt-get update -qq
+        sudo env DEBIAN_FRONTEND=noninteractive apt-get install -y --no-install-recommends "${missing[@]}"
+    fi
+}
+
+install_bazelisk() {
+    local version=1.29.0 arch binary destination
+    case "$(uname -m)" in
+        x86_64) arch=amd64 ;;
+        aarch64) arch=arm64 ;;
+        *) echo 'Unsupported Bazelisk architecture' >&2; return 1 ;;
+    esac
+    binary="bazelisk-linux-$arch"
+    destination="/usr/local/lib/bazelisk/$version/bazelisk"
+    if [[ ! -x "$destination" ]]; then
+        curl -fsSL --retry 3 "https://github.com/bazelbuild/bazelisk/releases/download/v$version/$binary" -o "$scratch/$binary"
+        curl -fsSL --retry 3 "https://github.com/bazelbuild/bazelisk/releases/download/v$version/$binary.sha256" -o "$scratch/$binary.sha256"
+        (cd "$scratch" && printf '%s  %s\n' "$(cat "$binary.sha256")" "$binary" | sha256sum --check)
+        sudo install -D -m 0755 "$scratch/$binary" "$destination"
+    fi
+    sudo ln -sfn "$destination" /usr/local/bin/bazel
+    # Bazelisk reads the repository's .bazelversion and caches that binary.
+    bazel --version
+}
+
+install_rust() {
+    # Match the build of record instead of introducing a second version pin.
+    local version
+    version="$(python3 -c 'import re; print(re.search(r"^RUST_VERSION = \"([^\"]+)\"", open("MODULE.bazel").read(), re.M)[1])')"
+    if [[ ! -x "$HOME/.cargo/bin/rustup" ]]; then
+        curl -fsSL --retry 3 https://sh.rustup.rs -o "$scratch/rustup.sh"
+        sh "$scratch/rustup.sh" -y --no-modify-path --profile minimal --default-toolchain none
+    fi
+    # The installer cannot change the running setup process's environment.
+    source "$HOME/.cargo/env"
+    if ! rustup run "$version" rustc --version >/dev/null 2>&1; then
+        rustup toolchain install "$version" --profile minimal
+    fi
+    rustup component add --toolchain "$version" rustfmt clippy
+    rustup default "$version"
+    # Amp and supervised services use fresh non-interactive login shells.
+    local profile_line='[ ! -f "$HOME/.cargo/env" ] || . "$HOME/.cargo/env"'
+    if ! grep -Fqx "$profile_line" "$HOME/.bash_profile" 2>/dev/null; then
+        printf '\n# Rust toolchain installed by monotempo orb setup.\n%s\n' "$profile_line" >> "$HOME/.bash_profile"
+    fi
+    cargo --version
+    rustc --version
+}
+
+warm_cargo() {
+    local config manifest
+    # Full locked metadata primes the downloads used by bazel/generate.py,
+    # including upstream Cargo-only dependencies omitted from the Bazel graph.
+    for config in */bazel/project.toml; do
+        manifest="${config%/bazel/project.toml}/Cargo.toml"
+        printf 'Caching Cargo dependencies: %s\n' "$manifest"
+        cargo metadata --locked --format-version 1 --manifest-path "$manifest" > /dev/null
+    done
+    cargo metadata --locked --format-version 1 --manifest-path bazel/cargo/Cargo.toml > /dev/null
+}
+
+scratch="$(mktemp -d)"
+trap 'rm -rf "$scratch"' EXIT
+step 'System build prerequisites' install_packages
+step 'Pinned Bazel (via Bazelisk)' install_bazelisk
+step 'Pinned Rust, Cargo, rustfmt and Clippy' install_rust
+step 'Cargo dependency cache' warm_cargo
+# Download host toolchains and external crates without compiling the monorepo.
+# Batch mode leaves no Bazel server behind for the snapshot to terminate.
+step 'Bazel dependency and toolchain cache' bazel --batch fetch --lockfile_mode=error //...

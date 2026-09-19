@@ -58,6 +58,25 @@ Outputs land in `bazel-bin/`, e.g. `bazel-bin/reth/bin/reth/reth`.
 
 [bazelisk]: https://github.com/bazelbuild/bazelisk
 
+## Amp orbs
+
+The executable `.agents/setup` prepares fresh orbs for Bazel builds and Cargo
+metadata generation. It installs system build prerequisites, Bazelisk (using
+`.bazelversion`), and Rust/Cargo/rustfmt/Clippy at `RUST_VERSION` from
+`MODULE.bazel`. It then caches locked Cargo dependencies for all projects and
+fetches Bazel dependencies and host toolchains without compiling the monorepo.
+Amp snapshots these installed tools and download caches for reuse by new orbs;
+rerunning setup reuses them rather than reinstalling everything.
+A cold setup can take several minutes to unpack LLVM; warm reruns are much
+faster (about 23 seconds on a 4-core orb, versus 5 minutes from scratch).
+
+`.agents/resume` only checks that the tools remain available. Normal tests need
+no persistent service or credentials; tests requiring external nodes or network
+access remain opt-in. Setup does not enable `--config=dev` or change local Bazel
+overrides. Use targeted builds/tests on small orbs: a full monorepo build still
+needs roughly 16 cores, 32 GiB RAM and 40 GiB disk. To repair an orb manually,
+run `.agents/setup` from the repository, then start a new login shell.
+
 ## CI status
 
 The root [Bazel workflow](.github/workflows/bazel.yml) is manual-only

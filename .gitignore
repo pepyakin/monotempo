@@ -2,6 +2,9 @@
 /bazel-*
 /user.bazelrc
 
+# Amp's per-orb portal metadata.
+/.amp/portals/*
+
 # Cargo, when used directly inside a project.
 target/
 
