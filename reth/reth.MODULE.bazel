@@ -52,3 +52,12 @@ crate.annotation(
     patches = ["//reth/bazel/patches:librocksdb-sys-snappy-build-file.patch"],
     repositories = ["crates"],
 )
+
+# RocksDB needs the public headers in zstd-sys's declared build outputs, not
+# the producer's private build-script runfiles directory.
+crate.annotation(
+    crate = "zstd-sys",
+    patch_args = ["-p1"],
+    patches = ["//reth/bazel/patches:zstd-sys-export-headers.patch"],
+    repositories = ["crates"],
+)
