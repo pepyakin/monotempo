@@ -1,7 +1,7 @@
-# Checks the Cargo-to-Bazel metadata on every PR and push to main.
+# Checks metadata, builds and tests the monorepo on every PR and push to main.
 #
-# Both jobs use a self-hosted Linux runner. Full builds remain opt-in and
-# need ~16 cores, 32 GiB RAM and ~40 GiB of disk.
+# Both jobs use a self-hosted Linux runner. Full builds need ~16 cores,
+# 32 GiB RAM and ~40 GiB of disk.
 # See README.md and bazel/README.md for runner prerequisites.
 
 name: bazel
@@ -11,11 +11,6 @@ on:
   push:
     branches: [main]
   workflow_dispatch:
-    inputs:
-      full_build:
-        description: Build and test the full monorepo (requires a large runner)
-        type: boolean
-        default: false
 
 concurrency:
   group: ${{ github.workflow }}-${{ github.event_name }}-${{ github.ref }}
@@ -52,7 +47,6 @@ jobs:
 
   bazel:
     name: build and test
-    if: github.event_name == 'workflow_dispatch' && inputs.full_build
     needs: generated
     runs-on: [self-hosted, linux]
     permissions:
@@ -68,6 +62,11 @@ jobs:
           bazelisk-cache: true
           disk-cache: ${{ github.workflow }}
           repository-cache: true
+      - name: Runner capacity
+        run: |
+          nproc
+          free -h
+          df -h "$GITHUB_WORKSPACE"
       - name: Build
         run: bazel build --config=ci //...
       - name: Test
