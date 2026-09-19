@@ -1,5 +1,5 @@
 {
-  "checksum": "5633584d67ac619cd16583a07832b3d6a24011683f100d1a1b7dc3cc4b911441",
+  "checksum": "2349fc160d2bbe23b6526bcde9beac8c435d423249dfc67c2dd332a9595bab9d",
   "conditions": {
     "aarch64-apple-darwin": [
       "aarch64-apple-darwin"
@@ -69759,6 +69759,12 @@
       "package_url": "https://github.com/gyscos/zstd-rs",
       "repository": {
         "Http": {
+          "patch_args": [
+            "-p1"
+          ],
+          "patches": [
+            "@@//reth/bazel/patches:zstd-sys-export-headers.patch"
+          ],
           "sha256": "91e19ebc2adc8f83e43039e79776e3fda8ca919132d68a1fed6a5faca2683748",
           "url": "https://static.crates.io/crates/zstd-sys/2.0.16+zstd.1.5.7/download"
         }
