@@ -64,6 +64,13 @@ work when run from the project directory, but Bazel is the build of record here.
 `tempo/AGENTS.md` applies under `tempo/`. Preserve Tempo's process-isolated,
 serial test budgets and snapshot names configured in `tempo/bazel/`.
 
+Keep imported automation and metadata in place for subtree sync and local
+consumers; follow the [upstream scaffolding policy](README.md#retained-upstream-scaffolding).
+Nested `.github/workflows/`, `CODEOWNERS` and `.mergify.yml` are upstream
+reference, not active monorepo policy. Make monorepo CI and release changes at
+the root. Do not assume nested `.github/` directories are disposable: some
+files are compile-time test inputs or are used by scripts and documentation.
+
 ## Git
 
 Projects are imported with full upstream history (subtree merges), so keep

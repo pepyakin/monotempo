@@ -94,6 +94,39 @@ repinning, incremental dev builds).
 See [`tempo/bazel/README.md`](tempo/bazel/README.md) for Tempo's test policies
 and local dependency wiring.
 
+## Retained upstream scaffolding
+
+We deliberately retain imported projects' upstream automation and metadata
+in place. Keeping these files close to upstream reduces modify/delete conflicts
+on subtree pulls and preserves inputs used by project-local tools. Their
+presence does **not** mean monotempo runs the upstream CI or release process.
+
+| Imported files | Role in monotempo |
+| --- | --- |
+| `<project>/.github/workflows/`, issue/PR templates, `CODEOWNERS`, `.mergify.yml` | Upstream reference, not this repository's CI, review ownership or merge policy. GitHub discovers workflows and templates in the root `.github/`, not nested project directories; imported `CODEOWNERS` files do not assign reviewers here. |
+| `<project>/.github/scripts/`, `.github/assets/` and other referenced files | Keep at their original paths: scripts, docs and tests can consume them even though nested workflows do not run. |
+| `<project>/Justfile`, `Makefile`, `Dockerfile*`, release scripts and `.changelog/` | Upstream development and release tooling, not the monorepo build or release contract. Some tools still consume these files; retaining them does not guarantee they work with the monorepo layout and cross-project dependencies. |
+
+For example, [Tempo's hardfork tests](tempo/xtask/src/generate_hardfork.rs)
+embed `tempo/.github/workflows/bench.yml` with `include_str!`, and its
+[Bazel target](tempo/xtask/BUILD.bazel) declares that file as an input.
+[Reth's Dockerfile](reth/Dockerfile) copies an installer from `.github/scripts/`;
+[Tempo's publishing script](tempo/scripts/publish-crates.sh) reads `.changelog/`.
+Deleting these directories wholesale would remove real inputs, not just inert
+configuration.
+
+Use the root Bazel configuration and [root workflow](.github/workflows/bazel.yml)
+for monorepo builds and tests. Add monorepo CI, ownership, merge and release
+configuration at the root rather than enabling or rewriting each upstream copy.
+Upstream contribution and release instructions describe their original projects;
+they are not instructions to publish monotempo changes to upstream repositories
+or registries.
+
+Apply this retention policy on new imports and subtree updates too. Do not
+delete or relocate imported scaffolding solely because it is nested. If a
+specific file must change for monotempo, check its source, build, script and
+documentation consumers first, and keep that change scoped to its project.
+
 ## Adding a project
 
 1. Import the source under `<project>/` (with history: `git subtree add
