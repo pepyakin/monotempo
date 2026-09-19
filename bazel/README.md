@@ -250,7 +250,7 @@ path, both lines):
 mkdir -p ~/.cache/reth-bazel-incremental
 cat >> user.bazelrc <<EOF
 build:dev --sandbox_add_mount_pair=/home/<you>/.cache/reth-bazel-incremental
-build:dev --@rules_rust//rust/settings:per_crate_rustc_flag=//reth/crates/@-Cincremental=/home/<you>/.cache/reth-bazel-incremental
+build:dev --@rules_rust//rust/settings:per_crate_rustc_flag=//@-Cincremental=/home/<you>/.cache/reth-bazel-incremental
 EOF
 bazel test --config=dev //reth/crates/net/network/...
 ```
@@ -264,17 +264,23 @@ inside the throwaway sandbox and nothing is reused. Notes:
   ~6 s to ~2 s; the rest is Bazel overhead and test-binary linking).
   `-C codegen-units=256` on its own changes nothing measurable.
 * `per_crate_rustc_flag=<label prefix>@<flag>` applies the flag only to
-  crates whose label starts with the prefix. `//reth/crates/` covers the libraries
-  and their test binaries but not `//reth/bin/...` or `//reth/examples/...`: those leaf
-  binaries monomorphise the whole node and each would add ~900 MiB of cache
-  for code nobody iterates on. External crates never match, so switching the
-  config on or off rebuilds the `//reth/crates/` targets once (a few minutes) but
-  keeps every external crate cached. Narrow the prefix further (e.g.
-  `//reth/crates/net/`) to keep the cache small, or add a second line with
-  `//alloy/crates/@` to cover alloy.
+  crates whose label starts with the prefix. Both `.bazelrc`'s codegen-units
+  flag and the incremental flag above use `//`: all main-repository projects,
+  including Tempo, reth, alloy, revm and projects added later. This includes
+  libraries, tests, binaries and examples; rules_rust excludes exec-configuration
+  tools such as build scripts and proc macros. External crates never match,
+  so switching the config on or off keeps their Rust compile flags unchanged.
+  If you already have a `//reth/crates/@-Cincremental=...` line in
+  `user.bazelrc`, replace its prefix with `//` to enable the other projects.
+  To limit cache growth, instead narrow the incremental prefix in
+  `user.bazelrc` (e.g. `//tempo/crates/` or `//reth/crates/net/`), repeating
+  the line for each subtree you work on. The shared codegen-units flag alone
+  does not enable incremental caching for the remaining crates.
 * The cache is large: ~15–20 GiB for all of `//reth/crates/` including test
   binaries (the biggest e2e test binaries take ~1 GiB each), roughly what
-  cargo's `target/debug/incremental` costs. Delete the directory to reset it.
+  cargo's `target/debug/incremental` costs. Covering more projects grows it
+  further; reth's node and example binaries can each add ~900 MiB. Only targets
+  you build populate the cache. Delete the directory to reset it.
 * Not for CI: the hermetic sandbox mounts `/usr`, `/bin`, `/lib`, `/lib64`,
   `/etc` from the host, and incremental artifacts are not reproducible.
 * macOS has no equivalent: the Darwin sandbox also uses per-action

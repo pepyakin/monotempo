@@ -45,7 +45,7 @@ build:dev --sandbox_add_mount_pair=/usr
 # `//@<flag>` applies the flag to main-repo crates only, so external crates keep
 # their cache entries when switching --config=dev on or off. 256 is rustc's own
 # codegen-units default for incremental builds (more, smaller units to reuse).
-build:dev --@rules_rust//rust/settings:per_crate_rustc_flag=//reth/crates/@-Ccodegen-units=256
+build:dev --@rules_rust//rust/settings:per_crate_rustc_flag=//@-Ccodegen-units=256
 
 # Release build, roughly the `release` cargo profile (opt-level 3, thin LTO,
 # no debug info).
