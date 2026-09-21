@@ -34,6 +34,27 @@ Outputs land in `bazel-bin/`, e.g. `bazel-bin/reth/bin/reth/reth`.
 
 [bazelisk]: https://github.com/bazelbuild/bazelisk
 
+## Compiler parallelism and memory
+
+Rust actions reserve one CPU and 3072 MB each, independently of their four
+codegen units. This patches rules_rust's CPU-only estimate: reserving four
+CPUs throughout each mostly serial front end left cores idle, while reserving
+one CPU without accounting for memory exhausted 32 GiB machines when large
+Reth test binaries linked concurrently. The memory estimate covers the observed
+2-3 GiB links; it is a scheduling estimate, not an enforced memory limit.
+
+Bazel's `--jobs` and `--local_resources=cpu=...` / `memory=...` still cap
+concurrency. On memory-constrained machines lower the memory budget or job
+count in `user.bazelrc`; do not increase codegen units to throttle links.
+Proc macros, build scripts and their dependencies use host `fastbuild`
+(unoptimized), like Cargo's default build dependencies. To trade longer cold
+tool compilation for optimized tool execution, override
+`--host_compilation_mode=opt`.
+
+These settings do not change enabled features. In particular, the single
+crate_universe graph still unifies features across projects; dropping a feature
+only from a local library can break a downstream crate that requires it.
+
 ## Layout
 
 Shared, at the root:

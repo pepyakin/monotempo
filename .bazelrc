@@ -15,10 +15,13 @@ build --@rules_rust//rust/settings:pipelined_compilation=True
 # Compact, cargo-like diagnostics.
 build --@rules_rust//rust/settings:error_format=human
 
-# `-C codegen-units=4` and, more importantly, have each rustc action reserve
-# 4 CPUs in Bazel's local scheduler. Without it Bazel runs one rustc per core;
-# reth's test binaries need 2-3 GiB each to link, and 16 of them at once
-# exhausted a 32 GiB machine. Lower/raise in user.bazelrc for other machines.
+# Match Cargo's unoptimized build dependencies instead of compiling every
+# proc macro, build script and its dependencies at Bazel's default host opt=3.
+build --host_compilation_mode=fastbuild
+
+# Compiler partitioning, not action parallelism. The rules_rust patch in
+# MODULE.bazel reserves one CPU and 3 GiB per Rust action independently of
+# codegen units. Memory, rather than idle CPU reservations, bounds large links.
 build --@rules_rust//rust/settings:codegen_units=4
 
 # Test output: only failures are printed, like nextest.

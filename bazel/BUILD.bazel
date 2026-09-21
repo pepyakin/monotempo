@@ -1,6 +1,9 @@
 load("@bazel_skylib//rules:native_binary.bzl", "native_test")
+load(":rust_resources_test.bzl", "rust_resources_test")
 
 package(default_visibility = ["//visibility:public"])
+
+rust_resources_test(name = "rust_resources_test")
 
 native_test(
     name = "rust_toolchain_test",

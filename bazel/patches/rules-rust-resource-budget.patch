@@ -1,0 +1,38 @@
+rules_rust 0.74.0 reserves codegen_units CPUs for the entire Rustc action,
+including its mostly serial front end, and does not reserve memory. Decouple
+compiler partitioning from scheduling: one CPU lets independent crates run,
+while a 3072 MB estimate budgets for our large Reth test links. Bazel's local
+CPU/RAM budgets and --jobs still bound concurrency. This is a scheduling
+estimate, not a hard memory limit. Keep is_codegen_units_enabled unchanged.
+
+--- a/rust/private/rustc_resource_set.bzl
++++ b/rust/private/rustc_resource_set.bzl
+@@ -276,21 +276,18 @@
+ 
+     return True
+ 
++def _rustc_resources(_os_name, _inputs):
++    # Most compilation is single-threaded; large test links need 2-3 GiB.
++    # Reserve memory independently of the compiler's codegen partitioning.
++    return {"cpu": 1, "memory": 3072}
++
+ def get_rustc_resource_set(toolchain):
+     """Get the `ctx.actions.run.resource_set` for the `Rustc` action.
+ 
+     Args:
+         toolchain (rust_toolchain): The current rust_toolchain toolchain.
+ 
+     Returns:
+-        Optional[Callable]: A resource set appropriate for the current configuration.
++        Callable: CPU and memory estimates, independent of codegen units.
+     """
+-    if not is_codegen_units_enabled(toolchain):
+-        return None
+-
+-    codegen_units = toolchain._codegen_units
+-
+-    if codegen_units > len(_RESOURCE_SETS):
+-        return _RESOURCE_SETS[len(_RESOURCE_SETS)]
+-
+-    return _RESOURCE_SETS[codegen_units]
++    return _rustc_resources

@@ -77,9 +77,11 @@ This opt-in diagnostic use of `--config=dev` does not change normal CI policy.
 
 Both tools inherit CPU affinity restricted to the requested number of CPUs;
 requests exceeding the runner's available CPU set fail. Job budgets also match,
-but scheduler policies do not: Bazel reserves four CPUs per rustc action,
-while Cargo's `-j` limits jobs. Bazel optimizes host tools,
-and its build scripts/patches/sandboxing differ from Cargo's. No claim of
+but scheduler policies do not: Bazel reserves one CPU and 3072 MB per rustc
+action, while Cargo's `-j` limits jobs. Both now use unoptimized host tools.
+The original stopwatch runs reserved four CPUs per Bazel rustc action and
+used optimized host tools; compare commits explicitly when measuring these
+changes. Build scripts/patches/sandboxing still differ from Cargo's. No claim of
 instruction-for-instruction equivalence is made. Test RNG seeds are fixed where
 proptest supports them; that does not make all runtime noise deterministic.
 
