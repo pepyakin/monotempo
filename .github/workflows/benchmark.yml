@@ -1,0 +1,88 @@
+name: build stopwatch
+
+# Deliberately opt-in: this occupies the runner for several clean builds.
+on:
+  workflow_dispatch:
+    inputs:
+      workload:
+        description: Project-local workload (not the entire monorepo)
+        type: choice
+        options: [alloy, tempo]
+        default: alloy
+      mode:
+        description: Nonincremental CI or incremental developer-loop simulation
+        type: choice
+        options: [ci, dev]
+        default: ci
+      repetitions:
+        description: Paired repeats (1 for smoke testing, 3 or more for reporting)
+        type: choice
+        options: ['1', '2', '3', '4', '5']
+        default: '3'
+      jobs:
+        description: CPU/job budget for both tools
+        type: choice
+        options: ['4', '8', '16']
+        default: '8'
+
+permissions: {}
+
+concurrency:
+  group: build-stopwatch
+  cancel-in-progress: false
+
+jobs:
+  benchmark:
+    runs-on: [self-hosted, linux]
+    timeout-minutes: 360
+    permissions:
+      contents: read
+    env:
+      PYTHONDONTWRITEBYTECODE: '1'
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+      - name: Validate tooling and pinned Rust version
+        id: rust
+        run: |
+          python3 -m unittest discover -s bazel -p 'test_*.py'
+          python3 bazel/rust_toolchain_test.py MODULE.bazel rust-toolchain.toml
+          python3 -c 'import tomllib; print("toolchain=" + tomllib.load(open("rust-toolchain.toml", "rb"))["toolchain"]["channel"])' >> "$GITHUB_OUTPUT"
+      - uses: dtolnay/rust-toolchain@6bed0761d98439e5a578e2877258200ad565ba87
+        with:
+          toolchain: ${{ steps.rust.outputs.toolchain }}
+      - uses: bazel-contrib/setup-bazel@0.15.0
+        with:
+          bazelisk-version: 1.29.0
+      - name: Install native prerequisites
+        run: |
+          missing=()
+          for package in build-essential pkg-config libssl-dev autoconf automake libtool cmake patch unzip xz-utils zstd; do
+            if [[ "$(dpkg-query -W -f='${Status}' "$package" 2>/dev/null || true)" != 'install ok installed' ]]; then
+              missing+=("$package")
+            fi
+          done
+          if ((${#missing[@]})); then
+            sudo -n apt-get update -qq
+            sudo -n env DEBIAN_FRONTEND=noninteractive apt-get install -y --no-install-recommends "${missing[@]}"
+          fi
+      - name: Paired measurements
+        env:
+          WORKLOAD: ${{ inputs.workload }}
+          MODE: ${{ inputs.mode }}
+          REPETITIONS: ${{ inputs.repetitions }}
+          JOBS: ${{ inputs.jobs }}
+        run: |
+          python3 bazel/benchmark.py \
+            --workload "$WORKLOAD" --mode "$MODE" --repetitions "$REPETITIONS" \
+            --jobs "$JOBS" --test-threads 8 \
+            --output "$RUNNER_TEMP/stopwatch-results-$GITHUB_RUN_ID-$GITHUB_RUN_ATTEMPT"
+      - name: Upload raw samples, logs, test and feature inventories
+        if: always()
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
+        with:
+          name: stopwatch-${{ inputs.workload }}-${{ inputs.mode }}-${{ github.run_attempt }}
+          path: ${{ runner.temp }}/stopwatch-results-${{ github.run_id }}-${{ github.run_attempt }}
+          if-no-files-found: warn
+          retention-days: 30
