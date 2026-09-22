@@ -29,6 +29,39 @@ workflows, not a pure comparison of build engines with identical compiler
 inputs. Do not switch Cargo to `bazel/cargo/`
 to disguise this difference: that is not the project's Cargo setup.
 
+## Opt-in Tempo scoped-graph prototype
+
+The workflow's `scoped: true` input (`benchmark.py --scoped --workload tempo`)
+is a **separate diagnostic comparison**, not a replacement for the project-local
+Cargo baseline above. Both sides use `bazel/cargo/Cargo.lock`, and Cargo builds
+only `tempo-payload-builder --lib --no-default-features --target
+x86_64-unknown-linux-gnu` from that shared workspace. No second dependency hub,
+lockfile, source checkout, or independently resolved external packages are added.
+
+`tempo_scope.py` asks the pinned Cargo for build and test `--unit-graph` plans.
+This unstable inspection API needs `RUSTC_BOOTSTRAP=1`, confined to those two
+non-compiling commands. The plans distinguish host/target units and build/test
+features. The prototype copies the already-patched rules_rust repository into
+the trial's temporary directory and wraps its public rules to instantiate
+additional, explicitly named variants in the existing source packages. It
+retains generated native inputs, tool settings and annotations, but replaces
+features, Rust dependencies, renames and native `links` edges from Cargo's plans.
+Normal targets and committed BUILD files are unchanged.
+
+Before compilation, an action-query audit checks every application compiler
+target's exact features, `--extern` edges and host/target context, and rejects
+escapes to globally unified targets. Plans, actual actions and the audit verdict
+are uploaded with the measurements. The normal exact test-inventory check still
+applies. Generation/auditing are untimed setup, so this does **not** measure the
+cost of regenerating scoped targets after a manifest edit.
+
+This is limited to the Linux x86_64 Tempo library/test workload and the pinned
+rules_rust layout. It is not automatic feature resolution for arbitrary Bazel
+roots. Compiler/profile flags, build-script execution settings, downstream source
+patches, repeated build-script compilation and metadata pipelining can still
+differ; passing the graph audit does not establish instruction-for-instruction
+equivalence. Keep its numbers separate from historical project-local results.
+
 ## Scenarios and phases
 
 Every repetition starts with private, empty Bazel output and Cargo target

@@ -1,0 +1,251 @@
+"""Experimental Linux Tempo compilation units, using the existing source graph.
+
+No Rust compilation happens here. Cargo's pinned, unstable --unit-graph supplies
+root-scoped features and edges. A private rules_rust override adds target
+variants in the same packages/repositories as the ordinary generated rules.
+Neither tracked BUILD files nor the shared lockfile are rewritten.
+"""
+
+import argparse
+from collections import defaultdict
+import hashlib
+import json
+from pathlib import Path
+import shutil
+import subprocess
+
+
+ROOT = Path(__file__).resolve().parent.parent
+TRIPLE = "x86_64-unknown-linux-gnu"
+PACKAGE = "tempo-payload-builder"
+MANIFEST = ROOT / "bazel/cargo/Cargo.toml"
+
+
+def cargo_plan(verb, env):
+    command = [
+        "cargo", verb, "--manifest-path", str(MANIFEST), "--locked",
+        "--package", PACKAGE, "--lib", "--no-default-features",
+        "--target", TRIPLE, "-Z", "unstable-options", "--unit-graph",
+    ]
+    # Enables Cargo's inspection API only; this environment is never used to
+    # compile the benchmark. The toolchain is pinned by rust-toolchain.toml.
+    return json.loads(subprocess.check_output(command, env=dict(env, RUSTC_BOOTSTRAP="1"), cwd=ROOT))
+
+
+class Scope:
+    def __init__(self, metadata, lock):
+        self.packages = {p["id"]: p for p in metadata["packages"]}
+        self.lock = lock
+        self.variants = defaultdict(dict)
+        self.expected = {}
+
+    def template(self, unit):
+        pkg = self.packages[unit["pkg_id"]]
+        key = f"{pkg['name']} {pkg['version']}"
+        crate = self.lock["crates"][key]
+        local = key in self.lock["workspace_members"]
+        if local:
+            path = self.lock["workspace_members"][key].removeprefix("bazel/cargo/")
+            prefix = f"@@//{path}:"
+        else:
+            repo = f"{pkg['name']}-{pkg['version']}".replace("+", "-")
+            prefix = f"@@rules_rust++crate+crates__{repo}//:"
+        if unit["mode"] == "run-custom-build":
+            name = pkg["name"].replace("-", "_") + "_build_script" if local else "_bs"
+            kind = "cargo_build_script"
+        elif unit["mode"] == "test":
+            if pkg["name"] != PACKAGE:
+                raise ValueError("Only the benchmark root's unit tests are supported")
+            name = crate["library_target_name"] + "_test"
+            kind = "rust_test"
+        else:
+            name = crate["library_target_name"]
+            kind = "rust_proc_macro" if "proc-macro" in unit["target"]["kind"] else "rust_library"
+        return prefix + name, kind, pkg
+
+    def add(self, graph):
+        if graph["version"] != 1 or len(graph["roots"]) != 1:
+            raise ValueError("Expected one Cargo unit-graph v1 root")
+        units = graph["units"]
+        labels = {}
+        active = set()
+
+        def visit(index):
+            if index in labels:
+                return labels[index]
+            if index in active:
+                raise ValueError("Compilation-unit cycle")
+            active.add(index)
+            unit = units[index]
+            if unit["platform"] not in (None, TRIPLE):
+                raise ValueError("The prototype only supports Linux x86_64")
+            if unit["target"]["kind"] == ["custom-build"] and unit["mode"] != "run-custom-build":
+                raise ValueError("Build-script compilation must be reached through its run unit")
+            template, kind, pkg = self.template(unit)
+            attrs = {"crate_features": unit["features"], "deps": [], "proc_macro_deps": [], "aliases": {}}
+            externs = {}
+            dependencies = unit["dependencies"]
+            if kind == "cargo_build_script":
+                compiled = [d for d in dependencies if units[d["index"]]["mode"] == "build"
+                            and units[d["index"]]["pkg_id"] == unit["pkg_id"]]
+                if len(compiled) != 1:
+                    raise ValueError("Expected one build-script executable")
+                script = units[compiled[0]["index"]]
+                if script["features"] != unit["features"]:
+                    raise ValueError("Different build-script compile/run features are unsupported")
+                attrs["link_deps"] = []
+                for dep in dependencies:
+                    if dep in compiled:
+                        continue
+                    # Cargo's run unit depends on other build-script runs for
+                    # DEP_<LINKS>_*. rules_rust takes their owning libraries.
+                    owners = [i for i, u in enumerate(units)
+                              if u["pkg_id"] == units[dep["index"]]["pkg_id"]
+                              and u["platform"] == units[dep["index"]]["platform"]
+                              and "lib" in u["target"]["kind"]
+                              and any(d["index"] == dep["index"] for d in u["dependencies"])]
+                    if len(owners) != 1:
+                        raise ValueError("Ambiguous native-library build-script owner")
+                    attrs["link_deps"].append(visit(owners[0]))
+                dependencies = script["dependencies"]
+                attrs["pkg_name"] = pkg["name"]
+            for dep in dependencies:
+                other = units[dep["index"]]
+                label = visit(dep["index"])
+                attr = "proc_macro_deps" if "proc-macro" in other["target"]["kind"] else "deps"
+                attrs[attr].append(label)
+                if other["mode"] != "run-custom-build":
+                    externs[dep["extern_crate_name"]] = label
+                if other["mode"] != "run-custom-build" and dep["extern_crate_name"] != other["target"]["name"]:
+                    if attr == "proc_macro_deps":
+                        raise ValueError("Renamed proc macros need an exec-configured alias")
+                    attrs["aliases"][label] = dep["extern_crate_name"]
+            attrs["crate_name"] = unit["target"]["name"].replace("-", "_")
+            identity = dict(template=template, kind=kind, host=unit["platform"] is None, attrs=attrs)
+            digest = hashlib.sha256(json.dumps(identity, sort_keys=True).encode()).hexdigest()[:16]
+            name = template.rsplit(":", 1)[1] + "__scope_" + digest
+            label = template.rsplit(":", 1)[0] + ":" + name
+            attrs["name"] = name
+            self.variants[template][label] = dict(kind=kind, attrs=attrs)
+            # cargo_build_script produces a host rust_binary named <name>_.
+            compiler_label = label + "_" if kind == "cargo_build_script" else label
+            self.expected[compiler_label] = dict(
+                package=f"{pkg['name']} {pkg['version']}", features=unit["features"],
+                host=kind == "cargo_build_script" or unit["platform"] is None,
+                kind=kind, deps=attrs["deps"], proc_macro_deps=attrs["proc_macro_deps"],
+                externs=externs,
+            )
+            labels[index] = label
+            active.remove(index)
+            return label
+
+        return visit(graph["roots"][0])
+
+
+def prepare(rules_root, destination, env):
+    destination.mkdir(parents=True, exist_ok=False)
+    metadata = json.loads(subprocess.check_output(
+        ["cargo", "metadata", "--locked", "--format-version=1", "--manifest-path", str(MANIFEST)],
+        env=env, cwd=ROOT,
+    ))
+    scope = Scope(metadata, json.loads((ROOT / "Cargo.Bazel.lock").read_text()))
+    roots = {}
+    for verb in ("build", "test"):
+        graph = cargo_plan(verb, env)
+        (destination / f"cargo-{verb}-units.json").write_text(json.dumps(graph, indent=2) + "\n")
+        roots[verb] = scope.add(graph)
+    override = destination / "rules_rust"
+    shutil.copytree(rules_root, override, symlinks=True)
+    private = override / "rust/private"
+    shutil.copyfile(ROOT / "bazel/tempo_scope.bzl", private / "tempo_scope.bzl")
+    # JSON's strings/lists/dicts are Starlark-compatible; the table has no
+    # boolean/null literals. Do not serialize the audit-only host flags here.
+    table = {key: list(value.values()) for key, value in sorted(scope.variants.items())}
+    (private / "tempo_scope_data.bzl").write_text("UNITS = " + json.dumps(table, indent=2, sort_keys=True) + "\n")
+    for relative, kinds in (
+        ("rust/defs.bzl", ("rust_library", "rust_proc_macro", "rust_test")),
+        ("cargo/defs.bzl", ("cargo_build_script",)),
+    ):
+        path = override / relative
+        content = path.read_text()
+        content = content.replace('load(', 'load("//rust/private:tempo_scope.bzl", _scope_emit = "emit")\n\nload(', 1)
+        for kind in kinds:
+            original = f"{kind} = _{kind}"
+            if content.count(original) != 1:
+                raise ValueError(f"Unsupported rules_rust wrapper: {kind}")
+            content = content.replace(original, f'def {kind}(**kwargs):\n    _scope_emit(_{kind}, "{kind}", kwargs)')
+        path.write_text(content)
+    result = dict(roots=roots, expected=scope.expected, override=str(override))
+    (destination / "scope.json").write_text(json.dumps(result, indent=2, sort_keys=True) + "\n")
+    return result
+
+
+def audit(actions, scope):
+    """Check actual compiler features, extern edges, and execution contexts.
+
+    Reject any escape back into the global application graph. Build-system
+    support tools in @rules_rust itself are deliberately outside Cargo's graph.
+    """
+    targets = {str(t["id"]): t["label"] for t in actions["targets"]}
+    configs = {str(c["id"]): c.get("isTool", False) for c in actions["configuration"]}
+    fragments = {str(f["id"]): f for f in actions["pathFragments"]}
+
+    def path(fragment):
+        part = fragments[str(fragment)]
+        return (path(part["parentId"]) + "/" if part.get("parentId") else "") + part["label"]
+
+    artifacts = {str(a["id"]): path(a["pathFragmentId"]) for a in actions["artifacts"]}
+
+    def label_of(action):
+        label = targets[str(action["targetId"])]
+        return "@@" + label if label.startswith("//") else label
+
+    outputs = {artifacts[str(output)]: label_of(action) for action in actions["actions"]
+               for output in action.get("outputIds", [])}
+    seen = set()
+    for action in actions["actions"]:
+        if action["mnemonic"] not in ("Rustc", "RustcMetadata"):
+            continue
+        label = label_of(action)
+        if not (label.startswith("@@//") or label.startswith("@@rules_rust++crate+")):
+            continue
+        if label not in scope["expected"]:
+            raise ValueError(f"Unscoped compiler action: {label}")
+        expected = scope["expected"][label]
+        args = action["arguments"]
+        features = []
+        externs = {}
+        for i, arg in enumerate(args):
+            cfg = args[i + 1] if arg == "--cfg" else arg.removeprefix("--cfg=") if arg.startswith("--cfg=") else ""
+            if cfg.startswith("feature="):
+                features.append(json.loads(cfg.removeprefix("feature=")))
+            extern = args[i + 1] if arg == "--extern" else arg.removeprefix("--extern=") if arg.startswith("--extern=") else ""
+            # proc_macro is supplied by the Rust sysroot, not a Cargo package.
+            if extern and extern != "proc_macro":
+                name, output = extern.split("=", 1)
+                externs[name.removeprefix("force:")] = outputs.get(output, output)
+        if sorted(features) != expected["features"]:
+            raise ValueError(f"Feature mismatch: {label}: {features} != {expected['features']}")
+        if configs[str(action["configurationId"])] != expected["host"]:
+            raise ValueError(f"Host/target mismatch: {label}")
+        if externs != expected["externs"]:
+            raise ValueError(f"Dependency-edge mismatch: {label}: {externs} != {expected['externs']}")
+        seen.add(label)
+    missing = set(scope["expected"]) - seen
+    if missing:
+        raise ValueError(f"Missing scoped compiler actions: {sorted(missing)}")
+    return f"Verified {len(seen)} scoped compiler targets: exact Cargo features, extern edges and host/target contexts; no global application edges."
+
+
+def main():
+    import os
+    parser = argparse.ArgumentParser(description=__doc__)
+    parser.add_argument("--rules-root", type=Path, required=True)
+    parser.add_argument("--output", type=Path, required=True)
+    args = parser.parse_args()
+    scope = prepare(args.rules_root, args.output, os.environ)
+    print(json.dumps(dict(roots=scope["roots"], override=scope["override"]), indent=2))
+
+
+if __name__ == "__main__":
+    main()

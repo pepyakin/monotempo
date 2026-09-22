@@ -13,6 +13,8 @@ import subprocess
 import tempfile
 import time
 
+import tempo_scope
+
 
 ROOT = Path(__file__).resolve().parent.parent
 WORKLOADS = {
@@ -94,12 +96,16 @@ class Benchmark:
         self.crate_path, self.package = WORKLOADS[args.workload]
         self.label = f"//{self.crate_path}:{self.package.replace('-', '_')}"
         self.test_label = self.label + "_test"
+        self.scoped = getattr(args, "scoped", False)
+        self.cargo_cwd = ROOT / ("bazel/cargo" if self.scoped else args.workload)
         self.enabled = features(ROOT / self.crate_path / "BUILD.bazel")
+        if self.scoped and (args.workload != "tempo" or self.enabled):
+            raise ValueError("The prototype requires the featureless Tempo benchmark root")
         self.rows = []
         self.env = dict(os.environ)
         for key in list(self.env):
             if key.startswith(("CARGO_", "RUSTFLAGS", "RUSTDOCFLAGS")) or key in (
-                "RUSTC", "RUSTC_WRAPPER", "RUSTC_WORKSPACE_WRAPPER", "RUSTUP_TOOLCHAIN",
+                "RUSTC", "RUSTC_WRAPPER", "RUSTC_WORKSPACE_WRAPPER", "RUSTUP_TOOLCHAIN", "RUSTC_BOOTSTRAP",
                 "RUST_TEST_THREADS", "CFLAGS", "CXXFLAGS", "LDFLAGS", "CC", "CXX", "AR",
                 "CARGO_ENCODED_RUSTFLAGS", "LIBCLANG_PATH", "BINDGEN_EXTRA_CLANG_ARGS",
             ):
@@ -145,11 +151,14 @@ class Benchmark:
         return log.read_text()
 
     def cargo(self, verb):
-        return [
+        command = [
             "cargo", verb, "--verbose", "--verbose", "--frozen", "--package", self.package, "--lib",
             "--no-default-features", "--features", ",".join(self.enabled),
             "--jobs", str(self.args.jobs),
         ]
+        if self.scoped:
+            command += ["--target", tempo_scope.TRIPLE]
+        return command
 
     def bazel(self, verb):
         return self.bazel_start + [verb] + self.bazel_flags
@@ -163,7 +172,7 @@ class Benchmark:
                 command += ["--message-format=json-render-diagnostics"]
             else:
                 command += ["--", *extra]
-            cwd = ROOT / self.args.workload
+            cwd = self.cargo_cwd
         else:
             command = self.bazel("build" if phase in ("build", "test_compile") else "test")
             command += [self.label if phase == "build" else self.test_label]
@@ -182,6 +191,9 @@ class Benchmark:
 
     def prepare(self, repetition):
         self.repetition = repetition
+        # The previous repetition's scoped labels belong to its private override.
+        self.label = f"//{self.crate_path}:{self.package.replace('-', '_')}"
+        self.test_label = self.label + "_test"
         trial = self.scratch / f"trial-{repetition}"
         trial.mkdir()
         self.env["CARGO_TARGET_DIR"] = str(trial / "cargo-target")
@@ -223,11 +235,29 @@ class Benchmark:
             "RUSTFLAGS": f"-C linker={llvm / 'bin/clang'} -C link-arg=-fuse-ld=lld",
         })
         self.run([str(llvm / "bin/clang"), "--version"])
-        self.run(["cargo", "fetch", "--locked"], cwd=ROOT / self.args.workload)
+        self.run(["cargo", "fetch", "--locked"], cwd=self.cargo_cwd)
         self.run(["cargo", "tree", "--frozen", "-p", self.package, "--no-default-features",
-                  "--features", ",".join(self.enabled), "-e", "features"], cwd=ROOT / self.args.workload)
-        self.run(self.bazel_start + ["query", "--lockfile_mode=error", "--output=build",
-                                    f"deps({self.test_label})"])
+                  "--features", ",".join(self.enabled), "-e", "features"], cwd=self.cargo_cwd)
+        query_flags = ["--lockfile_mode=error"]
+        if self.scoped:
+            scope_dir = trial / "scope"
+            self.run(["python3", str(ROOT / "bazel/tempo_scope.py"),
+                      "--rules-root", str(output_base / "external/rules_rust+"),
+                      "--output", str(scope_dir)])
+            scope = json.loads((scope_dir / "scope.json").read_text())
+            for name in ("scope.json", "cargo-build-units.json", "cargo-test-units.json"):
+                (self.output / f"scope-{repetition}-{name}").write_bytes((scope_dir / name).read_bytes())
+            self.bazel_flags += ["--override_repository=rules_rust+=" + scope["override"]]
+            query_flags += ["--override_repository=rules_rust+=" + scope["override"]]
+            self.label, self.test_label = (scope["roots"][verb] for verb in ("build", "test"))
+            query = 'mnemonic("Rustc.*", deps(set(' + self.label + " " + self.test_label + ")))"
+            # Keep stderr separate: merged progress messages are not JSON.
+            action_file = self.output / f"scope-{repetition}-actions.json"
+            self.run(self.bazel("aquery") + ["--output=jsonproto", "--output_file=" + str(action_file), query])
+            verdict = tempo_scope.audit(json.loads(action_file.read_text()), scope)
+            (self.output / f"scope-{repetition}-audit.txt").write_text(verdict + "\n")
+            print(verdict, flush=True)
+        self.run(self.bazel_start + ["query", *query_flags, "--output=build", f"deps({self.test_label})"])
 
     def trial(self, repetition):
         inventories = {}
@@ -267,12 +297,15 @@ def main():
     parser.add_argument("--repetitions", type=int, choices=range(1, 6), default=3)
     parser.add_argument("--jobs", type=int, default=8)
     parser.add_argument("--test-threads", type=int, default=8)
+    parser.add_argument("--scoped", action="store_true", help="Experimental Tempo graph; Cargo uses the shared lockfile")
     parser.add_argument("--output", type=Path, required=True)
     args = parser.parse_args()
     if os.environ.get("GITHUB_ACTIONS") != "true":
         parser.error("Measurements must run in GitHub Actions, not on a local machine or orb")
     if args.jobs < 1 or args.test_threads < 1:
         parser.error("Job and test-thread budgets must be positive")
+    if args.scoped and args.workload != "tempo":
+        parser.error("The scoped prototype only supports the Tempo workload")
     if (ROOT / "user.bazelrc").exists():
         parser.error("Remove user.bazelrc from this disposable CI checkout first")
     if subprocess.check_output(["git", "status", "--porcelain", "--untracked-files=no"], cwd=ROOT):
@@ -291,7 +324,8 @@ def main():
             "test_threads": args.test_threads, "repetitions": args.repetitions,
             "root_features": benchmark.enabled,
             "run_url": f"{os.environ['GITHUB_SERVER_URL']}/{os.environ['GITHUB_REPOSITORY']}/actions/runs/{os.environ['GITHUB_RUN_ID']}",
-            "comparison": "matched root targets/features; project-local Cargo vs globally unified Bazel dependencies",
+            "comparison": ("experimental scoped graph, shared Cargo workspace/lockfile; NOT project-local Cargo"
+                           if args.scoped else "matched root targets/features; project-local Cargo vs globally unified Bazel dependencies"),
         }
         (benchmark.output / "metadata.json").write_text(json.dumps(metadata, indent=2) + "\n")
         for command in (["rustc", "-vV"], ["cargo", "--version"], ["bazel", "--version"],
@@ -304,8 +338,10 @@ def main():
                 benchmark.trial(repetition)
         summary = (
             f"## {args.workload}: {args.mode}, {args.repetitions} paired repetitions\n\n"
-            "Test names and ignored-test sets match. Dependency features are not identical; "
-            "these are configured-workflow timings, not isolated build-tool speedups.\n\n"
+            + ("Experimental scoped graph against Cargo in `bazel/cargo/`, NOT Tempo's project-local Cargo baseline. "
+               "Compiler features and host/target contexts were audited. Build-script settings, patches and compiler flags can still differ.\n\n"
+               if args.scoped else "Test names and ignored-test sets match. Dependency features are not identical; "
+               "these are configured-workflow timings, not isolated build-tool speedups.\n\n")
             + summarize(benchmark.rows)
             + "\nCold = empty compiled outputs, warm downloads/OS cache. test_compile follows build; "
             "test_run forces execution; test_cached allows Bazel result reuse but Cargo reruns. "

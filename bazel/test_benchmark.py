@@ -78,6 +78,20 @@ class BenchmarkTest(unittest.TestCase):
             self.assertEqual(runner.env["CARGO_INCREMENTAL"], "0")
             self.assertEqual(runner.env["CARGO_PROFILE_TEST_CODEGEN_UNITS"], "4")
 
+    def test_scoped_comparison_explicitly_uses_shared_workspace_and_target(self):
+        with tempfile.TemporaryDirectory() as tmp:
+            args = argparse.Namespace(output=Path(tmp) / "results", workload="tempo", mode="ci",
+                                      jobs=8, test_threads=8, scoped=True)
+            runner = benchmark.Benchmark(args, Path(tmp))
+            calls = []
+            runner.run = lambda command, **kwargs: calls.append((command, kwargs))
+            runner.phase("cargo", "cold", "test_compile")
+            command, options = calls[0]
+            self.assertEqual(options["cwd"], benchmark.ROOT / "bazel/cargo")
+            self.assertIn("--frozen", command)
+            self.assertEqual(command[command.index("--target") + 1], "x86_64-unknown-linux-gnu")
+            self.assertNotIn("RUSTC_BOOTSTRAP", runner.env)
+
     def test_trials_alternate_tools_and_edits_start_from_restored_baselines(self):
         with tempfile.TemporaryDirectory() as tmp:
             root = Path(tmp)
