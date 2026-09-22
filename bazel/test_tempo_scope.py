@@ -13,6 +13,21 @@ def unit(name, *, host=False, features=(), kind="lib", mode="build", deps=()):
 
 
 class ScopeTest(unittest.TestCase):
+    def test_restore_aliases_keeps_versions_and_optional_feature_semantics(self):
+        derived = {
+            "dependencies": {"const-hex": {"version": "^1.19", "optional": True}},
+            "target": {"cfg(unix)": {"build-dependencies": {"const-hex": {"version": "^1.19"}}}},
+            "features": {"hex": ["dep:const-hex"], "std": ["const-hex?/std", "other/std"]},
+        }
+        original = {"dependencies": {"hex": {"workspace": True}}}
+        workspace = {"hex": {"package": "const-hex", "version": "^1.18"}}
+        self.assertTrue(tempo_scope.restore_aliases(derived, original, workspace))
+        self.assertEqual(derived["dependencies"], {"hex": {"version": "^1.19", "optional": True, "package": "const-hex"}})
+        self.assertEqual(derived["features"], {"hex": ["dep:hex"], "std": ["hex?/std", "other/std"]})
+        self.assertEqual(derived["target"]["cfg(unix)"]["build-dependencies"],
+                         {"hex": {"version": "^1.19", "package": "const-hex"}})
+        self.assertFalse(tempo_scope.restore_aliases(derived, original, workspace))
+
     def fixture(self):
         names = [tempo_scope.PACKAGE, "shared", "derive", "native"]
         metadata = dict(packages=[dict(id=n, name=n, version="1.0.0") for n in names])

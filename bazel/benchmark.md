@@ -35,8 +35,12 @@ The workflow's `scoped: true` input (`benchmark.py --scoped --workload tempo`)
 is a **separate diagnostic comparison**, not a replacement for the project-local
 Cargo baseline above. Both sides use `bazel/cargo/Cargo.lock`, and Cargo builds
 only `tempo-payload-builder --lib --no-default-features --target
-x86_64-unknown-linux-gnu` from that shared workspace. No second dependency hub,
-lockfile, source checkout, or independently resolved external packages are added.
+x86_64-unknown-linux-gnu` from a temporary manifest-only view of that workspace.
+That view restores source-level dependency aliases erased for crate-universe
+hub generation (for example `hex`), exposes build-script data such as `libmdbx`,
+and points back to the original sources. Its lockfile must remain byte-identical
+to the shared lockfile. No second dependency hub, source checkout, or independent
+version resolution is added.
 
 `tempo_scope.py` asks the pinned Cargo for build and test `--unit-graph` plans.
 This unstable inspection API needs `RUSTC_BOOTSTRAP=1`, confined to those two

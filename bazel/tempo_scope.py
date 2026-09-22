@@ -13,6 +13,9 @@ import json
 from pathlib import Path
 import shutil
 import subprocess
+import tomllib
+
+import generate
 
 
 ROOT = Path(__file__).resolve().parent.parent
@@ -21,15 +24,80 @@ PACKAGE = "tempo-payload-builder"
 MANIFEST = ROOT / "bazel/cargo/Cargo.toml"
 
 
-def cargo_plan(verb, env):
+def cargo_plan(verb, env, manifest):
     command = [
-        "cargo", verb, "--manifest-path", str(MANIFEST), "--locked",
+        "cargo", verb, "--manifest-path", str(manifest), "--locked",
         "--package", PACKAGE, "--lib", "--no-default-features",
         "--target", TRIPLE, "-Z", "unstable-options", "--unit-graph",
     ]
     # Enables Cargo's inspection API only; this environment is never used to
     # compile the benchmark. The toolchain is pinned by rust-toolchain.toml.
     return json.loads(subprocess.check_output(command, env=dict(env, RUSTC_BOOTSTRAP="1"), cwd=ROOT))
+
+
+def dependency_tables(manifest):
+    for table in [manifest, *manifest.get("target", {}).values()]:
+        for kind in ("dependencies", "dev-dependencies", "build-dependencies"):
+            if kind in table:
+                yield table[kind]
+
+
+def restore_aliases(derived, original, workspace):
+    """Undo only generator.colliding_renames, retaining versions and features."""
+    renames = {}
+    for table in dependency_tables(original):
+        for alias, spec in table.items():
+            if isinstance(spec, dict) and spec.get("workspace"):
+                spec = workspace[alias]
+            if isinstance(spec, dict) and spec.get("package", alias) != alias:
+                package = spec["package"]
+                for dest in dependency_tables(derived):
+                    if package in dest and alias not in dest:
+                        dest[alias] = dict(dest.pop(package), package=package)
+                        renames[package] = alias
+    for name, entries in derived.get("features", {}).items():
+        for package, alias in renames.items():
+            entries = [f"dep:{alias}" if e == f"dep:{package}" else
+                       alias + e[len(package):] if e.startswith((package + "/", package + "?/")) else e
+                       for e in entries]
+        derived["features"][name] = entries
+    return bool(renames)
+
+
+def cargo_workspace(destination, lock):
+    """Relocate derived manifests, not sources; retain the exact shared lockfile.
+
+    The normal derived manifests erase some extern renames solely to avoid
+    crate-universe hub-alias collisions. Cargo needs those source-level names.
+    """
+    shutil.copytree(MANIFEST.parent, destination, symlinks=True)
+    for source in MANIFEST.parent.rglob("*"):
+        if source.is_symlink():
+            target = destination / source.relative_to(MANIFEST.parent)
+            target.unlink()
+            target.symlink_to(source.resolve())
+    for member in lock["workspace_members"].values():
+        relative = Path(member).relative_to("bazel/cargo")
+        path = destination / relative / "Cargo.toml"
+        # Metadata derivation links targets only. Real Cargo build scripts also
+        # need siblings such as reth-mdbx-sys/libmdbx and package README files.
+        for source in (ROOT / relative).iterdir():
+            target = path.parent / source.name
+            if source.name not in ("target", ".git", "Cargo.lock") and not target.exists():
+                target.symlink_to(source)
+        derived = tomllib.loads(path.read_text())
+        original = tomllib.loads((ROOT / relative / "Cargo.toml").read_text())
+        project = tomllib.loads((ROOT / relative.parts[0] / "Cargo.toml").read_text())
+        if restore_aliases(derived, original, project.get("workspace", {}).get("dependencies", {})):
+            # Arrays of tables can be emitted as top-level arrays of inline
+            # tables. Emit scalars first so they do not fall inside a section.
+            content = "".join(f"{generate.toml_key(k)} = {generate.toml_value(v)}\n"
+                              for k, v in derived.items() if not isinstance(v, dict))
+            content += "".join(generate.toml_table(generate.toml_key(k), v)
+                               for k, v in derived.items() if isinstance(v, dict))
+            path.write_text(content)
+    shutil.copyfile(ROOT / "rust-toolchain.toml", destination / "rust-toolchain.toml")
+    return destination / "Cargo.toml"
 
 
 class Scope:
@@ -144,14 +212,16 @@ class Scope:
 
 def prepare(rules_root, destination, env):
     destination.mkdir(parents=True, exist_ok=False)
+    lock = json.loads((ROOT / "Cargo.Bazel.lock").read_text())
+    manifest = cargo_workspace(destination / "cargo", lock)
     metadata = json.loads(subprocess.check_output(
-        ["cargo", "metadata", "--locked", "--format-version=1", "--manifest-path", str(MANIFEST)],
+        ["cargo", "metadata", "--locked", "--format-version=1", "--manifest-path", str(manifest)],
         env=env, cwd=ROOT,
     ))
-    scope = Scope(metadata, json.loads((ROOT / "Cargo.Bazel.lock").read_text()))
+    scope = Scope(metadata, lock)
     roots = {}
     for verb in ("build", "test"):
-        graph = cargo_plan(verb, env)
+        graph = cargo_plan(verb, env, manifest)
         (destination / f"cargo-{verb}-units.json").write_text(json.dumps(graph, indent=2) + "\n")
         roots[verb] = scope.add(graph)
     override = destination / "rules_rust"
@@ -175,7 +245,9 @@ def prepare(rules_root, destination, env):
                 raise ValueError(f"Unsupported rules_rust wrapper: {kind}")
             content = content.replace(original, f'def {kind}(**kwargs):\n    _scope_emit(_{kind}, "{kind}", kwargs)')
         path.write_text(content)
-    result = dict(roots=roots, expected=scope.expected, override=str(override))
+    if (manifest.parent / "Cargo.lock").read_bytes() != (MANIFEST.parent / "Cargo.lock").read_bytes():
+        raise ValueError("Scoped Cargo changed the shared lockfile")
+    result = dict(roots=roots, expected=scope.expected, override=str(override), cargo_workspace=str(manifest.parent))
     (destination / "scope.json").write_text(json.dumps(result, indent=2, sort_keys=True) + "\n")
     return result
 

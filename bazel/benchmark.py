@@ -194,6 +194,7 @@ class Benchmark:
         # The previous repetition's scoped labels belong to its private override.
         self.label = f"//{self.crate_path}:{self.package.replace('-', '_')}"
         self.test_label = self.label + "_test"
+        self.cargo_cwd = ROOT / ("bazel/cargo" if self.scoped else self.args.workload)
         trial = self.scratch / f"trial-{repetition}"
         trial.mkdir()
         self.env["CARGO_TARGET_DIR"] = str(trial / "cargo-target")
@@ -236,8 +237,6 @@ class Benchmark:
         })
         self.run([str(llvm / "bin/clang"), "--version"])
         self.run(["cargo", "fetch", "--locked"], cwd=self.cargo_cwd)
-        self.run(["cargo", "tree", "--frozen", "-p", self.package, "--no-default-features",
-                  "--features", ",".join(self.enabled), "-e", "features"], cwd=self.cargo_cwd)
         query_flags = ["--lockfile_mode=error"]
         if self.scoped:
             scope_dir = trial / "scope"
@@ -245,6 +244,7 @@ class Benchmark:
                       "--rules-root", str(output_base / "external/rules_rust+"),
                       "--output", str(scope_dir)])
             scope = json.loads((scope_dir / "scope.json").read_text())
+            self.cargo_cwd = Path(scope["cargo_workspace"])
             for name in ("scope.json", "cargo-build-units.json", "cargo-test-units.json"):
                 (self.output / f"scope-{repetition}-{name}").write_bytes((scope_dir / name).read_bytes())
             self.bazel_flags += ["--override_repository=rules_rust+=" + scope["override"]]
@@ -257,6 +257,8 @@ class Benchmark:
             verdict = tempo_scope.audit(json.loads(action_file.read_text()), scope)
             (self.output / f"scope-{repetition}-audit.txt").write_text(verdict + "\n")
             print(verdict, flush=True)
+        self.run(["cargo", "tree", "--frozen", "-p", self.package, "--no-default-features",
+                  "--features", ",".join(self.enabled), "-e", "features"], cwd=self.cargo_cwd)
         self.run(self.bazel_start + ["query", *query_flags, "--output=build", f"deps({self.test_label})"])
 
     def trial(self, repetition):
@@ -338,8 +340,8 @@ def main():
                 benchmark.trial(repetition)
         summary = (
             f"## {args.workload}: {args.mode}, {args.repetitions} paired repetitions\n\n"
-            + ("Experimental scoped graph against Cargo in `bazel/cargo/`, NOT Tempo's project-local Cargo baseline. "
-               "Compiler features and host/target contexts were audited. Build-script settings, patches and compiler flags can still differ.\n\n"
+            + ("Experimental scoped graph against Cargo using the shared lockfile and a temporary manifest view, NOT Tempo's project-local Cargo baseline. "
+               "Compiler features, extern edges and host/target contexts were audited. Build-script settings, patches and compiler flags can still differ.\n\n"
                if args.scoped else "Test names and ignored-test sets match. Dependency features are not identical; "
                "these are configured-workflow timings, not isolated build-tool speedups.\n\n")
             + summarize(benchmark.rows)
