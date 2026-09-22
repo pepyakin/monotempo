@@ -38,7 +38,8 @@ def _compile(rule, workspace, name, crate_root, crate_features, declared_feature
     rule(
         name = name,
         crate_root = crate_root,
-        srcs = native.glob(["src/**/*.rs"]),
+        # Cargo's binary entrypoint must not invalidate the library.
+        srcs = native.glob(["src/**/*.rs"], exclude = ["src/main.rs"] if rule == rust_library else []),
         deps = deps + ([build_script] if build_script else []),
         compile_data = compile_data + _data(),
         visibility = ["//visibility:public"],
