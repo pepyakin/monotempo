@@ -1,7 +1,9 @@
 """Graph-generation and audit checks; never execute a Rust compiler."""
 
 from copy import deepcopy
+from pathlib import Path
 import unittest
+from unittest.mock import patch
 
 import tempo_scope
 
@@ -13,6 +15,23 @@ def unit(name, *, host=False, features=(), kind="lib", mode="build", deps=()):
 
 
 class ScopeTest(unittest.TestCase):
+    def test_presets_select_binary_or_library_and_keep_defaults_explicit(self):
+        expected = {
+            "tempo-node": ["--package", "tempo", "--bin", "tempo"],
+            "alloy-consensus": ["--package", "alloy-consensus", "--lib"],
+            "tempo-payload-builder": ["--package", "tempo-payload-builder", "--lib", "--no-default-features"],
+        }
+        for name, args in expected.items():
+            preset = tempo_scope.PRESETS[name]
+            self.assertEqual(preset.cargo_args(), args)
+            self.assertEqual(preset.verbs, ("build",) if name == "tempo-node" else ("build", "test"))
+            with patch("tempo_scope.subprocess.check_output", return_value=b'{"version": 1}') as run:
+                tempo_scope.cargo_plan("build", {}, Path("/tmp/Cargo.toml"), preset)
+                command = run.call_args.args[0]
+                self.assertEqual(command[5:-5], args)
+                self.assertEqual(command[-5:], ["--target", tempo_scope.TRIPLE, "-Z", "unstable-options", "--unit-graph"])
+                self.assertEqual(run.call_args.kwargs["env"], {"RUSTC_BOOTSTRAP": "1"})
+
     def test_restore_aliases_keeps_versions_and_optional_feature_semantics(self):
         derived = {
             "dependencies": {"const-hex": {"version": "^1.19", "optional": True}},
@@ -43,13 +62,13 @@ class ScopeTest(unittest.TestCase):
         }))
         self.assertEqual(derived, before)
 
-    def fixture(self):
-        names = [tempo_scope.PACKAGE, "shared", "derive", "native"]
-        metadata = dict(packages=[dict(id=n, name=n, version="1.0.0") for n in names])
+    def fixture(self, package=tempo_scope.PACKAGE):
+        names = [package, "shared", "derive", "native"]
+        metadata = dict(packages=[dict(id=n, name=n, version="1.0.0", targets=[]) for n in names])
         lock = dict(crates={n + " 1.0.0": dict(library_target_name=n.replace("-", "_")) for n in names},
-                    workspace_members={tempo_scope.PACKAGE + " 1.0.0": "bazel/cargo/tempo/crates/payload/builder"})
+                    workspace_members={package + " 1.0.0": "bazel/cargo/tempo/crates/payload/builder"})
         graph = dict(version=1, roots=[0], units=[
-            unit(tempo_scope.PACKAGE, deps=[(1, "renamed"), (2, "derive")]),
+            unit(package, deps=[(1, "renamed"), (2, "derive")]),
             unit("shared", features=["rc"]),
             unit("derive", host=True, kind="proc-macro", deps=[(3, "shared")]),
             unit("shared", host=True, features=["derive"]),
@@ -83,6 +102,16 @@ class ScopeTest(unittest.TestCase):
         self.assertEqual(scope.expected[second]["externs"]["derive"], first_macro)
         self.assertEqual(scope.add(graph), second)
 
+    def test_renamed_macro_uses_exec_alias_not_target_alias(self):
+        scope, graph = self.fixture()
+        graph["units"][0]["dependencies"][1]["extern_crate_name"] = "derive_compat"
+        root = scope.add(graph)
+        macro = scope.expected[root]["externs"]["derive_compat"]
+        attrs = next(iter(scope.variants["@@//tempo/crates/payload/builder:tempo_payload_builder"].values()))["attrs"]
+        self.assertEqual(attrs["proc_macro_aliases"], {macro: "derive_compat"})
+        self.assertNotIn(macro, attrs["aliases"])
+        self.assertTrue(scope.expected[macro]["host"])
+
     def test_build_script_uses_build_deps_and_native_link_owner(self):
         scope, graph = self.fixture()
         graph["units"] += [
@@ -110,6 +139,34 @@ class ScopeTest(unittest.TestCase):
         self.assertNotIn("native", scope.expected[library]["externs"])
         self.assertIn("native", scope.expected[test]["externs"])
         self.assertEqual(scope.expected[test]["kind"], "rust_test")
+
+    def test_binary_uses_binary_template_and_keeps_same_package_library(self):
+        scope, graph = self.fixture("cli")
+        binary = unit("cli", kind="bin", deps=[(0, "cli")])
+        scope.packages["cli"]["targets"] = [graph["units"][0]["target"], binary["target"]]
+        graph["units"].append(binary)
+        graph["roots"] = [4]
+        root = scope.add(graph)
+        self.assertIn(":cli__scope_", root)
+        self.assertEqual(scope.expected[root]["kind"], "rust_binary")
+        library = scope.expected[root]["externs"]["cli"]
+        self.assertIn(":cli_lib__scope_", library)
+        self.assertEqual(scope.expected[library]["kind"], "rust_library")
+        graph["units"][4]["mode"] = "test"
+        with self.assertRaisesRegex(ValueError, "library unit tests"):
+            scope.add(graph)
+
+    def test_other_project_tests_share_identical_dependency_units(self):
+        scope, graph = self.fixture()
+        first = scope.add(graph)
+        scope.packages["alloy-consensus"] = dict(id="alloy-consensus", name="alloy-consensus", version="1.0.0", targets=[])
+        scope.lock["crates"]["alloy-consensus 1.0.0"] = dict(library_target_name="alloy_consensus")
+        scope.lock["workspace_members"]["alloy-consensus 1.0.0"] = "bazel/cargo/alloy/crates/consensus"
+        graph["units"][0] = unit("alloy-consensus", mode="test", deps=[(1, "renamed"), (2, "derive")])
+        second = scope.add(graph)
+        self.assertIn("//alloy/crates/consensus:alloy_consensus_test__scope_", second)
+        self.assertEqual(scope.expected[second]["kind"], "rust_test")
+        self.assertEqual(scope.expected[first]["externs"], scope.expected[second]["externs"])
 
     def test_audit_rejects_extra_features_wrong_edges_host_and_global_escape(self):
         scope = dict(expected={

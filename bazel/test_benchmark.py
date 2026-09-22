@@ -92,6 +92,79 @@ class BenchmarkTest(unittest.TestCase):
             self.assertEqual(command[command.index("--target") + 1], "x86_64-unknown-linux-gnu")
             self.assertNotIn("RUSTC_BOOTSTRAP", runner.env)
 
+    def test_scoped_alloy_uses_default_features_not_global_build_features(self):
+        with tempfile.TemporaryDirectory() as tmp:
+            args = argparse.Namespace(output=Path(tmp) / "results", workload="alloy", mode="ci",
+                                      jobs=8, test_threads=8, scoped=True)
+            runner = benchmark.Benchmark(args, Path(tmp))
+            command = runner.cargo("test")
+            self.assertIn("alloy-consensus", command)
+            self.assertIn("--lib", command)
+            self.assertNotIn("--features", command)
+            self.assertNotIn("--no-default-features", command)
+            self.assertEqual(runner.enabled, ["default"])
+            self.assertEqual(runner.phases, ("build", "test_compile", "test_run", "test_cached"))
+
+    def test_node_builds_binary_only_and_checks_offline_cli_output(self):
+        with tempfile.TemporaryDirectory() as tmp:
+            args = argparse.Namespace(output=Path(tmp) / "results", workload="tempo-node", mode="ci",
+                                      jobs=8, test_threads=8, scoped=True)
+            runner = benchmark.Benchmark(args, Path(tmp))
+            runner.bazel_start, runner.bazel_flags = ["bazel"], []
+            runner.env["CARGO_TARGET_DIR"] = tmp + "/target"
+            calls = []
+
+            def run(command, **kwargs):
+                calls.append((command, kwargs))
+                return "Usage: tempo [OPTIONS]" if command[-1] == "--help" else "tempo 1.14.0"
+
+            runner.run = run
+            for tool in ("cargo", "bazel"):
+                runner.cycle(tool, "cold")
+                runner.smoke_binary(tool)
+            cargo, bazel = calls[0][0], calls[3][0]
+            self.assertEqual(cargo[cargo.index("--bin") + 1], "tempo")
+            self.assertNotIn("--lib", cargo)
+            self.assertNotIn("--no-default-features", cargo)
+            self.assertEqual(bazel[1:3], ["build", "//tempo/bin/tempo:tempo"])
+            self.assertEqual(len(calls), 6)
+            self.assertTrue(calls[1][0][0].endswith("/x86_64-unknown-linux-gnu/debug/tempo"))
+            self.assertEqual(calls[4][0][-3:], ["//tempo/bin/tempo:tempo", "--", "--help"])
+            self.assertTrue(all(not k.get("measured", False) for _, k in (calls[1], calls[2], calls[4], calls[5])))
+            runner.run = lambda *a, **k: "wrong executable"
+            with self.assertRaisesRegex(ValueError, "--help"):
+                runner.smoke_binary("cargo")
+
+    def test_node_trial_edits_main_and_never_schedules_tests(self):
+        with tempfile.TemporaryDirectory() as tmp:
+            root = Path(tmp)
+            leaf, foundation = root / "tempo/bin/tempo/src/main.rs", root / benchmark.FOUNDATION
+            for path in (leaf, foundation):
+                path.parent.mkdir(parents=True)
+                path.write_text("//! Original.\n")
+            original = leaf.read_bytes()
+            args = argparse.Namespace(output=root / "results", workload="tempo-node", mode="ci",
+                                      jobs=8, test_threads=8, scoped=True)
+            runner = benchmark.Benchmark(args, root)
+            runner.prepare = lambda repetition: None
+            smoke, phases = [], []
+            runner.smoke_binary = smoke.append
+
+            def phase(tool, scenario, phase, measured=True, extra=()):
+                phases.append((tool, scenario, phase, measured))
+                self.assertEqual(phase, "build")
+                self.assertEqual(leaf.read_bytes() != original, scenario == "leaf")
+                self.assertEqual(foundation.read_bytes() != original, scenario == "foundation")
+
+            runner.phase = phase
+            with patch("benchmark.ROOT", root):
+                runner.trial(1)
+            self.assertEqual(smoke, ["cargo", "bazel"])
+            self.assertEqual(sum(p[3] for p in phases), 8)
+            self.assertEqual(leaf.read_bytes(), original)
+            self.assertEqual(foundation.read_bytes(), original)
+            self.assertFalse((runner.output / "inventories-1.json").exists())
+
     def test_trials_alternate_tools_and_edits_start_from_restored_baselines(self):
         with tempfile.TemporaryDirectory() as tmp:
             root = Path(tmp)

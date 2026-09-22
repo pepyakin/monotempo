@@ -5,9 +5,9 @@ on:
   workflow_dispatch:
     inputs:
       workload:
-        description: Project-local workload (not the entire monorepo)
+        description: Workload (tempo-node requires scoped; no node tests)
         type: choice
-        options: [alloy, tempo]
+        options: [alloy, tempo, tempo-node]
         default: alloy
       mode:
         description: Nonincremental CI or incremental developer-loop simulation
@@ -25,7 +25,7 @@ on:
         options: ['4', '8', '16']
         default: '8'
       scoped:
-        description: Experimental Tempo graph using shared Cargo lockfile (not project-local baseline)
+        description: Experimental root-scoped graph using shared Cargo lockfile (not project-local baseline)
         type: boolean
         default: false
 

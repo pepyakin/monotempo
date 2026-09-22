@@ -17,10 +17,8 @@ import tempo_scope
 
 
 ROOT = Path(__file__).resolve().parent.parent
-WORKLOADS = {
-    "alloy": ("alloy/crates/consensus", "alloy-consensus"),
-    "tempo": ("tempo/crates/payload/builder", "tempo-payload-builder"),
-}
+SCOPES = {"alloy": "alloy-consensus", "tempo": "tempo-payload-builder", "tempo-node": "tempo-node"}
+WORKLOADS = {name: tempo_scope.PRESETS[scope] for name, scope in SCOPES.items()}
 FOUNDATION = "alloy-core/crates/primitives/src/lib.rs"
 
 
@@ -93,14 +91,18 @@ class Benchmark:
         self.scratch = scratch
         self.output = args.output.resolve()
         self.output.mkdir(parents=True, exist_ok=False)
-        self.crate_path, self.package = WORKLOADS[args.workload]
-        self.label = f"//{self.crate_path}:{self.package.replace('-', '_')}"
-        self.test_label = self.label + "_test"
+        workload = WORKLOADS[args.workload]
+        self.crate_path, self.package = workload.path, workload.package
         self.scoped = getattr(args, "scoped", False)
-        self.cargo_cwd = ROOT / ("bazel/cargo" if self.scoped else args.workload)
-        self.enabled = features(ROOT / self.crate_path / "BUILD.bazel")
-        if self.scoped and (args.workload != "tempo" or self.enabled):
-            raise ValueError("The prototype requires the featureless Tempo benchmark root")
+        if args.workload == "tempo-node" and not self.scoped:
+            raise ValueError("tempo-node requires --scoped")
+        self.preset = workload if self.scoped else None
+        self.binary = self.preset.binary if self.preset else None
+        self.phases = ("build",) if self.binary else ("build", "test_compile", "test_run", "test_cached")
+        self.label = f"//{self.crate_path}:{self.package.replace('-', '_')}"
+        self.test_label = None if self.binary else self.label + "_test"
+        self.cargo_cwd = ROOT / ("bazel/cargo" if self.scoped else self.crate_path.split("/")[0])
+        self.enabled = (["default"] if self.preset.default_features else []) if self.preset else features(ROOT / self.crate_path / "BUILD.bazel")
         self.rows = []
         self.env = dict(os.environ)
         for key in list(self.env):
@@ -151,9 +153,11 @@ class Benchmark:
         return log.read_text()
 
     def cargo(self, verb):
+        selection = self.preset.cargo_args() if self.preset else [
+            "--package", self.package, "--lib", "--no-default-features", "--features", ",".join(self.enabled),
+        ]
         command = [
-            "cargo", verb, "--verbose", "--verbose", "--frozen", "--package", self.package, "--lib",
-            "--no-default-features", "--features", ",".join(self.enabled),
+            "cargo", verb, "--verbose", "--verbose", "--frozen", *selection,
             "--jobs", str(self.args.jobs),
         ]
         if self.scoped:
@@ -186,15 +190,25 @@ class Benchmark:
         return self.run(command, tool=tool, scenario=scenario, phase=phase, measured=measured, cwd=cwd)
 
     def cycle(self, tool, scenario, measured=True):
-        for phase in ("build", "test_compile", "test_run", "test_cached"):
+        for phase in self.phases:
             self.phase(tool, scenario, phase, measured)
+
+    def smoke_binary(self, tool):
+        for option in ("help", "version"):
+            if tool == "cargo":
+                command = [str(Path(self.env["CARGO_TARGET_DIR"]) / tempo_scope.TRIPLE / "debug" / self.binary), f"--{option}"]
+            else:
+                command = self.bazel("run") + [self.label, "--", f"--{option}"]
+            output = self.run(command, tool=tool, scenario="smoke", phase=option)
+            if (option == "help" and "Usage:" not in output) or (option == "version" and not re.search(r"(?m)^tempo\s", output)):
+                raise ValueError(f"Unexpected {tool} binary --{option} output")
 
     def prepare(self, repetition):
         self.repetition = repetition
         # The previous repetition's scoped labels belong to its private override.
         self.label = f"//{self.crate_path}:{self.package.replace('-', '_')}"
-        self.test_label = self.label + "_test"
-        self.cargo_cwd = ROOT / ("bazel/cargo" if self.scoped else self.args.workload)
+        self.test_label = None if self.binary else self.label + "_test"
+        self.cargo_cwd = ROOT / ("bazel/cargo" if self.scoped else self.crate_path.split("/")[0])
         trial = self.scratch / f"trial-{repetition}"
         trial.mkdir()
         self.env["CARGO_TARGET_DIR"] = str(trial / "cargo-target")
@@ -224,7 +238,7 @@ class Benchmark:
             ]
         # Downloads, toolchain extraction, and server startup are outside compile timings.
         self.run(self.bazel_start + ["fetch", "--lockfile_mode=error",
-                 f"--repository_cache={self.scratch / 'bazel-downloads'}", self.test_label])
+                 f"--repository_cache={self.scratch / 'bazel-downloads'}", self.test_label or self.label])
         clangs = list(output_base.glob("external/*llvm*/bin/clang"))
         if len(clangs) != 1:
             raise RuntimeError(f"Expected one fetched LLVM toolchain, found {clangs}")
@@ -242,24 +256,24 @@ class Benchmark:
             scope_dir = trial / "scope"
             self.run(["python3", str(ROOT / "bazel/tempo_scope.py"),
                       "--rules-root", str(output_base / "external/rules_rust+"),
-                      "--output", str(scope_dir)])
+                      "--output", str(scope_dir), "--scope", SCOPES[self.args.workload]])
             scope = json.loads((scope_dir / "scope.json").read_text())
             self.cargo_cwd = Path(scope["cargo_workspace"])
-            for name in ("scope.json", "cargo-build-units.json", "cargo-test-units.json"):
+            for name in ["scope.json", *(f"cargo-{verb}-units.json" for verb in self.preset.verbs)]:
                 (self.output / f"scope-{repetition}-{name}").write_bytes((scope_dir / name).read_bytes())
             self.bazel_flags += ["--override_repository=rules_rust+=" + scope["override"]]
             query_flags += ["--override_repository=rules_rust+=" + scope["override"]]
-            self.label, self.test_label = (scope["roots"][verb] for verb in ("build", "test"))
-            query = 'mnemonic("Rustc.*", deps(set(' + self.label + " " + self.test_label + ")))"
+            self.label, self.test_label = scope["roots"]["build"], scope["roots"].get("test")
+            query = 'mnemonic("Rustc.*", deps(set(' + " ".join(scope["roots"].values()) + ")))"
             # Keep stderr separate: merged progress messages are not JSON.
             action_file = self.output / f"scope-{repetition}-actions.json"
             self.run(self.bazel("aquery") + ["--output=jsonproto", "--output_file=" + str(action_file), query])
             verdict = tempo_scope.audit(json.loads(action_file.read_text()), scope)
             (self.output / f"scope-{repetition}-audit.txt").write_text(verdict + "\n")
             print(verdict, flush=True)
-        self.run(["cargo", "tree", "--frozen", "-p", self.package, "--no-default-features",
-                  "--features", ",".join(self.enabled), "-e", "features"], cwd=self.cargo_cwd)
-        self.run(self.bazel_start + ["query", *query_flags, "--output=build", f"deps({self.test_label})"])
+        feature_args = self.preset.feature_args() if self.preset else ["--no-default-features", "--features", ",".join(self.enabled)]
+        self.run(["cargo", "tree", "--frozen", "-p", self.package, *feature_args, "-e", "features"], cwd=self.cargo_cwd)
+        self.run(self.bazel_start + ["query", *query_flags, "--output=build", f"deps({self.test_label or self.label})"])
 
     def trial(self, repetition):
         inventories = {}
@@ -268,25 +282,30 @@ class Benchmark:
             self.prepare(repetition)
             for tool in order:
                 self.phase(tool, "cold", "build")
-                self.phase(tool, "cold", "test_compile")
-                if tool == "bazel":
-                    self.run(self.bazel("aquery") + ["--output=textproto",
-                             f'mnemonic("Rustc.*", deps({self.test_label}))'])
-                inventories[tool] = {}
-                for kind, extra in (("all", []), ("ignored", ["--ignored"])):
-                    listing = self.phase(tool, "inventory", "test_list", False,
-                                         ["--list", "--format=terse", *extra])
-                    inventories[tool][kind] = inventory(listing)
-                self.phase(tool, "cold", "test_run")
-                self.phase(tool, "cold", "test_cached")
+                if self.binary:
+                    self.smoke_binary(tool)
+                else:
+                    self.phase(tool, "cold", "test_compile")
+                    if tool == "bazel":
+                        self.run(self.bazel("aquery") + ["--output=textproto",
+                                 f'mnemonic("Rustc.*", deps({self.test_label}))'])
+                    inventories[tool] = {}
+                    for kind, extra in (("all", []), ("ignored", ["--ignored"])):
+                        listing = self.phase(tool, "inventory", "test_list", False,
+                                             ["--list", "--format=terse", *extra])
+                        inventories[tool][kind] = inventory(listing)
+                    self.phase(tool, "cold", "test_run")
+                    self.phase(tool, "cold", "test_cached")
                 self.cycle(tool, "noop")
-                for scenario, source in (("leaf", self.crate_path + "/src/lib.rs"), ("foundation", FOUNDATION)):
+                leaf = self.crate_path + ("/src/main.rs" if self.binary else "/src/lib.rs")
+                for scenario, source in (("leaf", leaf), ("foundation", FOUNDATION)):
                     with edit_source(ROOT / source, repetition):
                         self.cycle(tool, scenario)
                     # Restore and re-prime the original baseline before the next independent edit.
                     self.cycle(tool, "restore", measured=False)
-            (self.output / f"inventories-{repetition}.json").write_text(json.dumps(inventories, indent=2) + "\n")
-            check_inventories(inventories)
+            if not self.binary:
+                (self.output / f"inventories-{repetition}.json").write_text(json.dumps(inventories, indent=2) + "\n")
+                check_inventories(inventories)
         finally:
             if hasattr(self, "bazel_start"):
                 self.run(self.bazel_start + ["shutdown"])
@@ -299,15 +318,15 @@ def main():
     parser.add_argument("--repetitions", type=int, choices=range(1, 6), default=3)
     parser.add_argument("--jobs", type=int, default=8)
     parser.add_argument("--test-threads", type=int, default=8)
-    parser.add_argument("--scoped", action="store_true", help="Experimental Tempo graph; Cargo uses the shared lockfile")
+    parser.add_argument("--scoped", action="store_true", help="Experimental root-scoped graph; Cargo uses the shared lockfile")
     parser.add_argument("--output", type=Path, required=True)
     args = parser.parse_args()
     if os.environ.get("GITHUB_ACTIONS") != "true":
         parser.error("Measurements must run in GitHub Actions, not on a local machine or orb")
     if args.jobs < 1 or args.test_threads < 1:
         parser.error("Job and test-thread budgets must be positive")
-    if args.scoped and args.workload != "tempo":
-        parser.error("The scoped prototype only supports the Tempo workload")
+    if args.workload == "tempo-node" and not args.scoped:
+        parser.error("tempo-node requires --scoped")
     if (ROOT / "user.bazelrc").exists():
         parser.error("Remove user.bazelrc from this disposable CI checkout first")
     if subprocess.check_output(["git", "status", "--porcelain", "--untracked-files=no"], cwd=ROOT):
@@ -325,6 +344,8 @@ def main():
             "cpu_affinity": sorted(os.sched_getaffinity(0)),
             "test_threads": args.test_threads, "repetitions": args.repetitions,
             "root_features": benchmark.enabled,
+            "scope": SCOPES[args.workload] if args.scoped else None,
+            "phases": benchmark.phases,
             "run_url": f"{os.environ['GITHUB_SERVER_URL']}/{os.environ['GITHUB_REPOSITORY']}/actions/runs/{os.environ['GITHUB_RUN_ID']}",
             "comparison": ("experimental scoped graph, shared Cargo workspace/lockfile; NOT project-local Cargo"
                            if args.scoped else "matched root targets/features; project-local Cargo vs globally unified Bazel dependencies"),
@@ -340,11 +361,12 @@ def main():
                 benchmark.trial(repetition)
         summary = (
             f"## {args.workload}: {args.mode}, {args.repetitions} paired repetitions\n\n"
-            + ("Experimental scoped graph against Cargo using the shared lockfile and a temporary manifest view, NOT Tempo's project-local Cargo baseline. "
+            + ("Experimental scoped graph against Cargo using the shared lockfile and a temporary manifest view, NOT the project-local Cargo baseline. "
                "Compiler features, extern edges and host/target contexts were audited. Build-script settings, patches and compiler flags can still differ.\n\n"
                if args.scoped else "Test names and ignored-test sets match. Dependency features are not identical; "
                "these are configured-workflow timings, not isolated build-tool speedups.\n\n")
             + summarize(benchmark.rows)
+            + ("\nBinary build only; offline --help/--version checks passed on both tools. No node tests were run.\n" if benchmark.binary else "")
             + "\nCold = empty compiled outputs, warm downloads/OS cache. test_compile follows build; "
             "test_run forces execution; test_cached allows Bazel result reuse but Cargo reruns. "
             "See benchmark.md and artifacts for scope, commands, flags and feature inventories.\n"

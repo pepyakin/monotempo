@@ -8,6 +8,8 @@ Actions. Do not report smoke-test timings as a stable result.
 
 ## Workload boundaries
 
+Without `--scoped`, the historical workloads remain:
+
 | Choice | Cargo workspace/package | Bazel library and unit-test targets |
 |---|---|---|
 | `alloy` | `alloy/`, `alloy-consensus --lib` | `//alloy/crates/consensus:alloy_consensus{,_test}` |
@@ -29,21 +31,36 @@ workflows, not a pure comparison of build engines with identical compiler
 inputs. Do not switch Cargo to `bazel/cargo/`
 to disguise this difference: that is not the project's Cargo setup.
 
-## Opt-in Tempo scoped-graph prototype
+## Opt-in scoped-graph prototype
 
-The workflow's `scoped: true` input (`benchmark.py --scoped --workload tempo`)
+The workflow's `scoped: true` input (`benchmark.py --scoped`)
 is a **separate diagnostic comparison**, not a replacement for the project-local
-Cargo baseline above. Both sides use `bazel/cargo/Cargo.lock`, and Cargo builds
-only `tempo-payload-builder --lib --no-default-features --target
-x86_64-unknown-linux-gnu` from a temporary manifest-only view of that workspace.
+Cargo baseline above. Both sides use `bazel/cargo/Cargo.lock` and the following
+root selections, always with `--target x86_64-unknown-linux-gnu`:
+
+| Workflow workload | Scope preset | Cargo selection | Checks |
+|---|---|---|---|
+| `tempo` | `tempo-payload-builder` | `-p tempo-payload-builder --lib --no-default-features` | Library build and unit tests |
+| `alloy` | `alloy-consensus` | `-p alloy-consensus --lib` (default features) | Library build and unit tests |
+| `tempo-node` | `tempo-node` | `-p tempo --bin tempo` (default features) | Binary build and offline `--help`/`--version` |
+
+`tempo-node` requires scoped mode. It does not start a node, run network-dependent
+CLI tests, or claim coverage of Tempo's integration suite. Its cold/noop/leaf/
+foundation scenarios measure only `build`; the leaf edit targets `src/main.rs`.
+Alloy's scoped root uses Cargo defaults, not the historical globally generated
+root feature list, so its test inventory can differ from the unscoped benchmark.
+The scoped Cargo and Bazel inventories must still match each other exactly.
+
+Cargo runs from a temporary manifest-only view of the shared workspace.
 That view restores source-level dependency aliases erased for crate-universe
 hub generation (for example `hex`), exposes build-script data such as `libmdbx`,
 and points back to the original sources. Its lockfile must remain byte-identical
 to the shared lockfile. No second dependency hub, source checkout, or independent
 version resolution is added.
 
-`tempo_scope.py` asks the pinned Cargo for build and test `--unit-graph` plans.
-This unstable inspection API needs `RUSTC_BOOTSTRAP=1`, confined to those two
+`tempo_scope.py --scope <preset>` asks the pinned Cargo for build and (for
+library presets) test `--unit-graph` plans.
+This unstable inspection API needs `RUSTC_BOOTSTRAP=1`, confined to these
 non-compiling commands. The plans distinguish host/target units and build/test
 features. The prototype copies the already-patched rules_rust repository into
 the trial's temporary directory and wraps its public rules to instantiate
@@ -51,6 +68,9 @@ additional, explicitly named variants in the existing source packages. It
 retains generated native inputs, tool settings and annotations, but replaces
 features, Rust dependencies, renames and native `links` edges from Cargo's plans.
 Normal targets and committed BUILD files are unchanged.
+Variant names depend on compilation inputs, not the preset name: identical
+dependency units get identical labels across presets. Each benchmark still uses
+fresh outputs; this does not measure cross-preset cache reuse.
 
 Before compilation, an action-query audit checks every application compiler
 target's exact features, `--extern` edges and host/target context, and rejects
@@ -59,7 +79,7 @@ are uploaded with the measurements. The normal exact test-inventory check still
 applies. Generation/auditing are untimed setup, so this does **not** measure the
 cost of regenerating scoped targets after a manifest edit.
 
-This is limited to the Linux x86_64 Tempo library/test workload and the pinned
+This is limited to the three Linux x86_64 presets above and the pinned
 rules_rust layout. It is not automatic feature resolution for arbitrary Bazel
 roots. Compiler/profile flags, build-script execution settings, downstream source
 patches, repeated build-script compilation and metadata pipelining can still
@@ -74,9 +94,10 @@ downloads, extraction and server startup are outside the measured intervals;
 their commands and times remain in `samples.jsonl` with `measured: false`.
 "Cold" means **cold compiled outputs**, not cold downloads or OS page cache.
 
-1. **cold:** compile the library and then its test binary from scratch.
+1. **cold:** compile the library and then its test binary from scratch (or just
+   the node binary for `tempo-node`).
 2. **noop:** repeat with unchanged sources and warm build outputs.
-3. **leaf:** add a public, non-inlined arithmetic probe to the selected library.
+3. **leaf:** add a public, non-inlined arithmetic probe to the selected root.
 4. **foundation:** independently add the same probe to `alloy-primitives`, an
    in-tree dependency of both workloads. This invalidates a much wider closure.
 
@@ -88,7 +109,7 @@ differently. An mtime-only `touch` would unfairly favor content-addressed Bazel.
 
 Each scenario reports separate wall-clock intervals:
 
-* `build`: library compilation (including tool startup/analysis).
+* `build`: library or node-binary compilation (including tool startup/analysis).
 * `test_compile`: test-binary compilation **after** the library build, not an
   independent cold `cargo test`. Sum build + test_compile for total compilation.
 * `test_run`: test command with compiled outputs warm; force Bazel to execute

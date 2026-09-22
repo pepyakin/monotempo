@@ -1,4 +1,4 @@
-"""Experimental Linux Tempo compilation units, using the existing source graph.
+"""Experimental Linux compilation units, using the existing source graph.
 
 No Rust compilation happens here. Cargo's pinned, unstable --unit-graph supplies
 root-scoped features and edges. A private rules_rust override adds target
@@ -8,6 +8,7 @@ Neither tracked BUILD files nor the shared lockfile are rewritten.
 
 import argparse
 from collections import defaultdict
+from dataclasses import dataclass
 import hashlib
 import json
 from pathlib import Path
@@ -25,10 +26,36 @@ PACKAGE = "tempo-payload-builder"
 MANIFEST = ROOT / "bazel/cargo/Cargo.toml"
 
 
-def cargo_plan(verb, env, manifest):
+@dataclass(frozen=True)
+class Preset:
+    path: str
+    package: str
+    binary: str | None = None
+    default_features: bool = True
+
+    def cargo_args(self):
+        target = ["--bin", self.binary] if self.binary else ["--lib"]
+        return ["--package", self.package, *target, *self.feature_args()]
+
+    def feature_args(self):
+        return [] if self.default_features else ["--no-default-features"]
+
+    @property
+    def verbs(self):
+        return ("build",) if self.binary else ("build", "test")
+
+
+PRESETS = {
+    "tempo-payload-builder": Preset("tempo/crates/payload/builder", PACKAGE, default_features=False),
+    "tempo-node": Preset("tempo/bin/tempo", "tempo", binary="tempo"),
+    "alloy-consensus": Preset("alloy/crates/consensus", "alloy-consensus"),
+}
+
+
+def cargo_plan(verb, env, manifest, preset):
     command = [
         "cargo", verb, "--manifest-path", str(manifest), "--locked",
-        "--package", PACKAGE, "--lib", "--no-default-features",
+        *preset.cargo_args(),
         "--target", TRIPLE, "-Z", "unstable-options", "--unit-graph",
     ]
     # Enables Cargo's inspection API only; this environment is never used to
@@ -129,12 +156,21 @@ class Scope:
             name = pkg["name"].replace("-", "_") + "_build_script" if local else "_bs"
             kind = "cargo_build_script"
         elif unit["mode"] == "test":
-            if pkg["name"] != PACKAGE:
-                raise ValueError("Only the benchmark root's unit tests are supported")
-            name = crate["library_target_name"] + "_test"
+            if not local or unit["target"]["kind"] != ["lib"]:
+                raise ValueError("Only workspace library unit tests are supported")
+            name = generate.crate_name_to_ident(pkg["name"]) + "_test"
             kind = "rust_test"
+        elif unit["target"]["kind"] == ["bin"]:
+            if not local:
+                raise ValueError("Only workspace binaries are supported")
+            name = unit["target"]["name"]
+            kind = "rust_binary"
         else:
-            name = crate["library_target_name"]
+            name = generate.crate_name_to_ident(pkg["name"]) if local else crate["library_target_name"]
+            # Match generate.Crate.lib_target: a same-name binary owns the
+            # short label, while its library keeps the Rust name at <name>_lib.
+            if local and any(t["kind"] == ["bin"] and t["name"] == name for t in pkg["targets"]):
+                name += "_lib"
             kind = "rust_proc_macro" if "proc-macro" in unit["target"]["kind"] else "rust_library"
         return prefix + name, kind, pkg
 
@@ -192,9 +228,8 @@ class Scope:
                 if other["mode"] != "run-custom-build":
                     externs[dep["extern_crate_name"]] = label
                 if other["mode"] != "run-custom-build" and dep["extern_crate_name"] != other["target"]["name"]:
-                    if attr == "proc_macro_deps":
-                        raise ValueError("Renamed proc macros need an exec-configured alias")
-                    attrs["aliases"][label] = dep["extern_crate_name"]
+                    aliases = "proc_macro_aliases" if attr == "proc_macro_deps" else "aliases"
+                    attrs.setdefault(aliases, {})[label] = dep["extern_crate_name"]
             attrs["crate_name"] = unit["target"]["name"].replace("-", "_")
             identity = dict(template=template, kind=kind, host=unit["platform"] is None, attrs=attrs)
             digest = hashlib.sha256(json.dumps(identity, sort_keys=True).encode()).hexdigest()[:16]
@@ -217,7 +252,35 @@ class Scope:
         return visit(graph["roots"][0])
 
 
-def prepare(rules_root, destination, env):
+def patch_macro_aliases(override):
+    """Keep renamed proc macros in exec config, only in the private override.
+
+    rules_rust 0.74's aliases attr is target-configured. collect_deps already
+    understands Target-keyed aliases; supply macro Targets through an exec attr.
+    """
+    replacements = [
+        ("rust/private/rust.bzl", '_COMMON_ATTRS = {',
+         '_COMMON_ATTRS = {\n    "proc_macro_aliases": attr.label_keyed_string_dict(cfg = "exec"),', 1),
+        ("rust/private/rust.bzl", "ctx.attr.aliases",
+         "dict(ctx.attr.aliases.items() + ctx.attr.proc_macro_aliases.items())", 4),
+        # Build-script binaries are already generated with their scoped attrs.
+        # Bypass our public binary wrapper: Starlark forbids recursive emit().
+        ("cargo/private/cargo_build_script_wrapper.bzl", 'load("//rust:defs.bzl", "rust_binary")',
+         'load("//rust/private:rust.bzl", "rust_binary")', 1),
+        ("cargo/private/cargo_build_script_wrapper.bzl", "        proc_macro_deps = [],",
+         "        proc_macro_deps = [],\n        proc_macro_aliases = {},", 1),
+        ("cargo/private/cargo_build_script_wrapper.bzl", "        proc_macro_deps = proc_macro_deps,",
+         "        proc_macro_deps = proc_macro_deps,\n        proc_macro_aliases = proc_macro_aliases,", 1),
+    ]
+    for relative, old, new, count in replacements:
+        path = override / relative
+        content = path.read_text()
+        if content.count(old) != count:
+            raise ValueError(f"Unsupported rules_rust macro-alias layout: {relative}: {old}")
+        path.write_text(content.replace(old, new))
+
+
+def prepare(rules_root, destination, env, preset_name="tempo-payload-builder"):
     destination.mkdir(parents=True, exist_ok=False)
     lock = json.loads((ROOT / "Cargo.Bazel.lock").read_text())
     manifest = cargo_workspace(destination / "cargo", lock)
@@ -226,13 +289,15 @@ def prepare(rules_root, destination, env):
         env=env, cwd=ROOT,
     ))
     scope = Scope(metadata, lock)
+    preset = PRESETS[preset_name]
     roots = {}
-    for verb in ("build", "test"):
-        graph = cargo_plan(verb, env, manifest)
+    for verb in preset.verbs:
+        graph = cargo_plan(verb, env, manifest, preset)
         (destination / f"cargo-{verb}-units.json").write_text(json.dumps(graph, indent=2) + "\n")
         roots[verb] = scope.add(graph)
     override = destination / "rules_rust"
     shutil.copytree(rules_root, override, symlinks=True)
+    patch_macro_aliases(override)
     private = override / "rust/private"
     shutil.copyfile(ROOT / "bazel/tempo_scope.bzl", private / "tempo_scope.bzl")
     # JSON's strings/lists/dicts are Starlark-compatible; the table has no
@@ -240,7 +305,7 @@ def prepare(rules_root, destination, env):
     table = {key: list(value.values()) for key, value in sorted(scope.variants.items())}
     (private / "tempo_scope_data.bzl").write_text("UNITS = " + json.dumps(table, indent=2, sort_keys=True) + "\n")
     for relative, kinds in (
-        ("rust/defs.bzl", ("rust_library", "rust_proc_macro", "rust_test")),
+        ("rust/defs.bzl", ("rust_library", "rust_proc_macro", "rust_test", "rust_binary")),
         ("cargo/defs.bzl", ("cargo_build_script",)),
     ):
         path = override / relative
@@ -254,7 +319,8 @@ def prepare(rules_root, destination, env):
         path.write_text(content)
     if (manifest.parent / "Cargo.lock").read_bytes() != (MANIFEST.parent / "Cargo.lock").read_bytes():
         raise ValueError("Scoped Cargo changed the shared lockfile")
-    result = dict(roots=roots, expected=scope.expected, override=str(override), cargo_workspace=str(manifest.parent))
+    result = dict(preset=preset_name, roots=roots, expected=scope.expected,
+                  override=str(override), cargo_workspace=str(manifest.parent))
     (destination / "scope.json").write_text(json.dumps(result, indent=2, sort_keys=True) + "\n")
     return result
 
@@ -321,8 +387,9 @@ def main():
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("--rules-root", type=Path, required=True)
     parser.add_argument("--output", type=Path, required=True)
+    parser.add_argument("--scope", choices=PRESETS, default="tempo-payload-builder")
     args = parser.parse_args()
-    scope = prepare(args.rules_root, args.output, os.environ)
+    scope = prepare(args.rules_root, args.output, os.environ, args.scope)
     print(json.dumps(dict(roots=scope["roots"], override=scope["override"]), indent=2))
 
 
