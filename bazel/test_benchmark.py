@@ -116,7 +116,7 @@ class BenchmarkTest(unittest.TestCase):
 
             def run(command, **kwargs):
                 calls.append((command, kwargs))
-                return "Usage: tempo [OPTIONS]" if command[-1] == "--help" else "tempo 1.14.0"
+                return "Usage: tempo [OPTIONS]" if command[-1] == "--help" else "Tempo Version: 1.14.0\nCommit SHA: VERGEN_IDEMPOTENT_OUTPUT\n"
 
             runner.run = run
             for tool in ("cargo", "bazel"):
@@ -133,6 +133,9 @@ class BenchmarkTest(unittest.TestCase):
             self.assertTrue(all(not k.get("measured", False) for _, k in (calls[1], calls[2], calls[4], calls[5])))
             runner.run = lambda *a, **k: "wrong executable"
             with self.assertRaisesRegex(ValueError, "--help"):
+                runner.smoke_binary("cargo")
+            runner.run = lambda command, **k: "Usage: tempo [OPTIONS]" if command[-1] == "--help" else "Tempo Version: unknown"
+            with self.assertRaisesRegex(ValueError, "--version"):
                 runner.smoke_binary("cargo")
 
     def test_node_trial_edits_main_and_never_schedules_tests(self):

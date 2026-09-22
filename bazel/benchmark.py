@@ -200,7 +200,8 @@ class Benchmark:
             else:
                 command = self.bazel("run") + [self.label, "--", f"--{option}"]
             output = self.run(command, tool=tool, scenario="smoke", phase=option)
-            if (option == "help" and "Usage:" not in output) or (option == "version" and not re.search(r"(?m)^tempo\s", output)):
+            expected = r"(?m)^Usage: tempo " if option == "help" else r"(?m)^Tempo Version: \d+\.\d+\.\d+\S*$"
+            if not re.search(expected, output):
                 raise ValueError(f"Unexpected {tool} binary --{option} output")
 
     def prepare(self, repetition):
