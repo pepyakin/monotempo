@@ -168,6 +168,8 @@ class Benchmark:
         return self.bazel_start + [verb] + self.bazel_flags
 
     def phase(self, tool, scenario, phase, measured=True, extra=()):
+        profile = getattr(self.args, "profile", False) and scenario == "cold" and phase in ("build", "test_compile")
+        stem = f"{len(self.rows):03}-{tool}-{scenario}-{phase}"
         if tool == "cargo":
             command = self.cargo("build" if phase == "build" else "test")
             if phase == "test_compile":
@@ -176,6 +178,8 @@ class Benchmark:
                 command += ["--message-format=json-render-diagnostics"]
             else:
                 command += ["--", *extra]
+            if profile:
+                command += ["--timings"]
             cwd = self.cargo_cwd
         else:
             command = self.bazel("build" if phase in ("build", "test_compile") else "test")
@@ -186,8 +190,16 @@ class Benchmark:
             # Preserve action/cache information without parsing console timing summaries.
             event_file = self.output / f"{len(self.rows):03}-bep.json"
             command += [f"--build_event_json_file={event_file}"]
+            if profile:
+                command += [f"--profile={self.output / (stem + '-profile.json.gz')}",
+                            "--experimental_profile_include_target_label",
+                            "--experimental_profile_include_primary_output"]
             cwd = ROOT
-        return self.run(command, tool=tool, scenario=scenario, phase=phase, measured=measured, cwd=cwd)
+        output = self.run(command, tool=tool, scenario=scenario, phase=phase, measured=measured, cwd=cwd)
+        if profile and tool == "cargo":
+            timing = Path(self.env["CARGO_TARGET_DIR"]) / "cargo-timings/cargo-timing.html"
+            (self.output / (stem + '-timings.html')).write_bytes(timing.read_bytes())
+        return output
 
     def cycle(self, tool, scenario, measured=True):
         for phase in self.phases:
@@ -320,6 +332,7 @@ def main():
     parser.add_argument("--jobs", type=int, default=8)
     parser.add_argument("--test-threads", type=int, default=8)
     parser.add_argument("--scoped", action="store_true", help="Experimental root-scoped graph; Cargo uses the shared lockfile")
+    parser.add_argument("--profile", action="store_true", help="Retain Cargo timings and Bazel action profiles for cold compilation")
     parser.add_argument("--output", type=Path, required=True)
     args = parser.parse_args()
     if os.environ.get("GITHUB_ACTIONS") != "true":
@@ -345,6 +358,7 @@ def main():
             "cpu_affinity": sorted(os.sched_getaffinity(0)),
             "test_threads": args.test_threads, "repetitions": args.repetitions,
             "root_features": benchmark.enabled,
+            "profile": args.profile,
             "scope": SCOPES[args.workload] if args.scoped else None,
             "phases": benchmark.phases,
             "run_url": f"{os.environ['GITHUB_SERVER_URL']}/{os.environ['GITHUB_REPOSITORY']}/actions/runs/{os.environ['GITHUB_RUN_ID']}",

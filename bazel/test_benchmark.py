@@ -78,6 +78,47 @@ class BenchmarkTest(unittest.TestCase):
             self.assertEqual(runner.env["CARGO_INCREMENTAL"], "0")
             self.assertEqual(runner.env["CARGO_PROFILE_TEST_CODEGEN_UNITS"], "4")
 
+    def test_cold_profiles_are_preserved_before_cargo_overwrites_its_report(self):
+        with tempfile.TemporaryDirectory() as tmp:
+            args = argparse.Namespace(output=Path(tmp) / "results", workload="alloy", mode="ci",
+                                      jobs=8, test_threads=8, profile=True)
+            runner = benchmark.Benchmark(args, Path(tmp))
+            runner.bazel_start, runner.bazel_flags = ["bazel"], []
+            runner.env["CARGO_TARGET_DIR"] = tmp + "/target"
+            timing = Path(tmp) / "target/cargo-timings/cargo-timing.html"
+            timing.parent.mkdir(parents=True)
+            calls = []
+
+            def run(command, **kwargs):
+                calls.append(command)
+                runner.rows.append(kwargs)
+                if "--timings" in command:
+                    timing.write_text(kwargs["phase"])
+                return "compiler output"
+
+            runner.run = run
+            for tool in ("cargo", "bazel"):
+                for phase in ("build", "test_compile"):
+                    self.assertEqual(runner.phase(tool, "cold", phase), "compiler output")
+                runner.phase(tool, "cold", "test_run")
+                runner.phase(tool, "leaf", "build")
+            self.assertEqual((runner.output / "000-cargo-cold-build-timings.html").read_text(), "build")
+            self.assertEqual((runner.output / "001-cargo-cold-test_compile-timings.html").read_text(), "test_compile")
+            for index, command in enumerate(calls):
+                self.assertEqual("--timings" in command, index in (0, 1))
+                profiles = [a for a in command if a.startswith("--profile=")]
+                self.assertEqual(bool(profiles), index in (4, 5))
+                if profiles:
+                    phase = "build" if index == 4 else "test_compile"
+                    self.assertEqual(profiles, [f"--profile={runner.output}/{index:03}-bazel-cold-{phase}-profile.json.gz"])
+                    self.assertIn("--experimental_profile_include_target_label", command)
+                    self.assertIn("--experimental_profile_include_primary_output", command)
+            args.profile = False
+            runner.phase("cargo", "cold", "build")
+            runner.phase("bazel", "cold", "build")
+            self.assertNotIn("--timings", calls[-2])
+            self.assertFalse(any(a.startswith("--profile=") for a in calls[-1]))
+
     def test_scoped_comparison_explicitly_uses_shared_workspace_and_target(self):
         with tempfile.TemporaryDirectory() as tmp:
             args = argparse.Namespace(output=Path(tmp) / "results", workload="tempo", mode="ci",

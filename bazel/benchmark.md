@@ -6,6 +6,20 @@ Alloy `ci` repetition as a smoke test, then at least three repetitions for each
 of `alloy`/`tempo` × `ci`/`dev`. The script refuses to benchmark outside GitHub
 Actions. Do not report smoke-test timings as a stable result.
 
+For the scoped comparison matrix, select `workload: all`, `mode: both`,
+`scoped: true`, and four repetitions. The six jobs run serially, retain separate
+artifacts, and continue independently if one fails. Four repetitions balance
+Cargo-first and Bazel-first order. `all` includes the node, so it requires scoped
+mode; these aggregate choices belong to the workflow, not the Python CLI.
+
+Set `profile: true` (`benchmark.py --profile`) to capture Cargo's stable HTML
+`--timings` report and Bazel's compressed JSON action profile for each cold
+`build`/`test_compile` phase. Profiles carry unique sample prefixes and survive
+cleanup of build outputs. Bazel events include target labels and primary outputs
+for matching against the audited graph. Profiling is inside those measured
+commands, so compare profiled repetitions with each other; do not attribute small
+differences from older unprofiled runs to optimizations. Warm phases are unchanged.
+
 ## Workload boundaries
 
 Without `--scoped`, the historical workloads remain:

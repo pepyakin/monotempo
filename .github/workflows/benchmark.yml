@@ -7,12 +7,12 @@ on:
       workload:
         description: Workload (tempo-node requires scoped; no node tests)
         type: choice
-        options: [alloy, tempo, tempo-node]
+        options: [alloy, tempo, tempo-node, all]
         default: alloy
       mode:
         description: Nonincremental CI or incremental developer-loop simulation
         type: choice
-        options: [ci, dev]
+        options: [ci, dev, both]
         default: ci
       repetitions:
         description: Paired repeats (1 for smoke testing, 3 or more for reporting)
@@ -28,6 +28,10 @@ on:
         description: Experimental root-scoped graph using shared Cargo lockfile (not project-local baseline)
         type: boolean
         default: false
+      profile:
+        description: Retain per-crate Cargo timings and Bazel action profiles for cold compilation
+        type: boolean
+        default: false
 
 permissions: {}
 
@@ -37,6 +41,13 @@ concurrency:
 
 jobs:
   benchmark:
+    name: ${{ matrix.workload }} / ${{ matrix.mode }}
+    strategy:
+      fail-fast: false
+      max-parallel: 1
+      matrix:
+        workload: ${{ fromJSON(inputs.workload == 'all' && '["alloy","tempo","tempo-node"]' || format('["{0}"]', inputs.workload)) }}
+        mode: ${{ fromJSON(inputs.mode == 'both' && '["ci","dev"]' || format('["{0}"]', inputs.mode)) }}
     runs-on: [self-hosted, linux]
     timeout-minutes: 360
     permissions:
@@ -73,23 +84,25 @@ jobs:
           fi
       - name: Paired measurements
         env:
-          WORKLOAD: ${{ inputs.workload }}
-          MODE: ${{ inputs.mode }}
+          WORKLOAD: ${{ matrix.workload }}
+          MODE: ${{ matrix.mode }}
           REPETITIONS: ${{ inputs.repetitions }}
           JOBS: ${{ inputs.jobs }}
           SCOPED: ${{ inputs.scoped }}
+          PROFILE: ${{ inputs.profile }}
         run: |
           extra=()
           if [[ "$SCOPED" == 'true' ]]; then extra+=(--scoped); fi
+          if [[ "$PROFILE" == 'true' ]]; then extra+=(--profile); fi
           python3 bazel/benchmark.py \
             --workload "$WORKLOAD" --mode "$MODE" --repetitions "$REPETITIONS" \
             --jobs "$JOBS" --test-threads 8 "${extra[@]}" \
-            --output "$RUNNER_TEMP/stopwatch-results-$GITHUB_RUN_ID-$GITHUB_RUN_ATTEMPT"
+            --output "$RUNNER_TEMP/stopwatch-results-$GITHUB_RUN_ID-$GITHUB_RUN_ATTEMPT-$WORKLOAD-$MODE"
       - name: Upload raw samples, logs, test and feature inventories
         if: always()
         uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
         with:
-          name: stopwatch-${{ inputs.workload }}-${{ inputs.mode }}-${{ github.run_attempt }}
-          path: ${{ runner.temp }}/stopwatch-results-${{ github.run_id }}-${{ github.run_attempt }}
+          name: stopwatch-${{ matrix.workload }}-${{ matrix.mode }}-${{ github.run_attempt }}
+          path: ${{ runner.temp }}/stopwatch-results-${{ github.run_id }}-${{ github.run_attempt }}-${{ matrix.workload }}-${{ matrix.mode }}
           if-no-files-found: warn
           retention-days: 30
