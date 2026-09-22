@@ -3,7 +3,7 @@
 //! This module provides common logic for computing slot and offset assignments
 //! used by both the `#[derive(Storable)]` and `#[contract]` macros.
 
-use alloy::primitives::U256;
+use alloy_primitives::U256;
 use proc_macro2::TokenStream;
 use quote::{format_ident, quote};
 use syn::{Ident, Type};

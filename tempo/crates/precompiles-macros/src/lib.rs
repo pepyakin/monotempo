@@ -14,7 +14,7 @@ mod storable_primitives;
 mod storable_tests;
 mod utils;
 
-use alloy::primitives::U256;
+use alloy_primitives::U256;
 use proc_macro::TokenStream;
 use quote::quote;
 use syn::{

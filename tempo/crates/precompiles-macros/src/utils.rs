@@ -1,6 +1,6 @@
 //! Utility functions for the contract macro implementation.
 
-use alloy::primitives::{U256, keccak256};
+use alloy_primitives::{U256, keccak256};
 use syn::{Attribute, Lit, Type};
 
 /// Return type for [`extract_attributes`]: (slot, base_slot)

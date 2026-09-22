@@ -17,7 +17,7 @@ crate_proc_macro(
     crate_features = FEATURES,
     declared_features = DECLARED_FEATURES,
     deps = [
-        "//alloy/crates/alloy:alloy",
+        "//alloy-core/crates/primitives:alloy_primitives",
         "@crates//:proc-macro2",
         "@crates//:quote",
         "@crates//:syn",
@@ -30,4 +30,7 @@ crate_unit_test(
     crate = ":tempo_precompiles_macros",
     crate_features = FEATURES,
     declared_features = DECLARED_FEATURES,
+    deps = [
+        "//alloy/crates/alloy:alloy",
+    ],
 )
