@@ -236,6 +236,10 @@ class Scope:
             name = template.rsplit(":", 1)[1] + "__scope_" + digest
             label = template.rsplit(":", 1)[0] + ":" + name
             attrs["name"] = name
+            if kind == "rust_binary":
+                # Keep argv[0]/CLI help unchanged without colliding with the
+                # ordinary binary or other scoped variants in this package.
+                attrs["binary_name"] = name + "/" + unit["target"]["name"]
             self.variants[template][label] = dict(kind=kind, attrs=attrs)
             # cargo_build_script produces a host rust_binary named <name>_.
             compiler_label = label + "_" if kind == "cargo_build_script" else label

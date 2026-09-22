@@ -152,6 +152,13 @@ class ScopeTest(unittest.TestCase):
         library = scope.expected[root]["externs"]["cli"]
         self.assertIn(":cli_lib__scope_", library)
         self.assertEqual(scope.expected[library]["kind"], "rust_library")
+        variants = scope.variants["@@//tempo/crates/payload/builder:cli"]
+        output = variants[root]["attrs"]["binary_name"]
+        self.assertEqual(output, root.rsplit(":", 1)[1] + "/cli")
+        graph["units"][4]["features"] = ["extra"]
+        other = scope.add(graph)
+        self.assertNotEqual(variants[other]["attrs"]["binary_name"], output)
+        self.assertTrue(variants[other]["attrs"]["binary_name"].endswith("/cli"))
         graph["units"][4]["mode"] = "test"
         with self.assertRaisesRegex(ValueError, "library unit tests"):
             scope.add(graph)
