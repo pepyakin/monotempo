@@ -19,7 +19,8 @@ class ScopeTest(unittest.TestCase):
             "target": {"cfg(unix)": {"build-dependencies": {"const-hex": {"version": "^1.19"}}}},
             "features": {"hex": ["dep:const-hex"], "std": ["const-hex?/std", "other/std"]},
         }
-        original = {"dependencies": {"hex": {"workspace": True}}}
+        original = {"dependencies": {"hex": {"workspace": True}},
+                    "target": {"cfg( unix )": {"build-dependencies": {"hex": {"workspace": True}}}}}
         workspace = {"hex": {"package": "const-hex", "version": "^1.18"}}
         self.assertTrue(tempo_scope.restore_aliases(derived, original, workspace))
         self.assertEqual(derived["dependencies"], {"hex": {"version": "^1.19", "optional": True, "package": "const-hex"}})
@@ -27,6 +28,20 @@ class ScopeTest(unittest.TestCase):
         self.assertEqual(derived["target"]["cfg(unix)"]["build-dependencies"],
                          {"hex": {"version": "^1.19", "package": "const-hex"}})
         self.assertFalse(tempo_scope.restore_aliases(derived, original, workspace))
+
+    def test_dev_alias_does_not_rename_a_normal_dependency_at_another_version(self):
+        derived = {
+            "dependencies": {"rand": {"version": "^0.9"}},
+            "dev-dependencies": {"rand_08": {"package": "rand", "version": "^0.8"}},
+            "target": {"cfg(windows)": {"dependencies": {"rand": {"version": "^0.9"}}}},
+        }
+        original = {"dependencies": {"rand": {"workspace": True}},
+                    "dev-dependencies": {"rand_08": {"workspace": True}}}
+        before = deepcopy(derived)
+        self.assertFalse(tempo_scope.restore_aliases(derived, original, {
+            "rand": "0.9", "rand_08": {"package": "rand", "version": "0.8"},
+        }))
+        self.assertEqual(derived, before)
 
     def fixture(self):
         names = [tempo_scope.PACKAGE, "shared", "derive", "native"]

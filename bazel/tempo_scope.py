@@ -11,6 +11,7 @@ from collections import defaultdict
 import hashlib
 import json
 from pathlib import Path
+import re
 import shutil
 import subprocess
 import tomllib
@@ -36,25 +37,26 @@ def cargo_plan(verb, env, manifest):
 
 
 def dependency_tables(manifest):
-    for table in [manifest, *manifest.get("target", {}).values()]:
+    for platform, table in [("", manifest), *manifest.get("target", {}).items()]:
         for kind in ("dependencies", "dev-dependencies", "build-dependencies"):
             if kind in table:
-                yield table[kind]
+                yield (re.sub(r"\s+", "", platform), kind), table[kind]
 
 
 def restore_aliases(derived, original, workspace):
     """Undo only generator.colliding_renames, retaining versions and features."""
     renames = {}
-    for table in dependency_tables(original):
+    destinations = dict(dependency_tables(derived))
+    for section, table in dependency_tables(original):
+        dest = destinations.get(section, {})
         for alias, spec in table.items():
             if isinstance(spec, dict) and spec.get("workspace"):
                 spec = workspace[alias]
             if isinstance(spec, dict) and spec.get("package", alias) != alias:
                 package = spec["package"]
-                for dest in dependency_tables(derived):
-                    if package in dest and alias not in dest:
-                        dest[alias] = dict(dest.pop(package), package=package)
-                        renames[package] = alias
+                if package in dest and alias not in dest:
+                    dest[alias] = dict(dest.pop(package), package=package)
+                    renames[package] = alias
     for name, entries in derived.get("features", {}).items():
         for package, alias in renames.items():
             entries = [f"dep:{alias}" if e == f"dep:{package}" else
@@ -88,7 +90,12 @@ def cargo_workspace(destination, lock):
         derived = tomllib.loads(path.read_text())
         original = tomllib.loads((ROOT / relative / "Cargo.toml").read_text())
         project = tomllib.loads((ROOT / relative.parts[0] / "Cargo.toml").read_text())
-        if restore_aliases(derived, original, project.get("workspace", {}).get("dependencies", {})):
+        changed = restore_aliases(derived, original, project.get("workspace", {}).get("dependencies", {}))
+        expected_names = {k: set(v) for k, v in dependency_tables(original) if v}
+        actual_names = {k: set(v) for k, v in dependency_tables(derived) if v}
+        if actual_names != expected_names:
+            raise ValueError(f"Source dependency names changed in {relative}: {actual_names} != {expected_names}")
+        if changed:
             # Arrays of tables can be emitted as top-level arrays of inline
             # tables. Emit scalars first so they do not fall inside a section.
             content = "".join(f"{generate.toml_key(k)} = {generate.toml_value(v)}\n"
