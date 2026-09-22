@@ -17167,6 +17167,7 @@ name = "tempo-precompiles-macros"
 version = "1.14.0"
 dependencies = [
  "alloy",
+ "alloy-primitives",
  "proc-macro2",
  "quote",
  "syn 2.0.119",

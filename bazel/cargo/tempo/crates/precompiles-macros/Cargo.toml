@@ -22,7 +22,7 @@ path = "src/lib.rs"
 proc-macro = true
 
 [dependencies]
-alloy = { version = "^2.4.2", default-features = false }
+alloy-primitives = { version = "^1.7.3", default-features = false }
 proc-macro2 = { version = "^1" }
 quote = { version = "^1" }
 syn = { version = "^2", features = ["full", "extra-traits"] }

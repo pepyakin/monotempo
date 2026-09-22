@@ -356,4 +356,4 @@ alloy-signer-trezor = { path = "alloy/crates/signer-trezor" }
 # Digest of every member manifest. crate_universe only re-resolves when a
 # manifest it was given changes, and it is given this one alone.
 [workspace.metadata.bazel]
-members-digest = "55e174e30cdc0dfa9de3be5bba36de67394462a88ca5f7e865b37140b75e8a40"
+members-digest = "988eb6501424c649a78830384247c96d43b84f221b68563958697116e2fb643f"
