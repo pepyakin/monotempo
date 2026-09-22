@@ -15,9 +15,13 @@ build --@rules_rust//rust/settings:pipelined_compilation=True
 # Compact, cargo-like diagnostics.
 build --@rules_rust//rust/settings:error_format=human
 
-# Match Cargo's unoptimized build dependencies instead of compiling every
-# proc macro, build script and its dependencies at Bazel's default host opt=3.
-build --host_compilation_mode=fastbuild
+# Avoid optimizing every Rust proc macro/build script and its dependencies.
+# Preserve the previous exec assertion state: blst's build.rs uses its OWN
+# cfg!(debug_assertions) to choose native optimization, not target OPT_LEVEL.
+# Changing the whole host mode to fastbuild slows Alloy's executed tests.
+build --host_compilation_mode=opt
+build --@rules_rust//rust/settings:extra_exec_rustc_flag=-Copt-level=0
+build --@rules_rust//rust/settings:extra_exec_rustc_flag=-Cdebug-assertions=off
 
 # Compiler partitioning, not action parallelism. The rules_rust patch in
 # MODULE.bazel reserves one CPU and 3 GiB per Rust action independently of

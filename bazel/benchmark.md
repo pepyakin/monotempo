@@ -79,6 +79,8 @@ Both tools inherit CPU affinity restricted to the requested number of CPUs;
 requests exceeding the runner's available CPU set fail. Job budgets also match,
 but scheduler policies do not: Bazel reserves one CPU and 3072 MB per rustc
 action, while Cargo's `-j` limits jobs. Both now use unoptimized host tools.
+Exec debug assertions remain disabled in Bazel (unlike Cargo) to preserve
+build-script behavior, notably BLST's choice of native optimization level.
 The original stopwatch runs reserved four CPUs per Bazel rustc action and
 used optimized host tools; compare commits explicitly when measuring these
 changes. Build scripts/patches/sandboxing still differ from Cargo's. No claim of

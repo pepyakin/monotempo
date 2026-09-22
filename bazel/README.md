@@ -46,10 +46,13 @@ Reth test binaries linked concurrently. The memory estimate covers the observed
 Bazel's `--jobs` and `--local_resources=cpu=...` / `memory=...` still cap
 concurrency. On memory-constrained machines lower the memory budget or job
 count in `user.bazelrc`; do not increase codegen units to throttle links.
-Proc macros, build scripts and their dependencies use host `fastbuild`
-(unoptimized), like Cargo's default build dependencies. To trade longer cold
-tool compilation for optimized tool execution, override
-`--host_compilation_mode=opt`.
+Rust proc macros, build scripts and their dependencies use an exec-only
+`-Copt-level=0` override. The host mode remains `opt`, and exec debug assertions
+remain off: BLST's build script uses its own `cfg!(debug_assertions)` to decide
+whether to optimize native code. Simply switching host mode to `fastbuild`
+changed this behavior and increased Alloy test execution time. To trade longer
+cold tool compilation for optimized tool execution, append
+`--@rules_rust//rust/settings:extra_exec_rustc_flag=-Copt-level=3`.
 
 These settings do not change enabled features. In particular, the single
 crate_universe graph still unifies features across projects; dropping a feature
